@@ -1525,6 +1525,36 @@ function renderSSRSwarm(neededDraws, nVal) {
 // ========================
 // 10. 第 6 页：商业定价期望收益 EV 计算器与混合策略柱状图
 // ========================
+function getRecSinglePrice(pBox) {
+    return Math.round(pBox * 1.2);
+}
+
+function getRecFullPrice(N, pBox) {
+    return Math.round((N * pBox * 1.6) / 5) * 5; // 5元取整
+}
+
+function applyRecSinglePrice() {
+    const priceSlider = document.getElementById("ev-price-slider");
+    const singleSlider = document.getElementById("ev-single-slider");
+    if (!priceSlider || !singleSlider) return;
+    const pBox = parseFloat(priceSlider.value) || 29;
+    const rec = getRecSinglePrice(pBox);
+    singleSlider.value = rec;
+    updateEVFromSliders();
+}
+
+function applyRecFullPrice() {
+    const nSlider = document.getElementById("ev-n-slider");
+    const priceSlider = document.getElementById("ev-price-slider");
+    const fullSlider = document.getElementById("ev-full-slider");
+    if (!nSlider || !priceSlider || !fullSlider) return;
+    const N = parseInt(nSlider.value, 10) || 6;
+    const pBox = parseFloat(priceSlider.value) || 29;
+    const rec = getRecFullPrice(N, pBox);
+    fullSlider.value = rec;
+    updateEVFromSliders();
+}
+
 function updateEVFromSliders() {
     const nSlider = document.getElementById("ev-n-slider");
     const priceSlider = document.getElementById("ev-price-slider");
@@ -1544,6 +1574,14 @@ function updateEVFromSliders() {
     document.getElementById("ev-price-badge").textContent = `¥ ${pBox} / 抽`;
     document.getElementById("ev-single-badge").textContent = `¥ ${pSingle} / 只`;
     document.getElementById("ev-full-badge").textContent = `¥ ${pFull} / 套`;
+
+    // 动态更新公允建议定价按钮
+    const recSingle = getRecSinglePrice(pBox);
+    const recFull = getRecFullPrice(N, pBox);
+    const recSingleBtn = document.getElementById("ev-rec-single-btn");
+    const recFullBtn = document.getElementById("ev-rec-full-btn");
+    if (recSingleBtn) recSingleBtn.textContent = `💡 建议 ¥${recSingle}`;
+    if (recFullBtn) recFullBtn.textContent = `💡 建议 ¥${recFull}`;
 
     // 1. 构建所有策略列表
     const strategies = [];

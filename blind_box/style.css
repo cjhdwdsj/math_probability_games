@@ -1580,6 +1580,38 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     color: var(--muted-ink);
 }
 
+.ev-card-val-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.ev-rec-pill {
+    background: rgba(247, 200, 75, 0.16);
+    color: #7d4e00;
+    border: 1px dashed rgba(212, 136, 6, 0.55);
+    border-radius: 999px;
+    font-size: 0.61rem;
+    font-weight: 800;
+    padding: 1px 5px;
+    cursor: pointer;
+    line-height: 1.25;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+
+.ev-rec-pill:hover {
+    background: #f7c84b;
+    color: #3b2800;
+    border-style: solid;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(212, 136, 6, 0.25);
+}
+
+.ev-rec-pill:active {
+    transform: scale(0.95);
+}
+
 .slider-val-badge {
     font-size: 0.7rem;
     font-weight: 900;
