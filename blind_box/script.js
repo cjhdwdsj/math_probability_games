@@ -1662,12 +1662,13 @@ function getRecSinglePrice(pBox) {
 }
 
 function applyRecSinglePrice() {
+    const nSlider = document.getElementById("ev-n-slider");
     const priceSlider = document.getElementById("ev-price-slider");
     const singleSlider = document.getElementById("ev-single-slider");
     if (!priceSlider || !singleSlider) return;
+    const N = nSlider ? (parseInt(nSlider.value, 10) || 6) : 6;
     const pBox = parseFloat(priceSlider.value) || 29;
 
-    // 动态自适应调整二手滑块的 min/max/step/labels
     syncEVSliderRanges(N, pBox);
     const rec = getRecSinglePrice(pBox);
     singleSlider.value = rec;
@@ -1681,6 +1682,8 @@ function applyRecFullPrice() {
     if (!nSlider || !priceSlider || !fullSlider) return;
     const N = parseInt(nSlider.value, 10) || 6;
     const pBox = parseFloat(priceSlider.value) || 29;
+
+    syncEVSliderRanges(N, pBox);
     const rec = getRecFullPrice(N, pBox);
     fullSlider.value = rec;
     updateEVFromSliders();
@@ -1761,6 +1764,10 @@ function updateEVFromSliders() {
 
     const N = parseInt(nSlider.value, 10);
     const pBox = parseFloat(priceSlider.value) || 29;
+
+    // 动态同步滑块上下界
+    syncEVSliderRanges(N, pBox);
+
     const pSingle = parseFloat(singleSlider.value) || 35;
     const pFull = parseFloat(fullSlider.value) || 280;
 
