@@ -597,7 +597,7 @@ function renderTrajectoryChart() {
     const descElem = document.getElementById("report-sub-desc");
 
     if (titleElem) titleElem.textContent = `你拆了 ${opened} 袋才集齐，花费 ¥ ${totalCost.toLocaleString()}！`;
-    if (descElem) descElem.innerHTML = `为什么你的开销曲线在后半段突然抬头狂飙？来看每只动物的捕获花费轨迹：`;
+    if (descElem) descElem.innerHTML = `这是你的开箱花费曲线（横轴：已集齐款式数量，纵轴：累计花费金额）：`;
 
     // 绘制轨迹图
     const rect = canvas.getBoundingClientRect();
@@ -894,23 +894,23 @@ function updateCrowdVisual(val) {
     let colorClass = "blue";
     if (badge) {
         if (pct <= 3.0) {
-            badge.textContent = `超越了全网 ${pct}% · 天选欧皇 👑`;
+            badge.textContent = `超越了模拟中 ${pct}% · 天选欧皇 👑`;
             badge.className = "crowd-rank-pill god";
             colorClass = "gold";
         } else if (pct <= 25.0) {
-            badge.textContent = `超越了全网 ${pct}% · 幸运欧气 ✨`;
+            badge.textContent = `超越了模拟中 ${pct}% · 幸运欧气 ✨`;
             badge.className = "crowd-rank-pill good";
             colorClass = "green";
         } else if (pct <= 80.0) {
-            badge.textContent = `超越了全网 ${pct}% · 凡人均值区 😐`;
+            badge.textContent = `超越了模拟中 ${pct}% · 凡人均值区 😐`;
             badge.className = "crowd-rank-pill mid";
             colorClass = "blue";
         } else if (pct <= 95.0) {
-            badge.textContent = `超越了全网 ${pct}% · 轻度非酋 🌧️`;
+            badge.textContent = `超越了模拟中 ${pct}% · 轻度非酋 🌧️`;
             badge.className = "crowd-rank-pill bad";
             colorClass = "coral";
         } else {
-            badge.textContent = `超越了全网 ${pct}% · 极度大非酋 😭`;
+            badge.textContent = `超越了模拟中 ${pct}% · 极度大非酋 😭`;
             badge.className = "crowd-rank-pill worst";
             colorClass = "purple";
         }
