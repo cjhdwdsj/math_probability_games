@@ -2072,11 +2072,11 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 }
 
 .thumb-mini-chart.harmonic .mini-bar span {
-    font-size: 0.55rem;
+    font-size: 0.6rem;
     font-weight: 900;
-    color: #fff;
-    transform: translateY(-13px);
-    text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    color: var(--ink);
+    transform: translateY(-14px);
+    text-shadow: none;
 }
 
 .thumb-mini-chart.harmonic .mini-bar.b6 {
