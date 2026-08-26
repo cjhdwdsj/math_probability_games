@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数学与概率探索实验室 - 互动游戏合集</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #fdf9ee;
+            --ink: #2f2a25;
+            --muted-ink: #6e665e;
+            --sky: #5aabd9;
+            --sky-deep: #3c8ec0;
+            --leaf: #79ad62;
+            --coral: #e96e56;
+            --sun: #f7c84b;
+            --purple: #9a6bc7;
+            --paper: #fffef9;
+            --line: rgba(47, 42, 37, 0.85);
+            --soft-line: rgba(47, 42, 37, 0.14);
+            --shadow: 5px 6px 0 rgba(47, 42, 37, 0.16);
+            --shadow-sm: 3px 4px 0 rgba(47, 42, 37, 0.14);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            color: var(--ink);
+            background:
+                radial-gradient(circle at 10% 15%, rgba(247, 200, 75, 0.25), transparent 18rem),
+                radial-gradient(circle at 90% 85%, rgba(90, 171, 217, 0.2), transparent 22rem),
+                radial-gradient(circle at 85% 15%, rgba(233, 110, 86, 0.15), transparent 16rem),
+                var(--bg-color);
+            font-family: "Noto Sans SC", system-ui, sans-serif;
+            line-height: 1.6;
+            padding: 2.5rem 1.2rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--coral);
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+
+        h1 {
+            font-family: "Noto Serif SC", serif;
+            font-size: 2.4rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .subtitle {
+            font-size: 1.15rem;
+            color: var(--muted-ink);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.8rem;
+        }
+
+        .game-card {
+            background: var(--paper);
+            border: 2.5px solid var(--line);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            padding: 1.6rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            text-decoration: none;
+            color: var(--ink);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-card:hover {
+            transform: translate(-3px, -3px);
+            box-shadow: 8px 9px 0 var(--line);
+        }
+
+        .game-card.disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            filter: grayscale(0.5);
+        }
+        .game-card.disabled:hover {
+            transform: none;
+            box-shadow: var(--shadow);
+        }
+
+        .card-tag {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 999px;
+            border: 1.5px solid var(--line);
+        }
+        .tag-playable { background: var(--sun); color: var(--ink); }
+        .tag-soon { background: rgba(47,42,37,0.1); color: var(--muted-ink); }
+
+        .card-icon {
+            font-size: 3.2rem;
+            margin-bottom: 0.8rem;
+            display: block;
+        }
+
+        .card-title {
+            font-family: "Noto Serif SC", serif;
+            font-size: 1.35rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-desc {
+            font-size: 0.95rem;
+            color: var(--muted-ink);
+            margin-bottom: 1.2rem;
+            flex: 1;
+        }
+
+        .card-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--sky-deep);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 3.5rem;
+            padding-top: 1.5rem;
+            border-top: 2px dashed var(--soft-line);
+            font-size: 0.85rem;
+            color: var(--muted-ink);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <span class="eyebrow">MATH & PROBABILITY EXPERIMENTS</span>
+            <h1>数学与概率探索实验室</h1>
+            <p class="subtitle">通过生动有趣的渐进式互动游戏与蒙特卡洛计算机模拟，探索那些反直觉的经典概率悖论与数学法则。</p>
+        </header>
+
+        <main class="games-grid">
+            <!-- 游戏 1：盲盒收集问题 -->
+            <a class="game-card" href="./games/blind-box/index.html">
+                <span class="card-tag tag-playable">已上线 🎁</span>
+                <span class="card-icon">🎁</span>
+                <h2 class="card-title">盲盒收集的概率陷阱</h2>
+                <p class="card-desc">一套 6 款盲盒平均要买多少个才能集齐？揭秘赠券收集者模型（调和级数）、最后一只的难度黑洞与沉没成本效应。</p>
+                <div class="card-action">立即开始探索 →</div>
+            </a>
+
+            <!-- 游戏 2：飞机座位错配问题 -->
+            <a class="game-card" href="./airplane_seating/index.html">
+                <span class="card-tag tag-playable">已上线 ✈️</span>
+                <span class="card-icon">✈️</span>
+                <h2 class="card-title">飞机座位错配问题</h2>
+                <p class="card-desc">第一个乘客乱坐座位，最后一位乘客坐对座位的概率居然永远恒为 1/2！直观动画与严谨枚举拆解。</p>
+                <div class="card-action">立即开始探索 →</div>
+            </a>
+
+            <!-- 游戏 3：三门问题（开发中） -->
+            <div class="game-card disabled">
+                <span class="card-tag tag-soon">即将上线</span>
+                <span class="card-icon">🚪</span>
+                <h2 class="card-title">三门问题（Monty Hall）</h2>
+                <p class="card-desc">主持人打开了一扇羊门，换门胜率真的能从 1/3 飙升到 2/3 吗？专治直觉不服的经典悖论。</p>
+                <div class="card-action" style="color: var(--muted-ink);">敬请期待...</div>
+            </div>
+
+            <!-- 游戏 4：中秋博饼与骰子概率 -->
+            <div class="game-card disabled">
+                <span class="card-tag tag-soon">规划中</span>
+                <span class="card-icon">🎲</span>
+                <h2 class="card-title">中秋博饼与骰子策略</h2>
+                <p class="card-desc">四进为什么比三红更难出？探索 6 颗骰子的多项式分布与奖项分配平衡性。</p>
+                <div class="card-action" style="color: var(--muted-ink);">规划中...</div>
+            </div>
+        </main>
+
+        <footer>
+            <p>《数学游戏探索》教学研讨项目 · 基于原生 Web 现代交互技术构建</p>
+        </footer>
+    </div>
+</body>
+</html>
