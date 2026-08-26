@@ -1522,15 +1522,15 @@ function renderSSRSwarm(neededDraws, nVal) {
     }
 }
 
-// ========================
-// 10. 第 6 页：商业定价期望收益 EV 计算器与混合策略柱状图
-// ========================
-function getRecSinglePrice(pBox) {
-    return Math.round(pBox * 1.2);
+// 基于二级市场博弈闭环的公允建议定价计算：
+// 1. 全套打包建议价 = 官方原价总额 * 1.35 (覆盖拆盒成本，并享受打包折扣)
+function getRecFullPrice(N, pBox) {
+    return Math.round((N * pBox * 1.35) / 5) * 5; // 5元取整
 }
 
-function getRecFullPrice(N, pBox) {
-    return Math.round((N * pBox * 1.6) / 5) * 5; // 5元取整
+// 2. 单买确认款建议价 = 单抽原价 * 1.55 (单款挑选溢价，确保买齐N只单买总价高于打包一口价)
+function getRecSinglePrice(pBox) {
+    return Math.round(pBox * 1.55);
 }
 
 function applyRecSinglePrice() {
