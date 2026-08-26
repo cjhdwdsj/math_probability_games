@@ -1783,9 +1783,11 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     grid-template-columns: 185px 1fr 65px;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.12rem 0.35rem;
+    padding: 0.18rem 0.45rem;
     border-radius: 6px;
-    transition: background 0.15s ease;
+    border: 1.5px solid transparent;
+    box-sizing: border-box;
+    transition: all 0.15s ease;
 }
 
 .ev-row:hover {
@@ -1794,7 +1796,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 
 .ev-row.is-best {
     background: rgba(247, 200, 75, 0.18);
-    border: 1px dashed rgba(212, 136, 6, 0.5);
+    border: 1.5px dashed rgba(212, 136, 6, 0.75);
 }
 
 .ev-row-label {
