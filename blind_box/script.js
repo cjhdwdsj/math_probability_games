@@ -408,6 +408,22 @@ function updateSsrFromSliders() {
     document.getElementById("ssr-n-badge").textContent = `${N} 款一套`;
     document.getElementById("ssr-rate-badge").textContent = ssrInfo.label;
 
+    // 隐藏款概率计算
+    const ssrDenom = ssrInfo.denom;
+    const ssrProbPct = (1 / ssrDenom) * 100;
+    const regularTotalPct = (1 - 1 / ssrDenom) * 100;
+    const singleRegularPct = regularTotalPct / N;
+
+    const regularProbElem = document.getElementById("ssr-regular-prob");
+    const singleRegularElem = document.getElementById("ssr-single-regular-prob");
+    const ssrProbElem = document.getElementById("ssr-prob");
+    const ssrFractionElem = document.getElementById("ssr-fraction-display");
+
+    if (regularProbElem) regularProbElem.textContent = `${regularTotalPct.toFixed(2)}%`;
+    if (singleRegularElem) singleRegularElem.textContent = `${singleRegularPct.toFixed(1)}%`;
+    if (ssrProbElem) ssrProbElem.textContent = `${ssrProbPct.toFixed(2)}%`;
+    if (ssrFractionElem) ssrFractionElem.textContent = `1/${ssrDenom}`;
+
     // 基础全套期望
     let harmonicN = 0;
     for (let i = 1; i <= N; i++) harmonicN += 1 / i;
@@ -415,12 +431,12 @@ function updateSsrFromSliders() {
     const regularCost = regularDraws * PRICE_PER_BOX;
 
     // 隐藏款期望
-    const ssrDraws = ssrInfo.denom;
+    const ssrDraws = ssrDenom;
     const ssrCost = ssrDraws * PRICE_PER_BOX;
     const ratio = (ssrDraws / regularDraws).toFixed(1);
 
     document.getElementById("ssr-regular-cost").textContent = `¥ ${Math.round(regularCost).toLocaleString()}`;
-    document.getElementById("ssr-regular-draws").textContent = `平均抽 ${regularDraws.toFixed(1)} 次`;
+    document.getElementById("ssr-regular-draws").textContent = `普通全套平均抽 ${regularDraws.toFixed(1)} 次`;
 
     document.getElementById("ssr-cost-display").textContent = `¥ ${Math.round(ssrCost).toLocaleString()}`;
     document.getElementById("ssr-draws-display").textContent = `平均需要买 ${ssrDraws} 个！`;
