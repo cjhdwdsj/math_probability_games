@@ -596,8 +596,8 @@ function renderTrajectoryChart() {
     const titleElem = document.getElementById("report-main-title");
     const descElem = document.getElementById("report-sub-desc");
 
-    if (titleElem) titleElem.textContent = `你一共拆了 ${opened} 袋，累计花费 ¥ ${totalCost.toLocaleString()}！`;
-    if (descElem) descElem.innerHTML = `这是你的开箱花费曲线（横轴：已集齐款式数量，纵轴：累计花费金额）：`;
+    if (titleElem) titleElem.textContent = `你拆了 ${opened} 袋才集齐，花费 ¥ ${totalCost.toLocaleString()}！`;
+    if (descElem) descElem.innerHTML = `为什么你的开销曲线在后半段突然抬头狂飙？来看每只动物的捕获花费轨迹：`;
 
     // 绘制轨迹图
     const rect = canvas.getBoundingClientRect();
