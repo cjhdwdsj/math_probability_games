@@ -1071,64 +1071,119 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     z-index: 12;
 }
 
-/* ========== Page 5 欧皇 vs 非酋与段位测算器 ========== */
-.luck-comparison {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.8rem;
-    margin-bottom: 0.6rem;
+/* ========== Page 4 蒙特卡洛大数分布与人群排队切分 ========== */
+.sim-top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.35rem;
+    font-size: 0.76rem;
 }
 
-.luck-card {
+.sim-preset-chips {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-weight: 700;
+    color: var(--muted-ink);
+}
+
+.crowd-interactive-card {
     background: #fff;
     border: 2px solid var(--line);
     border-radius: 12px;
-    padding: 0.8rem 1rem;
+    padding: 0.55rem 0.85rem 0.45rem;
     box-shadow: var(--shadow-sm);
-}
-.luck-card.god { border-color: var(--sun); background: #fffdf2; }
-.luck-card.bad { border-color: var(--purple); background: #faf6ff; }
-
-.luck-title {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.95rem;
+    margin-top: 0.4rem;
 }
 
-.luck-prob {
-    font-size: 1.65rem;
-    font-weight: 800;
-    margin: 0.15rem 0;
-}
-.luck-card.god .luck-prob { color: #d48806; }
-.luck-card.bad .luck-prob { color: var(--purple); }
-
-.luck-desc {
-    font-size: 0.8rem;
-    color: var(--muted-ink);
-    line-height: 1.45;
-}
-
-.luck-rank-box {
-    background: var(--paper);
-    border: 1.5px solid var(--line);
-    border-radius: 10px;
-    padding: 0.6rem 1rem;
+.crowd-slider-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
+    gap: 0.8rem;
+    margin-bottom: 0.35rem;
 }
 
-.luck-rank-badge {
+.crowd-rank-pill {
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.76rem;
     font-weight: 800;
-    font-size: 0.95rem;
+    border: 1.5px solid var(--line);
+    background: var(--paper);
+    color: var(--ink);
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+.crowd-rank-pill.god { background: #fff8e6; color: #d48806; border-color: #d48806; }
+.crowd-rank-pill.good { background: #f0fdf4; color: #27ae60; border-color: #27ae60; }
+.crowd-rank-pill.mid { background: rgba(47,42,37,0.06); color: var(--ink); border-color: var(--line); }
+.crowd-rank-pill.bad { background: #fff5f3; color: var(--coral); border-color: var(--coral); }
+.crowd-rank-pill.worst { background: #faf5ff; color: var(--purple); border-color: var(--purple); }
+
+.crowd-visual-wrap {
+    position: relative;
+    padding-bottom: 22px;
+    margin-top: 0.25rem;
+}
+
+.crowd-people-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(47, 42, 37, 0.04);
+    border: 1.5px dashed var(--soft-line);
+    border-radius: 8px;
+    padding: 0.25rem 0.45rem;
+}
+
+.crowd-person {
+    font-size: 1.1rem;
+    line-height: 1;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    user-select: none;
+}
+
+.crowd-person.lit {
+    transform: scale(1.18);
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+    opacity: 1;
+}
+
+.crowd-person.unlit {
+    opacity: 0.25;
+    transform: scale(0.9);
+}
+
+.crowd-indicator {
+    position: absolute;
+    bottom: 2px;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: left 0.15s ease;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 10;
+}
+
+.indicator-arrow {
+    font-size: 0.65rem;
     color: var(--coral);
-    background: rgba(233,110,86,0.1);
-    padding: 0.2rem 0.6rem;
-    border-radius: 6px;
-    border: 1px solid var(--coral);
+    line-height: 1;
+    margin-bottom: -1px;
+}
+
+.indicator-tag {
+    font-size: 0.68rem;
+    font-weight: 800;
+    color: #fff;
+    background: var(--coral);
+    padding: 1px 6px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.18);
 }
 
 /* ========== Page 6 隐藏款 SSR 机制 ========== */

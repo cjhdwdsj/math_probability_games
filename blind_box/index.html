@@ -195,45 +195,56 @@
                 </article>
             </section>
 
-            <!-- 第 4 页：欧皇 vs 非酋的真实概率 + 段位测算器 -->
+            <!-- 第 4 页（原4、6页合并）：10,000 位玩家开箱模拟与人群排队切分 -->
             <section class="lesson-page" data-page="5" aria-hidden="true">
                 <article class="lesson-card">
-                    <div class="section-kicker"><span aria-hidden="true">👑</span> 运气大比拼</div>
-                    <h2>欧皇与非酋的世界有多大差距？</h2>
-                    <p class="lead">你可能见过一发入魂的大佬，但也可能抽了 25 次依然在风中凌乱！</p>
+                    <div class="section-kicker"><span aria-hidden="true">🧪</span> 大数定律与欧非分布</div>
+                    <h2>10,000 位玩家开箱模拟：看清欧皇与非酋长尾</h2>
+                    <p class="lead">通过计算机模拟上万名玩家集齐所需的次数分布，左右拖动滑块看看你的成绩在全国排在哪个位置：</p>
 
-                    <div class="luck-comparison">
-                        <div class="luck-card god">
-                            <div class="luck-title">
-                                <span style="font-size: 1.3rem;">✨</span>
-                                <strong>天选欧皇（6发不重集齐）</strong>
-                            </div>
-                            <div class="luck-prob">1.54%</div>
-                            <p class="luck-desc">
-                                相当于 <strong>65 个人里才出 1 位</strong>！连抽 6 个全中不同款的概率只有百分之一点五。
-                            </p>
+                    <!-- 顶部款式与图例 -->
+                    <div class="sim-top-bar">
+                        <div class="sim-preset-chips">
+                            <span>款式数量：</span>
+                            <button class="preset-pill active" id="sim-btn-6" type="button" onclick="setSimN(6)">6 款一套 (均值14.7)</button>
+                            <button class="preset-pill" id="sim-btn-8" type="button" onclick="setSimN(8)">8 款一套 (均值21.7)</button>
+                            <button class="preset-pill" id="sim-btn-12" type="button" onclick="setSimN(12)">12 款大套 (均值37.2)</button>
+                            <button class="btn btn-quiet" type="button" onclick="runMonteCarloSim()" style="padding: 0.12rem 0.5rem; font-size: 0.72rem; margin-left: 0.2rem;">⚡ 重新模拟</button>
                         </div>
-
-                        <div class="luck-card bad">
-                            <div class="luck-title">
-                                <span style="font-size: 1.3rem;">😭</span>
-                                <strong>至尊大非酋（抽25次仍缺）</strong>
-                            </div>
-                            <div class="luck-prob">7.32%</div>
-                            <p class="luck-desc">
-                                相当于 <strong>每 14 个人就有 1 位</strong> 买了 25 个依然被最后一只卡死！
-                            </p>
+                        <div class="chart-legend">
+                            <span class="legend-item"><span class="legend-dot dot-god"></span> 欧皇区</span>
+                            <span class="legend-item"><span class="legend-dot dot-mid"></span> 凡人均值区</span>
+                            <span class="legend-item"><span class="legend-dot dot-bad"></span> 非酋长尾</span>
                         </div>
                     </div>
 
-                    <!-- 互动段位测算器 -->
-                    <div class="luck-rank-box">
-                        <div style="font-size: 0.88rem; font-weight: 700;">
-                            🎯 测测你的抽盒段位：
-                            <span id="rank-draws-text" style="color: var(--coral); font-size: 1.1rem; font-weight: 800;">14 次</span>
+                    <!-- 直方图画布 -->
+                    <div class="chart-container" id="chart-wrapper">
+                        <canvas id="sim-canvas"></canvas>
+                        <div id="chart-tooltip" class="chart-tooltip"></div>
+                    </div>
+
+                    <!-- 底部：拖动你的抽盒次数 + 人群排队切分互动区 -->
+                    <div class="crowd-interactive-card">
+                        <div class="crowd-slider-row">
+                            <label for="crowd-draws-slider" style="font-size: 0.82rem; font-weight: 700; color: var(--ink);">
+                                🎯 拖动抽盒次数：
+                                <strong id="crowd-draws-display" style="color: var(--coral); font-size: 1.15rem; font-family: 'Noto Serif SC', serif;">14 次</strong>
+                            </label>
+                            <input type="range" class="custom-range-slider" id="crowd-draws-slider" min="6" max="45" value="14" style="flex: 1; max-width: 260px;" oninput="updateCrowdVisual(this.value)">
+                            <div class="crowd-rank-pill mid" id="crowd-rank-badge">超越了全网 54.2% 的玩家</div>
                         </div>
-                        <input type="range" class="custom-range-slider" id="luck-slider" min="6" max="30" value="14" style="max-width: 200px;" oninput="updateLuckRank(this.value)">
-                        <div class="luck-rank-badge" id="luck-rank-badge">段位：普通凡人 😐</div>
+
+                        <!-- 20个小人群体排队可视化 -->
+                        <div class="crowd-visual-wrap">
+                            <div class="crowd-people-line" id="crowd-people-line">
+                                <!-- 动态生成 20 个小人图标 -->
+                            </div>
+                            <div class="crowd-indicator" id="crowd-indicator">
+                                <span class="indicator-arrow">▲</span>
+                                <span class="indicator-tag" id="crowd-indicator-tag">你在这里 (第14次)</span>
+                            </div>
+                        </div>
                     </div>
                 </article>
             </section>
@@ -289,59 +300,8 @@
                 </article>
             </section>
 
-            <!-- 第 6 页：蒙特卡洛 10000 人模拟 -->
+            <!-- 第 6 页：第三方全套定价与理性决策 -->
             <section class="lesson-page" data-page="7" aria-hidden="true">
-                <article class="lesson-card">
-                    <div class="section-kicker"><span aria-hidden="true">🧪</span> 大数定律验证</div>
-                    <h2>10,000 位玩家开箱模拟：看清长尾</h2>
-                    <p class="lead">通过计算机模拟上万名玩家集齐所需的次数分布，悬停柱子查看具体人数：</p>
-
-                    <!-- 参数控制栏 -->
-                    <div class="sim-controls-panel">
-                        <div class="sim-input-group">
-                            <label for="sim-n-select">盲盒款式数：</label>
-                            <select id="sim-n-select" onchange="runMonteCarloSim()">
-                                <option value="6" selected>6 款一套</option>
-                                <option value="8">8 款一套</option>
-                                <option value="10">10 款一套</option>
-                                <option value="12">12 款一套 (大套)</option>
-                            </select>
-                        </div>
-
-                        <div class="sim-input-group">
-                            <label for="sim-trials-select">模拟人数：</label>
-                            <select id="sim-trials-select" onchange="runMonteCarloSim()">
-                                <option value="1000">1,000 人</option>
-                                <option value="5000" selected>5,000 人</option>
-                                <option value="10000">10,000 人</option>
-                            </select>
-                        </div>
-
-                        <button class="btn btn-primary" type="button" onclick="runMonteCarloSim()">⚡ 重新模拟</button>
-                    </div>
-
-                    <!-- 图例说明 -->
-                    <div class="chart-legend">
-                        <span class="legend-item"><span class="legend-dot dot-god"></span> 欧皇区 (极速集齐)</span>
-                        <span class="legend-item"><span class="legend-dot dot-mid"></span> 正常集中区</span>
-                        <span class="legend-item"><span class="legend-dot dot-bad"></span> 非酋长尾 (最后一只卡死)</span>
-                    </div>
-
-                    <div class="chart-container" id="chart-wrapper">
-                        <canvas id="sim-canvas"></canvas>
-                        <div id="chart-tooltip" class="chart-tooltip"></div>
-                        <div class="sim-stat-summary">
-                            <div>实际模拟平均：<strong id="sim-avg-result">--</strong> 次</div>
-                            <div>理论期望平均：<strong id="sim-theory-result">14.70</strong> 次</div>
-                            <div>最欧玩家：<strong id="sim-min-result" style="color: #d48806;">--</strong> 次</div>
-                            <div>最非玩家：<strong id="sim-max-result" style="color: var(--purple);">--</strong> 次</div>
-                        </div>
-                    </div>
-                </article>
-            </section>
-
-            <!-- 第 7 页：第三方全套定价与理性决策 -->
-            <section class="lesson-page" data-page="8" aria-hidden="true">
                 <article class="lesson-card">
                     <div class="section-kicker"><span aria-hidden="true">💡</span> 二手市场与理性决策</div>
                     <h2>第三方全套溢价卖，买家看似亏实则血赚？</h2>

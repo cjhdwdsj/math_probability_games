@@ -5,7 +5,7 @@
 // ========================
 // 1. 全局配置与状态
 // ========================
-const TOTAL_PAGES = 9;
+const TOTAL_PAGES = 8;
 let currentPage = 0;
 
 const CHARACTERS = [
@@ -53,9 +53,11 @@ let currentPullDist = 0;
 let currentHarmonicN = 6;
 let harmonicTimers = [];
 
-// 第 6 页（模拟器）缓存数据
+// 第 4 页（蒙特卡洛与人群排队）缓存与状态
 let simCache = null;
 let animFrameId = null;
+let simSelectedN = 6;
+let simUserDraws = 14;
 
 // ========================
 // 2. 初始化与页面生命周期
@@ -65,17 +67,18 @@ document.addEventListener("DOMContentLoaded", () => {
     initKeyboardControls();
     initStandeeDragListeners();
     initSimCanvasListeners();
+    initCrowdQueue();
 
     // 默认初始化各组件
     initTabletopScene(userGuess);
-    updateLuckRank(14);
     updateSsrFromSliders();
     updateEVFromSliders();
     animateHarmonicPage(6);
+    runMonteCarloSim();
 
     window.addEventListener("resize", () => {
         if (currentPage === 3) renderTrajectoryChart();
-        if (currentPage === 7 && simCache) renderHistogram(1);
+        if (currentPage === 5 && simCache) renderHistogram(1);
     });
 });
 
@@ -103,8 +106,15 @@ function goToPage(pageIndex) {
         setTimeout(renderTrajectoryChart, 80);
     } else if (currentPage === 4) {
         setTimeout(() => animateHarmonicPage(currentHarmonicN), 80);
+    } else if (currentPage === 5) {
+        setTimeout(() => {
+            const initialDraws = tableState.openedCount > 0 ? tableState.openedCount : 14;
+            simUserDraws = initialDraws;
+            runMonteCarloSim();
+            updateCrowdVisual(initialDraws);
+        }, 80);
     } else if (currentPage === 7) {
-        setTimeout(runMonteCarloSim, 80);
+        setTimeout(updateEVFromSliders, 80);
     }
 }
 
@@ -725,96 +735,110 @@ function animateHarmonicPage(N = 6) {
 }
 
 // ========================
-// 8. 第 4 页：欧气段位测算器
+// 8. 第 4 页：蒙特卡洛大规模模拟与人群排队切分
 // ========================
-function updateLuckRank(val) {
-    const draws = parseInt(val, 10);
-    const text = document.getElementById("rank-draws-text");
-    const badge = document.getElementById("luck-rank-badge");
-    if (!text || !badge) return;
+let hoveredBinIndex = -1;
 
-    text.textContent = `${draws} 次`;
-
-    if (draws === 6) {
-        badge.textContent = "段位：天选神王 👑 (1.5%)";
-        badge.style.color = "#d48806";
-        badge.style.borderColor = "#d48806";
-        badge.style.background = "rgba(247, 200, 75, 0.2)";
-    } else if (draws <= 9) {
-        badge.textContent = "段位：幸运欧皇 ✨ (前15%)";
-        badge.style.color = "#27ae60";
-        badge.style.borderColor = "#27ae60";
-        badge.style.background = "rgba(39, 174, 96, 0.1)";
-    } else if (draws <= 16) {
-        badge.textContent = "段位：普通凡人 😐 (正常均值)";
-        badge.style.color = "var(--ink)";
-        badge.style.borderColor = "var(--line)";
-        badge.style.background = "rgba(47, 42, 37, 0.06)";
-    } else if (draws <= 23) {
-        badge.textContent = "段位：轻度非酋 🌧️ (后20%)";
-        badge.style.color = "var(--coral)";
-        badge.style.borderColor = "var(--coral)";
-        badge.style.background = "rgba(233, 110, 86, 0.1)";
-    } else {
-        badge.textContent = "段位：至尊大冤种 😭 (后7%)";
-        badge.style.color = "var(--purple)";
-        badge.style.borderColor = "var(--purple)";
-        badge.style.background = "rgba(154, 107, 199, 0.15)";
-    }
-}
-
-// ========================
-// 9. 第 5 页：隐藏款 SSR 机制
-// ========================
-function updateSsrFromSliders() {
-    const nSlider = document.getElementById("ssr-n-slider");
-    const rateSlider = document.getElementById("ssr-rate-slider");
-    if (!nSlider || !rateSlider) return;
-
-    const N = parseInt(nSlider.value, 10);
-    const rateIdx = parseInt(rateSlider.value, 10) - 1;
-    const ssrInfo = SSR_RATES[rateIdx] || SSR_RATES[2];
-
-    document.getElementById("ssr-n-badge").textContent = `${N} 款一套`;
-    document.getElementById("ssr-rate-badge").textContent = ssrInfo.label;
-
-    const ssrDenom = ssrInfo.denom;
-    const ssrProbPct = (1 / ssrDenom) * 100;
-    const regularTotalPct = (1 - 1 / ssrDenom) * 100;
-    const singleRegularPct = regularTotalPct / N;
-
-    const regularProbElem = document.getElementById("ssr-regular-prob");
-    const singleRegularElem = document.getElementById("ssr-single-regular-prob");
-    const ssrProbElem = document.getElementById("ssr-prob");
-    const ssrFractionElem = document.getElementById("ssr-fraction-display");
-
-    if (regularProbElem) regularProbElem.textContent = `${regularTotalPct.toFixed(2)}%`;
-    if (singleRegularElem) singleRegularElem.textContent = `${singleRegularPct.toFixed(1)}%`;
-    if (ssrProbElem) ssrProbElem.textContent = `${ssrProbPct.toFixed(2)}%`;
-    if (ssrFractionElem) ssrFractionElem.textContent = `1/${ssrDenom}`;
+function setSimN(N) {
+    simSelectedN = N;
+    [6, 8, 12].forEach(num => {
+        const btn = document.getElementById(`sim-btn-${num}`);
+        if (btn) {
+            if (num === N) btn.classList.add("active");
+            else btn.classList.remove("active");
+        }
+    });
 
     let harmonicN = 0;
     for (let i = 1; i <= N; i++) harmonicN += 1 / i;
-    const regularDraws = N * harmonicN;
-    const regularCost = regularDraws * PRICE_PER_BOX;
+    const theoryMean = N * harmonicN;
+    simUserDraws = Math.round(theoryMean);
 
-    const ssrDraws = ssrDenom;
-    const ssrCost = ssrDraws * PRICE_PER_BOX;
-    const ratio = (ssrDraws / regularDraws).toFixed(1);
-
-    document.getElementById("ssr-regular-cost").textContent = `¥ ${Math.round(regularCost).toLocaleString()}`;
-    document.getElementById("ssr-regular-draws").textContent = `普通全套平均抽 ${regularDraws.toFixed(1)} 次`;
-
-    document.getElementById("ssr-cost-display").textContent = `¥ ${Math.round(ssrCost).toLocaleString()}`;
-    document.getElementById("ssr-draws-display").textContent = `平均需要买 ${ssrDraws} 个！`;
-
-    document.getElementById("ssr-ratio-display").textContent = `${ratio} 倍`;
+    runMonteCarloSim();
 }
 
-// ========================
-// 10. 第 6 页：蒙特卡洛大规模模拟
-// ========================
-let hoveredBinIndex = -1;
+function initCrowdQueue() {
+    const line = document.getElementById("crowd-people-line");
+    if (!line) return;
+    line.innerHTML = "";
+    for (let i = 0; i < 20; i++) {
+        const span = document.createElement("span");
+        span.className = "crowd-person unlit";
+        span.id = `person-${i}`;
+        span.textContent = "👤";
+        line.appendChild(span);
+    }
+}
+
+function updateCrowdVisual(val) {
+    const draws = parseInt(val, 10);
+    simUserDraws = draws;
+
+    const displayElem = document.getElementById("crowd-draws-display");
+    const badge = document.getElementById("crowd-rank-badge");
+    const indicatorTag = document.getElementById("crowd-indicator-tag");
+    const indicator = document.getElementById("crowd-indicator");
+    const slider = document.getElementById("crowd-draws-slider");
+
+    if (displayElem) displayElem.textContent = `${draws} 次`;
+    if (slider && parseInt(slider.value, 10) !== draws) slider.value = draws;
+
+    if (!simCache) return;
+    const { N, maxDraws, bins, trials } = simCache;
+
+    // 计算 <= draws 的累计玩家比例
+    let countLeq = 0;
+    for (let d = N; d <= Math.min(draws, maxDraws); d++) {
+        countLeq += (bins[d] || 0);
+    }
+    const pct = ((countLeq / trials) * 100).toFixed(1);
+
+    if (badge) {
+        if (pct <= 3.0) {
+            badge.textContent = `超越了全网 ${pct}% · 天选欧皇 👑`;
+            badge.className = "crowd-rank-pill god";
+        } else if (pct <= 25.0) {
+            badge.textContent = `超越了全网 ${pct}% · 幸运欧气 ✨`;
+            badge.className = "crowd-rank-pill good";
+        } else if (pct <= 80.0) {
+            badge.textContent = `超越了全网 ${pct}% · 凡人均值区 😐`;
+            badge.className = "crowd-rank-pill mid";
+        } else if (pct <= 95.0) {
+            badge.textContent = `超越了全网 ${pct}% · 轻度非酋 🌧️`;
+            badge.className = "crowd-rank-pill bad";
+        } else {
+            badge.textContent = `超越了全网 ${pct}% · 极度大非酋 😭`;
+            badge.className = "crowd-rank-pill worst";
+        }
+    }
+
+    if (indicatorTag) {
+        indicatorTag.textContent = `第 ${draws} 次 · 超越 ${pct}%`;
+    }
+
+    const totalPeople = 20;
+    const litCount = Math.min(totalPeople, Math.max(0, Math.round((pct / 100) * totalPeople)));
+
+    for (let i = 0; i < totalPeople; i++) {
+        const p = document.getElementById(`person-${i}`);
+        if (p) {
+            if (i < litCount) {
+                p.className = "crowd-person lit";
+                p.textContent = (pct <= 5) ? "🌟" : "🧑";
+            } else {
+                p.className = "crowd-person unlit";
+                p.textContent = "👤";
+            }
+        }
+    }
+
+    if (indicator) {
+        const ratio = Math.min(0.96, Math.max(0.04, litCount / totalPeople));
+        indicator.style.left = `${(ratio * 100).toFixed(1)}%`;
+    }
+
+    renderHistogram(1);
+}
 
 function initSimCanvasListeners() {
     const canvas = document.getElementById("sim-canvas");
@@ -861,17 +885,12 @@ function hideTooltip() {
 }
 
 function runMonteCarloSim() {
-    const nSelect = document.getElementById("sim-n-select");
-    const trialsSelect = document.getElementById("sim-trials-select");
-    if (!nSelect || !trialsSelect) return;
-
-    const N = parseInt(nSelect.value, 10);
-    const trials = parseInt(trialsSelect.value, 10);
+    const N = simSelectedN || 6;
+    const trials = 10000;
 
     let harmonicN = 0;
     for (let i = 1; i <= N; i++) harmonicN += 1 / i;
     const theoryMean = N * harmonicN;
-    document.getElementById("sim-theory-result").textContent = theoryMean.toFixed(2);
 
     const results = new Array(trials);
     let totalDrawsSum = 0;
@@ -899,10 +918,6 @@ function runMonteCarloSim() {
     }
 
     const simMean = totalDrawsSum / trials;
-    document.getElementById("sim-avg-result").textContent = simMean.toFixed(2);
-    document.getElementById("sim-min-result").textContent = minDraws;
-    document.getElementById("sim-max-result").textContent = maxDraws;
-
     const sorted = results.slice().sort((a, b) => a - b);
     const p99 = sorted[Math.floor(trials * 0.995)];
     const bucketMax = Math.min(maxDraws, Math.max(p99, Math.ceil(theoryMean * 2.2)));
@@ -932,9 +947,18 @@ function runMonteCarloSim() {
         layout: {}
     };
 
+    // 同步更新滑块范围
+    const slider = document.getElementById("crowd-draws-slider");
+    if (slider) {
+        slider.min = N;
+        slider.max = Math.min(maxDraws, Math.max(35, bucketMax));
+    }
+
+    updateCrowdVisual(simUserDraws || Math.round(theoryMean));
+
     if (animFrameId) cancelAnimationFrame(animFrameId);
     let startTime = null;
-    const duration = 300;
+    const duration = 280;
 
     function animateChart(timestamp) {
         if (!startTime) startTime = timestamp;
@@ -1061,12 +1085,13 @@ function renderHistogram(progress = 1) {
         ctx.stroke();
     }
 
+    // 理论平均线 (虚线)
     const theoryX = paddingLeft + (theoryMean - startX) * binStep + binStep / 2;
     if (theoryX >= paddingLeft && theoryX <= cssWidth - paddingRight) {
         ctx.beginPath();
         ctx.setLineDash([4, 3]);
         ctx.strokeStyle = "#e96e56";
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 1.8;
         ctx.moveTo(theoryX, paddingTop - 4);
         ctx.lineTo(theoryX, cssHeight - paddingBottom);
         ctx.stroke();
@@ -1075,7 +1100,23 @@ function renderHistogram(progress = 1) {
         ctx.fillStyle = "#e96e56";
         ctx.font = "bold 10px sans-serif";
         ctx.textAlign = "left";
-        ctx.fillText(`理论平均 ${theoryMean.toFixed(1)}次`, theoryX + 4, paddingTop + 8);
+        ctx.fillText(`理论均值 ${theoryMean.toFixed(1)}次`, theoryX + 4, paddingTop + 8);
+    }
+
+    // 玩家当前选择的抽数竖线 (游标线)
+    if (simUserDraws >= startX && simUserDraws <= bucketMax) {
+        const userX = paddingLeft + (simUserDraws - startX) * binStep + binStep / 2;
+        ctx.beginPath();
+        ctx.strokeStyle = "#2f2a25";
+        ctx.lineWidth = 2.5;
+        ctx.moveTo(userX, paddingTop - 4);
+        ctx.lineTo(userX, cssHeight - paddingBottom);
+        ctx.stroke();
+
+        ctx.fillStyle = "#2f2a25";
+        ctx.font = "bold 10px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(`▼ ${simUserDraws}次`, userX, paddingTop - 2);
     }
 
     ctx.strokeStyle = "rgba(47, 42, 37, 0.85)";
