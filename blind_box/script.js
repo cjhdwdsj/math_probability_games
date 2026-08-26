@@ -17,7 +17,7 @@ const CHARACTERS = [
     { id: 6, name: "幻彩独角", icon: "🦄", color: "#9b59b6" }
 ];
 
-const PRICE_PER_BOX = 69;
+const PRICE_PER_BOX = 29;
 
 const SSR_RATES = [
     { denom: 24, label: "1/24 (微型隐藏)" },
@@ -155,10 +155,21 @@ function adjustGuess(delta) {
 }
 
 function startTabletopGame() {
-    const transNum = document.getElementById("trans-guess-num");
-    const transCount = document.getElementById("trans-guess-count");
-    if (transNum) transNum.textContent = userGuess;
-    if (transCount) transCount.textContent = userGuess;
+    const titleElem = document.getElementById("trans-guess-title");
+    const leadElem = document.getElementById("trans-guess-lead");
+
+    if (titleElem && leadElem) {
+        if (userGuess <= 10) {
+            titleElem.textContent = `你猜只要 ${userGuess} 个就能集齐？`;
+            leadElem.innerHTML = `6 款盲盒你觉得买 <strong style="color: var(--coral);">${userGuess}</strong> 袋就够了？行，<strong style="color: var(--coral);">${userGuess}</strong> 袋盲盒全给你买来扔桌上了，去拆拆看能不能如你所愿！`;
+        } else if (userGuess <= 18) {
+            titleElem.textContent = `你猜要买 ${userGuess} 个才能集齐？`;
+            leadElem.innerHTML = `行！<strong style="color: var(--coral);">${userGuess}</strong> 袋盲盒已经全给你买好扔桌上了，去桌前亲手拆拆看 <strong style="color: var(--coral);">${userGuess}</strong> 袋到底能不能凑齐一套！`;
+        } else {
+            titleElem.textContent = `你猜要买 ${userGuess} 个？这么谨慎？`;
+            leadElem.innerHTML = `看来你深知概率的险恶！<strong style="color: var(--coral);">${userGuess}</strong> 袋盲盒全给你买来扔桌上了，去桌前拆拆看能不能提前集齐！`;
+        }
+    }
 
     initTabletopScene(userGuess);
     goToPage(1); // 翻入第 1.5 页过渡页
@@ -478,24 +489,9 @@ function renderTrajectoryChart() {
 
     const titleElem = document.getElementById("report-main-title");
     const descElem = document.getElementById("report-sub-desc");
-    const heroBadge = document.getElementById("report-badge-hero");
-    const rankTitle = document.getElementById("report-rank-title");
 
-    if (titleElem) titleElem.textContent = `你总共拆了 ${opened} 袋，累计花费 ¥ ${totalCost.toLocaleString()}！`;
-
-    if (opened <= 9) {
-        if (heroBadge) heroBadge.className = "report-badge-hero god";
-        if (rankTitle) rankTitle.textContent = "段位：天选神王 👑";
-        if (descElem) descElem.innerHTML = `仅用了 <strong>${opened} 次</strong>（¥${totalCost}）！你击败了全国 90% 的玩家，欧气爆棚！`;
-    } else if (opened <= 18) {
-        if (heroBadge) heroBadge.className = "report-badge-hero mid";
-        if (rankTitle) rankTitle.textContent = "段位：标准凡人 😐";
-        if (descElem) descElem.innerHTML = `总共用了 <strong>${opened} 次</strong>（¥${totalCost}），精准落在大数定律均值区间，看你的花费曲线：`;
-    } else {
-        if (heroBadge) heroBadge.className = "report-badge-hero bad";
-        if (rankTitle) rankTitle.textContent = "段位：至尊大非酋 😭";
-        if (descElem) descElem.innerHTML = `整整买了 <strong>${opened} 袋</strong>（¥${totalCost}）才把最后一只救出来！注意看最后一只那段漫长的横线：`;
-    }
+    if (titleElem) titleElem.textContent = `你一共拆了 ${opened} 袋，累计花费 ¥ ${totalCost.toLocaleString()}！`;
+    if (descElem) descElem.innerHTML = `这是你的开箱花费曲线（横轴：已集齐款式数量，纵轴：累计花费金额）：`;
 
     // 绘制轨迹图
     const rect = canvas.getBoundingClientRect();
