@@ -82,9 +82,10 @@
                             </ol>
                         </div>
                     </div>
-                    <div class="btn-group">
-                        <button class="btn btn-secondary" id="play-n3" type="button" onclick="animateN3()">🎬 演示一次</button>
-                        <button class="btn btn-quiet" id="skip-n3" type="button" onclick="skipN3Animation()" disabled>⏭ 跳过动画</button>
+                    <div class="btn-group n3-controls" aria-label="N 等于 3 演示控制">
+                        <button class="btn btn-secondary" id="start-n3" type="button" onclick="startN3Stepper()">🧭 开始步进</button>
+                        <button class="btn btn-primary" id="next-n3" type="button" onclick="nextN3Step()" disabled>下一步</button>
+                        <button class="btn btn-quiet" id="result-n3" type="button" onclick="showN3Result()" disabled>⏭ 查看结果</button>
                         <button class="btn btn-outline" type="button" onclick="simulateN3()">📈 模拟 50 次</button>
                     </div>
                     <p class="result" id="n3-result"></p>
@@ -157,13 +158,15 @@
                             <option value="50">50 人</option>
                         </select>
                     </div>
-                    <p class="game-instructions">点击一个座位，让乘客 1 坐下；系统会继续完成其余乘客的选择。</p>
+                    <p class="game-instructions">先点击一个座位，让乘客 1 坐下；之后由你点击“下一位乘客”逐个推进。</p>
                     <div class="game-seats" id="game-seats" aria-label="可供第一位乘客选择的座位"></div>
+                    <div id="user-game-step" class="game-step-status" aria-live="polite">请选择乘客 1 的座位。</div>
                     <div id="game-result" class="game-result hidden" aria-live="polite">
                         <div class="result-indicator" id="result-indicator"></div>
                         <p id="result-text"></p>
                     </div>
                     <div class="btn-group">
+                        <button class="btn btn-primary" id="next-user-passenger" type="button" onclick="nextUserGameStep()" disabled>下一位乘客</button>
                         <button class="btn btn-secondary" type="button" onclick="resetGame()">🔁 再试一次</button>
                         <button class="btn btn-outline" type="button" onclick="showUserStats()">📊 查看统计</button>
                     </div>
