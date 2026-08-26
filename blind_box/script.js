@@ -1609,18 +1609,18 @@ function renderSSRSwarm(neededDraws, nVal) {
     const maxR = 114; // 外层延伸到圆环边缘
     const goldenAngle = 2.399963229728653; // 137.507764度 黄金角分布
 
-    // 基础自适应字号：随着粒子数量自适应微缩，确保 1500+ 颗粒子也能全部塞入
+    // 基础自适应字号：少时大立牌（28px~21px）饱满不空旷，多时（1500+）自适应微缩
     let baseSize;
-    if (displayCount <= 40) {
-        baseSize = 22;
-    } else if (displayCount <= 120) {
-        baseSize = 22 - ((displayCount - 40) / 80) * 5; // 22 -> 17px
-    } else if (displayCount <= 300) {
-        baseSize = 17 - ((displayCount - 120) / 180) * 4; // 17 -> 13px
-    } else if (displayCount <= 800) {
-        baseSize = 13 - ((displayCount - 300) / 500) * 4.5; // 13 -> 8.5px
+    if (displayCount <= 20) {
+        baseSize = 28;
+    } else if (displayCount <= 60) {
+        baseSize = 28 - ((displayCount - 20) / 40) * 7; // 28 -> 21px
+    } else if (displayCount <= 180) {
+        baseSize = 21 - ((displayCount - 60) / 120) * 6.5; // 21 -> 14.5px
+    } else if (displayCount <= 500) {
+        baseSize = 14.5 - ((displayCount - 180) / 320) * 4.5; // 14.5 -> 10px
     } else {
-        baseSize = Math.max(4.5, 8.5 - ((displayCount - 800) / 800) * 3.5); // 8.5 -> 5.0px
+        baseSize = Math.max(5.5, 10 - ((displayCount - 500) / 1150) * 4.2); // 10 -> 5.8px
     }
 
     for (let i = 0; i < displayCount; i++) {
@@ -1633,16 +1633,19 @@ function renderSSRSwarm(neededDraws, nVal) {
             char = ALL_CHARACTERS[randIdx] || ALL_CHARACTERS[0];
         }
 
-        const norm = Math.sqrt((i + 0.5) / displayCount); // 均匀面积密度 (0 -> 1 从内到外)
+        const norm = Math.sqrt((i + 0.5) / displayCount); // 均匀面积密度 (0 内 -> 1 外)
         const r = minR + norm * (maxR - minR);
         const theta = i * goldenAngle;
 
         const x = centerX + r * Math.cos(theta);
         const y = centerY + r * Math.sin(theta);
 
-        // 从内到外由大到小：内层 1.40x，外层 0.60x
-        const scale = 1.40 - norm * 0.80;
-        const itemSize = Math.max(6, Math.round(baseSize * scale));
+        // 强烈的非线性指数级内外反差（悬殊7倍比差）：
+        // 内圈 norm=0 放大到 2.20x (内层极度醒目大立牌，清晰可辨)
+        // 外圈 norm=1 陡降衰减至 0.30x (边缘极其微小星砂微尘)
+        const decayCurve = Math.pow(1 - norm, 1.3);
+        const scale = 0.30 + decayCurve * 1.90;
+        const itemSize = Math.max(2.5, Math.min(36, Math.round(baseSize * scale * 10) / 10));
 
         const sprite = getEmojiSprite(char.icon);
         ctx.drawImage(sprite, x - itemSize / 2, y - itemSize / 2, itemSize, itemSize);
