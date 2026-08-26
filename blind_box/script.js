@@ -1376,29 +1376,45 @@ function updateSSRVisual() {
     if (swarmContainer) {
         swarmContainer.innerHTML = "";
         
-        // 真实显示数量：根据 neededDraws 动态铺满多层同心圆（上限设为 180 个以保持最佳性能与视觉清晰度）
-        const displayCount = Math.min(neededDraws, 180);
+        // 100% 真实全量装下所有 neededDraws
+        const displayCount = neededDraws;
         const fragment = document.createDocumentFragment();
         
-        const minR = 28;  // 内层贴近黄金核心
-        const maxR = 112; // 外层延伸到舞台边缘
-        const goldenAngle = 2.399963229728653; // 137.507764度 黄金角分布，自然密铺
+        const minR = 24;  // 内层贴近黄金核心
+        const maxR = 114; // 外层延伸到舞台边缘
+        const goldenAngle = 2.399963229728653; // 137.507764度 黄金角分布
+
+        // 基础自适应字号：根据总数动态缩放，保证 100% 装下且清晰可辨
+        const baseFontSize = Math.max(6, Math.min(18, Math.round(115 / Math.sqrt(displayCount))));
+
+        // 初始前 nVal 个严格按 1..N 顺序排布，外部所有重复款随机混排（伪随机保持布局稳定）
+        const chosenChars = [];
+        for (let i = 0; i < displayCount; i++) {
+            if (i < nVal) {
+                chosenChars.push(ALL_CHARACTERS[i] || ALL_CHARACTERS[0]);
+            } else {
+                const pseudoRand = ((i * 9301 + 49297) % 233280) / 233280;
+                const randIdx = Math.floor(pseudoRand * nVal);
+                chosenChars.push(ALL_CHARACTERS[randIdx] || ALL_CHARACTERS[0]);
+            }
+        }
 
         for (let i = 0; i < displayCount; i++) {
-            const norm = Math.sqrt((i + 1) / displayCount); // 均匀面积密度
+            const norm = Math.sqrt((i + 0.5) / displayCount); // 均匀面积密度
             const r = minR + norm * (maxR - minR);
             const theta = i * goldenAngle;
 
             const x = Math.round(r * Math.cos(theta));
             const y = Math.round(r * Math.sin(theta));
 
-            // 外层的动物头尺寸逐渐缩小 (从 1.05x 递减到 0.62x)，保证层层递进包裹感且全部清晰可见
-            const scale = (1.05 - norm * 0.42).toFixed(2);
-            const char = ALL_CHARACTERS[i % nVal] || ALL_CHARACTERS[0];
+            // 外层尺寸微调递减 (从 1.05x 递减到 0.72x)
+            const scale = (1.05 - norm * 0.33).toFixed(2);
+            const char = chosenChars[i];
 
             const item = document.createElement("span");
             item.className = "ssr-cocoon-item";
-            item.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+            item.style.fontSize = `${baseFontSize}px`;
+            item.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(${scale})`;
             item.textContent = char.icon;
             item.title = `第 ${i + 1} 抽: ${char.name}`;
             fragment.appendChild(item);
