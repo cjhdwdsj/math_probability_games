@@ -757,6 +757,8 @@ function setSimN(N) {
     runMonteCarloSim();
 }
 
+const PERSON_SVG = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`;
+
 function initCrowdQueue() {
     const line = document.getElementById("crowd-people-line");
     if (!line) return;
@@ -765,7 +767,7 @@ function initCrowdQueue() {
         const span = document.createElement("span");
         span.className = "crowd-person unlit";
         span.id = `person-${i}`;
-        span.textContent = "👤";
+        span.innerHTML = PERSON_SVG;
         line.appendChild(span);
     }
 }
@@ -793,22 +795,28 @@ function updateCrowdVisual(val) {
     }
     const pct = ((countLeq / trials) * 100).toFixed(1);
 
+    let colorClass = "blue";
     if (badge) {
         if (pct <= 3.0) {
             badge.textContent = `超越了全网 ${pct}% · 天选欧皇 👑`;
             badge.className = "crowd-rank-pill god";
+            colorClass = "gold";
         } else if (pct <= 25.0) {
             badge.textContent = `超越了全网 ${pct}% · 幸运欧气 ✨`;
             badge.className = "crowd-rank-pill good";
+            colorClass = "green";
         } else if (pct <= 80.0) {
             badge.textContent = `超越了全网 ${pct}% · 凡人均值区 😐`;
             badge.className = "crowd-rank-pill mid";
+            colorClass = "blue";
         } else if (pct <= 95.0) {
             badge.textContent = `超越了全网 ${pct}% · 轻度非酋 🌧️`;
             badge.className = "crowd-rank-pill bad";
+            colorClass = "coral";
         } else {
             badge.textContent = `超越了全网 ${pct}% · 极度大非酋 😭`;
             badge.className = "crowd-rank-pill worst";
+            colorClass = "purple";
         }
     }
 
@@ -823,11 +831,9 @@ function updateCrowdVisual(val) {
         const p = document.getElementById(`person-${i}`);
         if (p) {
             if (i < litCount) {
-                p.className = "crowd-person lit";
-                p.textContent = (pct <= 5) ? "🌟" : "🧑";
+                p.className = `crowd-person lit ${colorClass}`;
             } else {
                 p.className = "crowd-person unlit";
-                p.textContent = "👤";
             }
         }
     }
