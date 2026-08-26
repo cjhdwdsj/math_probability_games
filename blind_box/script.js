@@ -44,18 +44,18 @@ const SSR_RATE_OPTS = [
     { denom: 288, label: "1/288 (至尊典藏)" }
 ];
 const SSR_PROB_OPTS = [
-    { pct: 0.50, label: "50% 把握 (中位欧气)" },
-    { pct: 0.65, label: "65% 把握 (适度乐观)" },
-    { pct: 0.80, label: "80% 把握 (较稳当)" },
-    { pct: 0.90, label: "90% 把握 (大概率稳)" },
-    { pct: 0.95, label: "95% 把握 (防非酋)" },
-    { pct: 0.99, label: "99% 把握 (几乎必中)" }
+    { pct: 0.05, label: "5% 把握 (天选欧皇 👑)" },
+    { pct: 0.20, label: "20% 把握 (强运欧气 ✨)" },
+    { pct: 0.50, label: "50% 把握 (中位凡人 😐)" },
+    { pct: 0.80, label: "80% 把握 (稳健防守 🛡️)" },
+    { pct: 0.95, label: "95% 把握 (大非酋保底 🌧️)" },
+    { pct: 0.99, label: "99% 把握 (绝对防翻车 🔒)" }
 ];
 
 let ssrKnobState = {
     nIdx: 0,       // N = 6
     rateIdx: 2,    // 1/72
-    probIdx: 3     // 90%
+    probIdx: 3     // 80%
 };
 
 // 第 1 页：玩家猜想

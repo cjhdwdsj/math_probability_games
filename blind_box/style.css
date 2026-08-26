@@ -1229,6 +1229,23 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     color: var(--muted-ink);
 }
 
+.fl-knob-control-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    position: relative;
+}
+
+.fl-knob-limit-label {
+    font-size: 0.64rem;
+    font-weight: 800;
+    color: var(--muted-ink);
+    opacity: 0.75;
+    user-select: none;
+    white-space: nowrap;
+}
+
 .fl-knob-dial {
     width: 48px;
     height: 48px;
