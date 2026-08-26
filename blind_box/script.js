@@ -22,9 +22,14 @@ const PRICE_PER_BOX = 69;
 // 玩家抽盒状态
 let gachaState = {
     draws: 0,
-    collectedMap: {}, // id -> count
+    collectedMap: {},
     isAnimating: false
 };
+
+// 模拟器缓存数据
+let simCache = null;
+let animProgress = 1;
+let animFrameId = null;
 
 // ========================
 // 2. 初始化与页面导航
@@ -34,8 +39,14 @@ document.addEventListener("DOMContentLoaded", () => {
     updateNavigation();
     initKeyboardControls();
     recalcEV();
-    initSimCanvas();
+    initSimCanvasListeners();
     updateLuckRank(14);
+
+    window.addEventListener("resize", () => {
+        if (currentPage === 6 && simCache) {
+            renderHistogram(1);
+        }
+    });
 });
 
 function goToPage(pageIndex) {
@@ -57,9 +68,8 @@ function goToPage(pageIndex) {
 
     updateNavigation();
 
-    // 当切换到模拟器页时，自动运行一次模拟绘制图表
     if (currentPage === 6) {
-        setTimeout(runMonteCarloSim, 50);
+        setTimeout(runMonteCarloSim, 80);
     }
 }
 
@@ -135,7 +145,6 @@ function initAlbumGrid() {
     updateGachaUI();
 }
 
-// 单抽逻辑
 function drawSingle() {
     if (gachaState.isAnimating) return;
     gachaState.isAnimating = true;
@@ -151,7 +160,6 @@ function drawSingle() {
     const randomIdx = Math.floor(Math.random() * CHARACTERS.length);
     const chosen = CHARACTERS[randomIdx];
 
-    // 1. 摇盒动画
     box.style.display = "flex";
     box.classList.add("shaking");
     card.classList.remove("popping");
@@ -163,7 +171,6 @@ function drawSingle() {
         gachaState.draws++;
         gachaState.collectedMap[chosen.id] = (gachaState.collectedMap[chosen.id] || 0) + 1;
 
-        // 2. 弹出揭晓卡
         icon.textContent = chosen.icon;
         name.textContent = chosen.name;
         if (isNew) {
@@ -175,14 +182,12 @@ function drawSingle() {
         }
         card.classList.add("popping");
 
-        // 3. 刷新图鉴
         updateGachaUI(chosen.id, isNew);
         checkCompletion();
         gachaState.isAnimating = false;
     }, 450);
 }
 
-// 爽快五连抽逻辑（依次连环弹出 5 张卡片）
 function drawMultipleAnimated(count = 5) {
     if (gachaState.isAnimating) return;
     gachaState.isAnimating = true;
@@ -228,7 +233,6 @@ function drawMultipleAnimated(count = 5) {
     }, count * 120 + 200);
 }
 
-// 一键抽到齐
 function drawUntilCompleteAnimated() {
     if (gachaState.isAnimating) return;
     if (Object.keys(gachaState.collectedMap).length >= CHARACTERS.length) {
@@ -400,13 +404,52 @@ function updateSsrCalculation(ssrRate) {
 }
 
 // ========================
-// 7. 第 7 页：蒙特卡洛大规模模拟引擎
+// 7. 第 7 页：高清动态直方图模拟引擎
 // ========================
-function initSimCanvas() {
+let hoveredBinIndex = -1;
+
+function initSimCanvasListeners() {
     const canvas = document.getElementById("sim-canvas");
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const tooltip = document.getElementById("chart-tooltip");
+    if (!canvas || !tooltip) return;
+
+    canvas.addEventListener("mousemove", (e) => {
+        if (!simCache) return;
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        const { N, bucketMax, plotWidth, paddingLeft, totalBins } = simCache.layout;
+        const binStep = plotWidth / totalBins;
+        const relX = mouseX - paddingLeft;
+
+        if (relX >= 0 && relX <= plotWidth) {
+            const binIdx = Math.floor(relX / binStep) + N;
+            if (binIdx >= N && binIdx <= bucketMax) {
+                hoveredBinIndex = binIdx;
+                const count = simCache.bins[binIdx] || 0;
+                const pct = ((count / simCache.trials) * 100).toFixed(2);
+                tooltip.style.display = "block";
+                tooltip.style.left = `${mouseX}px`;
+                tooltip.style.top = `${mouseY}px`;
+                tooltip.innerHTML = `🎯 抽 <strong>${binIdx}</strong> 次集齐: <strong>${count}</strong> 人 (占比 <strong>${pct}%</strong>)`;
+                renderHistogram(1);
+                return;
+            }
+        }
+        hideTooltip();
+    });
+
+    canvas.addEventListener("mouseleave", hideTooltip);
+}
+
+function hideTooltip() {
+    const tooltip = document.getElementById("chart-tooltip");
+    if (tooltip) tooltip.style.display = "none";
+    if (hoveredBinIndex !== -1) {
+        hoveredBinIndex = -1;
+        renderHistogram(1);
+    }
 }
 
 function runMonteCarloSim() {
@@ -452,18 +495,6 @@ function runMonteCarloSim() {
     document.getElementById("sim-min-result").textContent = minDraws;
     document.getElementById("sim-max-result").textContent = maxDraws;
 
-    drawHistogram(results, N, theoryMean, simMean, minDraws, maxDraws);
-}
-
-function drawHistogram(results, N, theoryMean, simMean, minDraws, maxDraws) {
-    const canvas = document.getElementById("sim-canvas");
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    const width = canvas.width;
-    const height = canvas.height;
-
-    ctx.clearRect(0, 0, width, height);
-
     const bucketMax = Math.min(maxDraws, Math.max(36, N * 4));
     const bins = new Array(bucketMax + 1).fill(0);
     for (let i = 0; i < results.length; i++) {
@@ -476,71 +507,213 @@ function drawHistogram(results, N, theoryMean, simMean, minDraws, maxDraws) {
     }
 
     const maxFrequency = Math.max(...bins);
-    const paddingLeft = 40;
-    const paddingBottom = 22;
-    const paddingTop = 18;
-    const paddingRight = 15;
 
-    const plotWidth = width - paddingLeft - paddingRight;
-    const plotHeight = height - paddingTop - paddingBottom;
+    simCache = {
+        results,
+        N,
+        theoryMean,
+        simMean,
+        minDraws,
+        maxDraws,
+        bucketMax,
+        bins,
+        maxFrequency,
+        trials,
+        layout: {}
+    };
+
+    // 触发平滑生长动画
+    if (animFrameId) cancelAnimationFrame(animFrameId);
+    let startTime = null;
+    const duration = 320;
+
+    function animateChart(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const elapsed = timestamp - startTime;
+        const progress = Math.min(1, elapsed / duration);
+        // ease-out cubic
+        const ease = 1 - Math.pow(1 - progress, 3);
+        renderHistogram(ease);
+
+        if (progress < 1) {
+            animFrameId = requestAnimationFrame(animateChart);
+        } else {
+            animFrameId = null;
+        }
+    }
+
+    animFrameId = requestAnimationFrame(animateChart);
+}
+
+function renderHistogram(progress = 1) {
+    if (!simCache) return;
+    const canvas = document.getElementById("sim-canvas");
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const cssWidth = rect.width || 700;
+    const cssHeight = 145;
+
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.floor(cssWidth * dpr);
+    canvas.height = Math.floor(cssHeight * dpr);
+
+    const ctx = canvas.getContext("2d");
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, cssWidth, cssHeight);
+
+    const { N, theoryMean, simMean, bucketMax, bins, maxFrequency, trials } = simCache;
+
+    const paddingLeft = 46;
+    const paddingBottom = 26;
+    const paddingTop = 20;
+    const paddingRight = 20;
+
+    const plotWidth = cssWidth - paddingLeft - paddingRight;
+    const plotHeight = cssHeight - paddingTop - paddingBottom;
 
     const startX = N;
     const totalBins = bucketMax - startX + 1;
-    const barWidth = Math.max(2, (plotWidth / totalBins) - 1.5);
+    const binStep = plotWidth / totalBins;
+    const barWidth = Math.max(3, binStep - 2);
 
-    ctx.strokeStyle = "rgba(47, 42, 37, 0.08)";
+    simCache.layout = { N, bucketMax, plotWidth, paddingLeft, totalBins };
+
+    // 1. 绘制 Y 轴背景网格虚线与百分比
     ctx.lineWidth = 1;
-    for (let i = 0; i <= 3; i++) {
-        const y = paddingTop + (plotHeight / 3) * i;
+    ctx.setLineDash([3, 3]);
+    ctx.font = "10px sans-serif";
+    ctx.textAlign = "right";
+
+    const gridLines = 3;
+    for (let i = 0; i <= gridLines; i++) {
+        const yValRatio = i / gridLines;
+        const yPos = heightFromBottom(yValRatio);
+        const pct = ((maxFrequency * yValRatio / trials) * 100).toFixed(1);
+
+        ctx.strokeStyle = "rgba(47, 42, 37, 0.08)";
         ctx.beginPath();
-        ctx.moveTo(paddingLeft, y);
-        ctx.lineTo(width - paddingRight, y);
+        ctx.moveTo(paddingLeft, yPos);
+        ctx.lineTo(cssWidth - paddingRight, yPos);
         ctx.stroke();
+
+        ctx.fillStyle = "rgba(47, 42, 37, 0.45)";
+        ctx.fillText(`${pct}%`, paddingLeft - 6, yPos + 3);
     }
+    ctx.setLineDash([]);
+
+    function heightFromBottom(ratio) {
+        return paddingTop + plotHeight * (1 - ratio);
+    }
+
+    // 2. 绘制每个频数柱子（圆角渐变柱）
+    const curvePoints = [];
 
     for (let d = startX; d <= bucketMax; d++) {
         const freq = bins[d] || 0;
-        const barH = (freq / maxFrequency) * plotHeight;
-        const x = paddingLeft + (d - startX) * (plotWidth / totalBins);
-        const y = height - paddingBottom - barH;
+        const ratio = (freq / maxFrequency) * progress;
+        const barH = ratio * plotHeight;
+        const x = paddingLeft + (d - startX) * binStep + (binStep - barWidth) / 2;
+        const y = cssHeight - paddingBottom - barH;
 
-        if (d <= N + 1) {
-            ctx.fillStyle = "#f7c84b";
-        } else if (d > theoryMean * 1.4) {
-            ctx.fillStyle = "#9a6bc7";
+        curvePoints.push({ x: x + barWidth / 2, y });
+
+        // 颜色渐变
+        const grad = ctx.createLinearGradient(x, y, x, cssHeight - paddingBottom);
+        if (d <= N + 2) {
+            grad.addColorStop(0, "#f7c84b"); // 欧皇金
+            grad.addColorStop(1, "#f39c12");
+        } else if (d > theoryMean * 1.35) {
+            grad.addColorStop(0, "#b388ff"); // 非酋紫
+            grad.addColorStop(1, "#7c4dff");
         } else {
-            ctx.fillStyle = "#5aabd9";
+            grad.addColorStop(0, "#5aabd9"); // 正常蓝
+            grad.addColorStop(1, "#3498db");
         }
 
-        ctx.fillRect(x, y, barWidth, barH);
+        ctx.fillStyle = grad;
+        drawRoundedRect(ctx, x, y, barWidth, barH, Math.min(4, barWidth / 2));
+        ctx.fill();
+
+        // 鼠标悬停高亮外边框
+        if (hoveredBinIndex === d) {
+            ctx.strokeStyle = "#2f2a25";
+            ctx.lineWidth = 2;
+            drawRoundedRect(ctx, x - 1, y - 1, barWidth + 2, barH + 1, Math.min(4, barWidth / 2));
+            ctx.stroke();
+        }
     }
 
-    const theoryX = paddingLeft + (theoryMean - startX) * (plotWidth / totalBins);
-    ctx.beginPath();
-    ctx.setLineDash([4, 3]);
-    ctx.strokeStyle = "#e96e56";
-    ctx.lineWidth = 2;
-    ctx.moveTo(theoryX, paddingTop);
-    ctx.lineTo(theoryX, height - paddingBottom);
-    ctx.stroke();
-    ctx.setLineDash([]);
+    // 3. 绘制平滑拟合趋势曲线 (KDE Curve)
+    if (curvePoints.length > 2 && progress >= 0.8) {
+        ctx.beginPath();
+        ctx.moveTo(curvePoints[0].x, curvePoints[0].y);
+        for (let i = 0; i < curvePoints.length - 1; i++) {
+            const xc = (curvePoints[i].x + curvePoints[i + 1].x) / 2;
+            const yc = (curvePoints[i].y + curvePoints[i + 1].y) / 2;
+            ctx.quadraticCurveTo(curvePoints[i].x, curvePoints[i].y, xc, yc);
+        }
+        ctx.strokeStyle = "rgba(47, 42, 37, 0.75)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
 
-    ctx.fillStyle = "#e96e56";
-    ctx.font = "bold 10px sans-serif";
-    ctx.fillText(`平均值 ${theoryMean.toFixed(1)} 次`, theoryX + 4, paddingTop + 10);
+    // 4. 绘制理论期望参考线 (红色虚线)
+    const theoryX = paddingLeft + (theoryMean - startX) * binStep + binStep / 2;
+    if (theoryX >= paddingLeft && theoryX <= cssWidth - paddingRight) {
+        ctx.beginPath();
+        ctx.setLineDash([4, 3]);
+        ctx.strokeStyle = "#e96e56";
+        ctx.lineWidth = 2;
+        ctx.moveTo(theoryX, paddingTop - 4);
+        ctx.lineTo(theoryX, cssHeight - paddingBottom);
+        ctx.stroke();
+        ctx.setLineDash([]);
 
-    ctx.strokeStyle = "rgba(47, 42, 37, 0.8)";
+        // 标牌
+        ctx.fillStyle = "#e96e56";
+        ctx.font = "bold 10px sans-serif";
+        ctx.textAlign = "left";
+        ctx.fillText(`理论期望 E = ${theoryMean.toFixed(1)}次`, theoryX + 4, paddingTop + 8);
+    }
+
+    // 5. 坐标轴与刻度
+    ctx.strokeStyle = "rgba(47, 42, 37, 0.85)";
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(paddingLeft, paddingTop);
-    ctx.lineTo(paddingLeft, height - paddingBottom);
-    ctx.lineTo(width - paddingRight, height - paddingBottom);
+    ctx.lineTo(paddingLeft, cssHeight - paddingBottom);
+    ctx.lineTo(cssWidth - paddingRight, cssHeight - paddingBottom);
     ctx.stroke();
 
+    // X 轴刻度标签
     ctx.fillStyle = "#6e665e";
     ctx.font = "10px sans-serif";
-    ctx.fillText(`最少 ${N} 次`, paddingLeft, height - 6);
-    ctx.fillText(`${bucketMax}+ 次 (非酋长尾)`, width - paddingRight - 90, height - 6);
+    ctx.textAlign = "center";
+
+    const tickSteps = [N, 10, 15, 20, 25, 30, 35].filter(v => v >= N && v <= bucketMax);
+    tickSteps.forEach(tickVal => {
+        const tickX = paddingLeft + (tickVal - startX) * binStep + binStep / 2;
+        ctx.fillText(`${tickVal}次`, tickX, cssHeight - 8);
+    });
+
+    if (!tickSteps.includes(bucketMax)) {
+        ctx.fillText(`${bucketMax}+次`, cssWidth - paddingRight - 15, cssHeight - 8);
+    }
+}
+
+function drawRoundedRect(ctx, x, y, width, height, radius) {
+    if (height <= 0) return;
+    const r = Math.min(radius, width / 2, height / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + width - r, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+    ctx.lineTo(x + width, y + height);
+    ctx.lineTo(x, y + height);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
 }
 
 // ========================

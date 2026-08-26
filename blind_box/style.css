@@ -151,8 +151,8 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     position: absolute;
     inset: 0;
     display: grid;
-    place-items: center; /* 完美水平与垂直居中！ */
-    padding: clamp(0.5rem, 1.8vh, 1.2rem) 0;
+    place-items: center;
+    padding: clamp(0.4rem, 1.6vh, 1.2rem) 0;
     opacity: 0;
     pointer-events: none;
     transform: translateX(2rem);
@@ -179,7 +179,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     border: 2px solid var(--line);
     border-radius: 1.25rem 1.4rem;
     box-shadow: var(--shadow);
-    padding: clamp(1rem, 2.8vh, 1.8rem) clamp(1.2rem, 3vw, 2.2rem);
+    padding: clamp(0.9rem, 2.5vh, 1.6rem) clamp(1.2rem, 3vw, 2.2rem);
     overflow: hidden;
     position: relative;
     margin: auto;
@@ -208,7 +208,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 .lead {
     font-size: clamp(0.88rem, 1.7vh, 0.98rem);
     color: var(--muted-ink);
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.65rem;
 }
 
 /* 按钮规范 */
@@ -246,29 +246,12 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     box-shadow: none;
 }
 
-.btn-primary {
-    background: var(--sun);
-}
-.btn-primary:hover:not(:disabled) {
-    background: var(--sun-hover);
-}
-
-.btn-coral {
-    background: var(--coral);
-    color: #fff;
-}
-.btn-coral:hover:not(:disabled) {
-    background: var(--coral-dark);
-}
-
-.btn-sky {
-    background: var(--sky);
-    color: #fff;
-}
-.btn-sky:hover:not(:disabled) {
-    background: var(--sky-deep);
-}
-
+.btn-primary { background: var(--sun); }
+.btn-primary:hover:not(:disabled) { background: var(--sun-hover); }
+.btn-coral { background: var(--coral); color: #fff; }
+.btn-coral:hover:not(:disabled) { background: var(--coral-dark); }
+.btn-sky { background: var(--sky); color: #fff; }
+.btn-sky:hover:not(:disabled) { background: var(--sky-deep); }
 .btn-quiet {
     background: transparent;
     border-color: var(--soft-line);
@@ -837,7 +820,6 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     line-height: 1.45;
 }
 
-/* 欧气段位快速测算 */
 .luck-rank-box {
     background: var(--paper);
     border: 1.5px solid var(--line);
@@ -910,7 +892,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     border: 1.5px solid var(--line);
     border-radius: 8px;
     padding: 0.4rem 0.8rem;
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.3rem;
 }
 
 .sim-input-group {
@@ -929,18 +911,63 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     font-size: 0.85rem;
 }
 
+.chart-legend {
+    display: flex;
+    justify-content: center;
+    gap: 1.2rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--muted-ink);
+    margin: 0.2rem 0 0.4rem;
+}
+
+.legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    border: 1px solid var(--ink);
+}
+.dot-god { background: var(--sun); }
+.dot-mid { background: var(--sky); }
+.dot-bad { background: var(--purple); }
+
 .chart-container {
     background: #fff;
     border: 2px solid var(--line);
-    border-radius: 10px;
-    padding: 0.5rem 0.8rem;
+    border-radius: 12px;
+    padding: 0.6rem 0.8rem;
     box-shadow: var(--shadow-sm);
+    position: relative;
 }
 
 #sim-canvas {
     width: 100%;
-    height: 120px;
+    height: 145px;
     display: block;
+    cursor: crosshair;
+}
+
+.chart-tooltip {
+    position: absolute;
+    display: none;
+    background: rgba(47, 42, 37, 0.94);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    pointer-events: none;
+    z-index: 20;
+    white-space: nowrap;
+    transform: translate(-50%, -125%);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.2);
 }
 
 .sim-stat-summary {

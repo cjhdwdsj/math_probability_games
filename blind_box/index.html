@@ -324,13 +324,21 @@
                         <button class="btn btn-coral" id="btn-run-sim" type="button" onclick="runMonteCarloSim()">🚀 开始模拟</button>
                     </div>
 
-                    <div class="chart-container">
-                        <canvas id="sim-canvas" width="760" height="120"></canvas>
+                    <!-- 图例说明 -->
+                    <div class="chart-legend">
+                        <span class="legend-item"><span class="legend-dot dot-god"></span> 欧皇区 (极速集齐)</span>
+                        <span class="legend-item"><span class="legend-dot dot-mid"></span> 正常集中区</span>
+                        <span class="legend-item"><span class="legend-dot dot-bad"></span> 非酋长尾 (最后一只卡死)</span>
+                    </div>
+
+                    <div class="chart-container" id="chart-wrapper">
+                        <canvas id="sim-canvas"></canvas>
+                        <div id="chart-tooltip" class="chart-tooltip"></div>
                         <div class="sim-stat-summary">
                             <div>实际模拟平均：<strong id="sim-avg-result">--</strong> 次</div>
-                            <div>理论平均：<strong id="sim-theory-result">14.70</strong> 次</div>
-                            <div>运气最好：<strong id="sim-min-result" style="color: var(--leaf);">--</strong> 次</div>
-                            <div>运气最差：<strong id="sim-max-result" style="color: var(--purple);">--</strong> 次</div>
+                            <div>理论期望平均：<strong id="sim-theory-result">14.70</strong> 次</div>
+                            <div>最欧玩家：<strong id="sim-min-result" style="color: #d48806;">--</strong> 次</div>
+                            <div>最非玩家：<strong id="sim-max-result" style="color: var(--purple);">--</strong> 次</div>
                         </div>
                     </div>
                 </article>
