@@ -1603,22 +1603,24 @@ function renderSSRSwarm(neededDraws, nVal) {
     const centerX = cssWidth / 2;
     const centerY = cssHeight / 2;
 
-    // 视觉粒子数上限：220 个粒子在 114px 半径内已达到 100% 视觉饱和满铺，彻底消灭过度绘制
-    const displayCount = Math.min(neededDraws, 220);
+    // 100% 真实全量 1:1 绘制：多少袋就实打实绘制多少颗粒子！
+    const displayCount = neededDraws;
     const minR = 52;  // 内层贴近黄金核心立牌边缘
     const maxR = 114; // 外层延伸到圆环边缘
     const goldenAngle = 2.399963229728653; // 137.507764度 黄金角分布
 
-    // 基础自适应字号
+    // 基础自适应字号：随着粒子数量自适应微缩，确保 1500+ 颗粒子也能全部塞入
     let baseSize;
-    if (neededDraws <= 40) {
+    if (displayCount <= 40) {
         baseSize = 22;
-    } else if (neededDraws <= 120) {
-        baseSize = 22 - ((neededDraws - 40) / 80) * 5; // 22 -> 17px
-    } else if (neededDraws <= 300) {
-        baseSize = 17 - ((neededDraws - 120) / 180) * 4; // 17 -> 13px
+    } else if (displayCount <= 120) {
+        baseSize = 22 - ((displayCount - 40) / 80) * 5; // 22 -> 17px
+    } else if (displayCount <= 300) {
+        baseSize = 17 - ((displayCount - 120) / 180) * 4; // 17 -> 13px
+    } else if (displayCount <= 800) {
+        baseSize = 13 - ((displayCount - 300) / 500) * 4.5; // 13 -> 8.5px
     } else {
-        baseSize = Math.max(8, 13 - ((neededDraws - 300) / 700) * 4.5); // 13 -> 8.5px
+        baseSize = Math.max(4.5, 8.5 - ((displayCount - 800) / 800) * 3.5); // 8.5 -> 5.0px
     }
 
     for (let i = 0; i < displayCount; i++) {
