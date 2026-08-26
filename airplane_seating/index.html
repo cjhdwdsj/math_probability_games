@@ -32,21 +32,44 @@
                     <span class="eyebrow">渐进式概率实验</span>
                     <div class="cover-icon" aria-hidden="true">✈️</div>
                     <h1 id="page-title-1" tabindex="-1">飞机座位错配问题</h1>
-                    <p class="cover-subtitle">一个看似混乱、结论却恒为 <strong>1/2</strong> 的经典概率悖论。</p>
-                    <div class="rule-list" aria-label="问题规则">
-                        <p><span aria-hidden="true">👥</span><strong>N 个乘客 + N 个座位</strong></p>
-                        <p><span aria-hidden="true">🎲</span>第一位乘客随机选择一个座位</p>
-                        <p><span aria-hidden="true">🪑</span>其余乘客优先坐自己的座位，被占时随机选择</p>
-                    </div>
-                    <p class="question">最后一位乘客坐到自己座位的概率是多少？</p>
-                    <button class="btn btn-primary start-btn" type="button" onclick="nextPage()">开始学习 <span aria-hidden="true">→</span></button>
+                    <p class="cover-subtitle">一个从“坐错座位”开始的概率谜题。</p>
+                    <p class="cover-intro">先用一段小动画看懂所有人如何选座，再一步步探索最后会发生什么。</p>
+                    <button class="btn btn-primary start-btn" type="button" onclick="nextPage()">先了解规则 <span aria-hidden="true">→</span></button>
                 </article>
             </section>
 
             <section class="lesson-page" data-page="1" aria-hidden="true" aria-labelledby="page-title-2">
+                <article class="lesson-card card-rules">
+                    <div class="section-kicker"><span aria-hidden="true">🧭</span> 先看懂规则</div>
+                    <h2 id="page-title-2" tabindex="-1">五个座位，大家怎么坐？</h2>
+                    <p class="lead">每位乘客都有自己的编号座位。关键规则只有两条：先找自己的座位；若已被占，才在剩余座位中随机选择。</p>
+                    <div class="rules-key" aria-label="规则摘要">
+                        <span><b>1</b> 乘客 1 没有固定座位，随机选一个。</span>
+                        <span><b>2</b> 其他乘客先看自己的座位是否空着。</span>
+                        <span><b>3</b> 自己的座位被占时，才在剩余座位中随机选。</span>
+                    </div>
+                    <div class="rules-seat-row" aria-label="五个按编号排列的座位">
+                        <div class="seat mini rule-seat" data-rule-seat="1">1</div>
+                        <div class="seat mini rule-seat" data-rule-seat="2">2</div>
+                        <div class="seat mini rule-seat" data-rule-seat="3">3</div>
+                        <div class="seat mini rule-seat" data-rule-seat="4">4</div>
+                        <div class="seat mini last rule-seat" data-rule-seat="5">5</div>
+                    </div>
+                    <div class="rules-animation-area" id="rules-animation" aria-live="polite" aria-atomic="true">
+                        <div class="animation-status is-idle"><div class="status-line"><span class="status-orb" aria-hidden="true"></span><strong>等待演示</strong></div><p class="animation-text">点击开始后，依次观察 1 至 5 号乘客如何选座。</p></div>
+                    </div>
+                    <div class="btn-group rules-controls">
+                        <button class="btn btn-secondary" id="play-rules" type="button" onclick="playRulesDemo()">▶ 开始规则演示</button>
+                        <button class="btn btn-quiet" id="reset-rules" type="button" onclick="resetRulesDemo()" disabled>↺ 重看</button>
+                    </div>
+                    <p class="rules-note">这是一条示例路径：随机选择可以不同，但“先坐自己的座位；被占才随机”的规则始终不变。</p>
+                </article>
+            </section>
+
+            <section class="lesson-page" data-page="2" aria-hidden="true" aria-labelledby="page-title-3">
                 <article class="lesson-card card-n2">
                     <div class="section-kicker"><span aria-hidden="true">🔬</span> 最简单的情况</div>
-                    <h2 id="page-title-2" tabindex="-1">先从 N = 2 开始</h2>
+                    <h2 id="page-title-3" tabindex="-1">先从 N = 2 开始</h2>
                     <p class="lead">第一位只有两种等可能选择；不需要模拟，直接列出全部结果即可。</p>
                     <p class="n2-choice-guide" id="n2-choice-guide">请选择乘客 1 要坐的座位；系统将自动演示乘客 2 的入座结果。</p>
                     <div class="seats-small n2-choice-seats" aria-describedby="n2-choice-guide">
@@ -65,10 +88,10 @@
                 </article>
             </section>
 
-            <section class="lesson-page" data-page="2" aria-hidden="true" aria-labelledby="page-title-3">
+            <section class="lesson-page" data-page="3" aria-hidden="true" aria-labelledby="page-title-4">
                 <article class="lesson-card card-n3">
                     <div class="section-kicker"><span aria-hidden="true">🎬</span> 观察连锁反应</div>
-                    <h2 id="page-title-3" tabindex="-1">再试试 N = 3</h2>
+                    <h2 id="page-title-4" tabindex="-1">再试试 N = 3</h2>
                     <p class="lead">当有人发现自己的座位被占，他只能在剩余座位里随机选择。</p>
                     <div class="seats-small" aria-label="1号、2号与3号座位">
                         <div class="seat mini" data-seat="1">1</div>
@@ -96,10 +119,10 @@
                 </article>
             </section>
 
-            <section class="lesson-page" data-page="3" aria-hidden="true" aria-labelledby="page-title-4">
+            <section class="lesson-page" data-page="4" aria-hidden="true" aria-labelledby="page-title-5">
                 <article class="lesson-card card-pattern">
                     <div class="section-kicker"><span aria-hidden="true">💡</span> 先看数据，再问原因</div>
-                    <h2 id="page-title-4" tabindex="-1">人数变了，规律没变</h2>
+                    <h2 id="page-title-5" tabindex="-1">人数变了，规律没变</h2>
                     <p class="lead">多次随机模拟会有波动，但都会围绕 50% 聚集。</p>
                     <div class="pattern-results" aria-label="不同乘客数量的模拟结果">
                         <div class="result-item"><span>N = 2</span><span>51.2%</span><i style="--bar:51.2%"></i></div>
@@ -112,10 +135,10 @@
                 </article>
             </section>
 
-            <section class="lesson-page" data-page="4" aria-hidden="true" aria-labelledby="page-title-5">
+            <section class="lesson-page" data-page="5" aria-hidden="true" aria-labelledby="page-title-6">
                 <article class="lesson-card card-bulk">
                     <div class="section-kicker"><span aria-hidden="true">🧮</span> 用更多样本验证</div>
-                    <h2 id="page-title-5" tabindex="-1">大规模验证：N = 100</h2>
+                    <h2 id="page-title-6" tabindex="-1">大规模验证：N = 100</h2>
                     <p class="lead">每一次实验都独立；曲线会逐渐稳定在 50% 附近。</p>
                     <div class="chart-container" role="img" aria-label="最后一位乘客成功概率的模拟曲线；虚线表示理论值百分之五十。"><svg id="probability-chart" viewBox="0 0 720 250" preserveAspectRatio="none" aria-hidden="true"></svg></div>
                     <div class="simulation-process" aria-live="polite" aria-atomic="true">
@@ -139,10 +162,10 @@
                 </article>
             </section>
 
-            <section class="lesson-page" data-page="5" aria-hidden="true" aria-labelledby="page-title-6">
+            <section class="lesson-page" data-page="6" aria-hidden="true" aria-labelledby="page-title-7">
                 <article class="lesson-card card-theory">
                     <div class="section-kicker"><span aria-hidden="true">🧠</span> 核心解释</div>
-                    <h2 id="page-title-6" tabindex="-1">为什么答案恒为 1 / 2？</h2>
+                    <h2 id="page-title-7" tabindex="-1">为什么答案恒为 1 / 2？</h2>
                     <p class="lead">连锁过程最终只会在 <strong>1 号座位</strong> 与 <strong>N 号座位</strong>之间结束。</p>
                     <div class="cases">
                         <div class="case"><div class="case-number">1</div><div><strong>第一位选中 1 号座位</strong><span>后面每个人都能坐回自己的座位，最后一位成功。</span></div><b class="success">成功</b></div>
@@ -154,10 +177,10 @@
                 </article>
             </section>
 
-            <section class="lesson-page" data-page="6" aria-hidden="true" aria-labelledby="page-title-7">
+            <section class="lesson-page" data-page="7" aria-hidden="true" aria-labelledby="page-title-8">
                 <article class="lesson-card card-interactive">
                     <div class="section-kicker"><span aria-hidden="true">🕹️</span> 动手试一试</div>
-                    <h2 id="page-title-7" tabindex="-1">你来当第一位乘客</h2>
+                    <h2 id="page-title-8" tabindex="-1">你来当第一位乘客</h2>
                     <div class="game-controls">
                         <label for="user-n-select">乘客人数</label>
                         <select id="user-n-select" onchange="generateUserGameSeats()">
@@ -184,11 +207,11 @@
                 </article>
             </section>
 
-            <section class="lesson-page" data-page="7" aria-hidden="true" aria-labelledby="page-title-8">
+            <section class="lesson-page" data-page="8" aria-hidden="true" aria-labelledby="page-title-9">
                 <article class="lesson-card card-summary">
                     <span class="eyebrow">课程完成</span>
                     <div class="summary-icon" aria-hidden="true">🎓</div>
-                    <h2 id="page-title-8" tabindex="-1">记住这个结论</h2>
+                    <h2 id="page-title-9" tabindex="-1">记住这个结论</h2>
                     <p class="summary-answer">无论 N 是 2、100 还是 1000，<br>最后一位乘客成功的概率恒为 <strong>1 / 2</strong>。</p>
                     <div class="summary-points">
                         <div class="point"><span aria-hidden="true">💡</span><span>过程会很复杂，但终点只有 1 号座位与 N 号座位。</span></div>
@@ -203,14 +226,15 @@
         <nav class="lesson-navigation" aria-label="课程翻页导航">
             <button class="nav-button nav-prev" id="prev-page" type="button" onclick="previousPage()" aria-label="上一页">← <span>上一页</span></button>
             <div class="page-dots" aria-label="课程进度">
-                <button class="page-dot active" type="button" data-page-index="0" onclick="goToPage(0)" aria-label="第 1 页：问题引入" aria-current="step"></button>
-                <button class="page-dot" type="button" data-page-index="1" onclick="goToPage(1)" aria-label="第 2 页：N 等于 2"></button>
-                <button class="page-dot" type="button" data-page-index="2" onclick="goToPage(2)" aria-label="第 3 页：N 等于 3"></button>
-                <button class="page-dot" type="button" data-page-index="3" onclick="goToPage(3)" aria-label="第 4 页：发现规律"></button>
-                <button class="page-dot" type="button" data-page-index="4" onclick="goToPage(4)" aria-label="第 5 页：大规模验证"></button>
-                <button class="page-dot" type="button" data-page-index="5" onclick="goToPage(5)" aria-label="第 6 页：理论解释"></button>
-                <button class="page-dot" type="button" data-page-index="6" onclick="goToPage(6)" aria-label="第 7 页：互动体验"></button>
-                <button class="page-dot" type="button" data-page-index="7" onclick="goToPage(7)" aria-label="第 8 页：总结"></button>
+                <button class="page-dot active" type="button" data-page-index="0" onclick="goToPage(0)" aria-label="第 1 页：封面" aria-current="step"></button>
+                <button class="page-dot" type="button" data-page-index="1" onclick="goToPage(1)" aria-label="第 2 页：规则介绍"></button>
+                <button class="page-dot" type="button" data-page-index="2" onclick="goToPage(2)" aria-label="第 3 页：N 等于 2"></button>
+                <button class="page-dot" type="button" data-page-index="3" onclick="goToPage(3)" aria-label="第 4 页：N 等于 3"></button>
+                <button class="page-dot" type="button" data-page-index="4" onclick="goToPage(4)" aria-label="第 5 页：发现规律"></button>
+                <button class="page-dot" type="button" data-page-index="5" onclick="goToPage(5)" aria-label="第 6 页：大规模验证"></button>
+                <button class="page-dot" type="button" data-page-index="6" onclick="goToPage(6)" aria-label="第 7 页：理论解释"></button>
+                <button class="page-dot" type="button" data-page-index="7" onclick="goToPage(7)" aria-label="第 8 页：互动体验"></button>
+                <button class="page-dot" type="button" data-page-index="8" onclick="goToPage(8)" aria-label="第 9 页：总结"></button>
             </div>
             <button class="nav-button nav-next" id="next-page" type="button" onclick="nextPage()"><span>下一页</span> →</button>
         </nav>

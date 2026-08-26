@@ -167,7 +167,8 @@ h2 { font-size: clamp(1.55rem, 3vw, 2.3rem); line-height: 1.25; margin-top: 0.28
     background: linear-gradient(132deg, rgba(255, 255, 255, 0.96), rgba(231, 247, 255, 0.89));
 }
 .cover-icon { margin: 0.35rem 0; font-size: clamp(2.5rem, 6.5vw, 4.5rem); animation: float 2.4s ease-in-out infinite; }
-.cover-subtitle { max-width: 37rem; margin: 0.6rem auto 1rem; color: var(--muted-ink); font-size: clamp(0.95rem, 1.8vw, 1.13rem); }
+.cover-subtitle { max-width: 37rem; margin: 0.6rem auto 0.4rem; color: var(--muted-ink); font-size: clamp(0.95rem, 1.8vw, 1.13rem); }
+.cover-intro { max-width: 31rem; margin: 0 auto 1rem; color: var(--ink); font-size: 0.92rem; line-height: 1.7; }
 .cover-subtitle strong, .summary-answer strong { color: var(--coral); }
 .rule-list {
     display: grid;
@@ -264,6 +265,17 @@ h2 { font-size: clamp(1.55rem, 3vw, 2.3rem); line-height: 1.25; margin-top: 0.28
 .seat.mini.current { box-shadow: 0 0 0 4px rgba(247, 200, 75, 0.75); animation: seat-result-pulse 920ms var(--ease-out) 2; }
 .seat.mini.checking { background: #fff3bd; animation: seat-check 520ms var(--ease-out) infinite alternate; }
 .seat.mini.target { background: #d7eef9; box-shadow: 0 0 0 5px rgba(90, 171, 217, 0.28); animation: seat-target-pulse 760ms var(--ease-out) infinite; }
+.rule-seat.rolling { background: #fff3bd; box-shadow: 0 0 0 4px rgba(247, 200, 75, 0.72); animation: rule-roll 150ms var(--ease-out) both; }
+
+/* Rules introduction */
+.card-rules { max-width: 53rem; text-align: center; }
+.rules-key { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.45rem; max-width: 48rem; margin: 0.75rem auto; text-align: left; }
+.rules-key span { display: flex; align-items: flex-start; gap: 0.4rem; padding: 0.46rem 0.55rem; border-radius: 0.62rem; background: #f7f1e6; color: var(--muted-ink); font-size: 0.76rem; line-height: 1.45; }
+.rules-key b { display: grid; place-items: center; width: 1.15rem; height: 1.15rem; flex: 0 0 auto; border: 1.5px solid var(--ink); border-radius: 50%; background: var(--sun); color: var(--ink); font-size: 0.68rem; }
+.rules-seat-row { display: flex; justify-content: center; gap: 0.55rem; margin: 0.6rem 0; }
+.rules-animation-area { min-height: 4.85rem; max-width: 43rem; margin: 0 auto; padding: 0.58rem 0.75rem; overflow: hidden; border: 1.5px dashed rgba(47, 42, 37, 0.32); border-radius: 0.75rem; background: linear-gradient(90deg, rgba(90, 171, 217, 0.06) 1px, transparent 1px) 0 0 / 1.2rem 1.2rem, #f7f1e6; text-align: left; }
+.rules-animation-area .animation-text { min-height: 0; margin-bottom: 0; }
+.rules-note { max-width: 45rem; margin: 0.55rem auto 0; color: var(--muted-ink); font-size: 0.72rem; line-height: 1.45; }
 
 .card-n2, .card-n3, .card-pattern { max-width: 48rem; text-align: center; }
 .n2-choice-guide { margin: 0.3rem 0 0; color: var(--muted-ink); font-size: 0.81rem; }
@@ -407,7 +419,7 @@ h2 { font-size: clamp(1.55rem, 3vw, 2.3rem); line-height: 1.25; margin-top: 0.28
 .game-controls select { padding: 0.38rem 0.7rem; border: 2px solid var(--line); border-radius: 0.55rem; background: #fffdf7; color: var(--ink); }
 .game-instructions { margin: 0.65rem 0; color: var(--muted-ink); font-size: 0.86rem; }
 .game-seats { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.55rem; max-width: 46rem; min-height: 3.3rem; margin: 0 auto; }
-#game-seats .seat.mini[data-passenger]::before, .card-n2 .seat.mini[data-passenger]::before { content: "P" attr(data-passenger); position: absolute; top: -0.55rem; right: -0.5rem; display: grid; place-items: center; width: 1.15rem; height: 1.15rem; border: 1.5px solid var(--ink); border-radius: 50%; background: var(--sky); color: white; font-size: 0.58rem; font-weight: 700; z-index: 1; }
+#game-seats .seat.mini[data-passenger]::before, .card-n2 .seat.mini[data-passenger]::before, .card-rules .seat.mini[data-passenger]::before { content: "P" attr(data-passenger); position: absolute; top: -0.55rem; right: -0.5rem; display: grid; place-items: center; width: 1.15rem; height: 1.15rem; border: 1.5px solid var(--ink); border-radius: 50%; background: var(--sky); color: white; font-size: 0.58rem; font-weight: 700; z-index: 1; }
 .game-step-status { max-width: 38rem; min-height: 2.6rem; margin: 0.65rem auto 0; padding: 0.48rem 0.7rem; border: 1.5px dashed rgba(47, 42, 37, 0.27); border-radius: 0.65rem; background: #f7f1e6; color: var(--muted-ink); font-size: 0.8rem; line-height: 1.5; }
 .game-result { margin: 0.65rem auto 0; padding: 0.55rem; max-width: 25rem; border-radius: 0.7rem; background: #f7f1e6; }
 .game-result.hidden, .user-stats.hidden { display: none; }
@@ -451,6 +463,7 @@ h2 { font-size: clamp(1.55rem, 3vw, 2.3rem); line-height: 1.25; margin-top: 0.28
 @keyframes seat-target-pulse { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-0.15rem); } }
 @keyframes seat-result-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
 @keyframes passenger-float { from { transform: translateY(-0.15rem) rotate(-4deg); } to { transform: translateY(0.15rem) rotate(4deg); } }
+@keyframes rule-roll { from { transform: translateY(-0.22rem) rotate(-3deg); } to { transform: translateY(0) rotate(0); } }
 
 @media (max-width: 700px) {
     .lesson-app { grid-template-rows: 3.7rem minmax(0, 1fr) 4.3rem; padding: 0 0.8rem; }
@@ -462,6 +475,10 @@ h2 { font-size: clamp(1.55rem, 3vw, 2.3rem); line-height: 1.25; margin-top: 0.28
     .rule-list p { min-height: auto; display: block; padding: 0.45rem 0.6rem; }
     .scenario { grid-template-columns: auto minmax(0, 1fr); }
     .scenario strong { grid-column: 2; }
+    .rules-key { grid-template-columns: 1fr; gap: 0.28rem; margin: 0.55rem auto; }
+    .rules-key span { padding: 0.36rem 0.48rem; }
+    .rules-seat-row { gap: 0.32rem; }
+    .rules-seat-row .seat.mini { width: 2.55rem; height: 2.55rem; }
     .bulk-controls { flex-direction: column; }
     .chart-container { height: 10rem; }
     .nav-button { min-width: 3.6rem; }

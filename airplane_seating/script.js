@@ -6,6 +6,8 @@ let bulkRunId = 0;
 let bulkTimer = null;
 let userGameStats = { wins: 0, total: 0 };
 let userGameRun = null;
+let rulesDemoRunId = 0;
+let rulesDemoRunning = false;
 let n2AnimationRunId = 0;
 let n2AnimationRunning = false;
 let n3AnimationRunning = false;
@@ -74,8 +76,9 @@ function goToPage(index, shouldFocus = true) {
     const newPage = pages[nextIndex];
 
     document.querySelectorAll('.passenger').forEach((passenger) => passenger.remove());
-    if (previousIndex === 1 && nextIndex !== 1) resetN2Demo();
-    if (previousIndex === 4 && nextIndex !== 4) pauseBulkSimulation('已暂停：返回本页后可继续观看。');
+    if (previousIndex === 1 && nextIndex !== 1) resetRulesDemo();
+    if (previousIndex === 2 && nextIndex !== 2) resetN2Demo();
+    if (previousIndex === 5 && nextIndex !== 5) pauseBulkSimulation('已暂停：返回本页后可继续观看。');
     n3AnimationRunId += 1;
     n3AnimationRunning = false;
     n3ActiveRun = null;
@@ -150,6 +153,141 @@ function randomAvailableSeat(seatsState) {
     return available[Math.floor(Math.random() * available.length)];
 }
 
+// ===== 五座位规则介绍演示 =====
+function setRulesControls({ running = false, complete = false } = {}) {
+    const play = document.getElementById('play-rules');
+    const reset = document.getElementById('reset-rules');
+    if (play) {
+        play.disabled = running;
+        play.textContent = running ? '▶ 正在演示…' : complete ? '▶ 再演示一次' : '▶ 开始规则演示';
+    }
+    if (reset) reset.disabled = running || !complete;
+}
+
+function renderRulesStatus({ state = 'idle', title, detail }) {
+    const area = document.getElementById('rules-animation');
+    if (!area) return;
+    area.innerHTML = `
+        <div class="animation-status is-${state}">
+            <div class="status-line"><span class="status-orb" aria-hidden="true"></span><strong>${title}</strong></div>
+            <p class="animation-text">${detail}</p>
+        </div>
+    `;
+}
+
+function resetRulesDemo() {
+    rulesDemoRunId += 1;
+    rulesDemoRunning = false;
+    document.querySelectorAll('.rules-passenger').forEach((passenger) => passenger.remove());
+    document.querySelectorAll('.rule-seat').forEach((seat) => {
+        seat.classList.remove('occupied', 'wrong', 'current', 'checking', 'target', 'rolling');
+        delete seat.dataset.passenger;
+    });
+    renderRulesStatus({
+        state: 'idle',
+        title: '等待演示',
+        detail: '点击开始后，依次观察 1 至 5 号乘客如何选座。'
+    });
+    setRulesControls();
+}
+
+async function moveRulesPassenger(passenger, position, runId) {
+    passenger.style.display = 'flex';
+    passenger.classList.add('is-flying');
+    passenger.style.left = `${window.innerWidth / 2 - 16}px`;
+    passenger.style.top = '4.6rem';
+    await sleep(160);
+    if (runId !== rulesDemoRunId || currentPageIndex !== 1) return false;
+    passenger.style.left = `${position.x}px`;
+    passenger.style.top = `${position.y}px`;
+    await sleep(560);
+    if (runId !== rulesDemoRunId || currentPageIndex !== 1) return false;
+    passenger.classList.remove('is-flying');
+    passenger.classList.add('is-arrived');
+    return true;
+}
+
+async function showRuleRoll(seats, options, finalSeat, runId) {
+    for (const seatIndex of options) {
+        seats.forEach((seat) => seat.classList.remove('rolling'));
+        seats[seatIndex].classList.add('rolling');
+        await sleep(150);
+        if (runId !== rulesDemoRunId || currentPageIndex !== 1) return false;
+    }
+    seats.forEach((seat) => seat.classList.remove('rolling'));
+    seats[finalSeat].classList.add('target');
+    return true;
+}
+
+async function playRulesDemo() {
+    if (rulesDemoRunning || currentPageIndex !== 1) return;
+    resetRulesDemo();
+    const seats = Array.from(document.querySelectorAll('.rule-seat'));
+    if (seats.length !== 5) return;
+
+    const runId = ++rulesDemoRunId;
+    rulesDemoRunning = true;
+    setRulesControls({ running: true });
+    const steps = [
+        { passenger: 1, seat: 2, kind: 'first-random', roll: [0, 4, 3, 1], detail: '乘客 1 没有自己的指定座位，因此在 5 个空座位中随机滚动选择。' },
+        { passenger: 2, seat: 3, kind: 'blocked-random', roll: [4, 0, 2], detail: '乘客 2 发现自己的 2 号座位已被乘客 1 占用，只能在剩下的空座位中随机滚动选择。' },
+        { passenger: 3, seat: 1, kind: 'blocked-random', roll: [3, 4, 0], detail: '乘客 3 发现自己的 3 号座位已被乘客 2 占用，只能在剩下的空座位中随机滚动选择。' },
+        { passenger: 4, seat: 4, kind: 'own', detail: '乘客 4 的 4 号座位空着，直接坐下。' },
+        { passenger: 5, seat: 5, kind: 'own', detail: '乘客 5 的 5 号座位空着，直接坐下。' }
+    ];
+
+    for (const step of steps) {
+        const targetIndex = step.seat - 1;
+        if (step.kind === 'blocked-random') {
+            seats[step.passenger - 1].classList.add('checking');
+            renderRulesStatus({ state: 'checking', title: `乘客 ${step.passenger} 检查自己的座位`, detail: `他发现 ${step.passenger} 号座位已经被占。${step.detail}` });
+            await sleep(520);
+            if (runId !== rulesDemoRunId || currentPageIndex !== 1) return;
+            seats[step.passenger - 1].classList.remove('checking');
+        }
+
+        if (step.kind === 'first-random' || step.kind === 'blocked-random') {
+            renderRulesStatus({ state: 'running', title: `乘客 ${step.passenger} 正在随机选择`, detail: step.detail });
+            const rolled = await showRuleRoll(seats, step.roll, targetIndex, runId);
+            if (!rolled) return;
+        } else {
+            seats[targetIndex].classList.add('target');
+            renderRulesStatus({ state: 'running', title: `乘客 ${step.passenger} 直接坐自己的座位`, detail: step.detail });
+            await sleep(260);
+            if (runId !== rulesDemoRunId || currentPageIndex !== 1) return;
+        }
+
+        const passenger = document.createElement('div');
+        passenger.className = 'passenger rules-passenger';
+        passenger.dataset.passenger = String(step.passenger);
+        passenger.textContent = String(step.passenger);
+        passenger.style.display = 'none';
+        document.body.appendChild(passenger);
+        const rect = seats[targetIndex].getBoundingClientRect();
+        const moved = await moveRulesPassenger(passenger, { x: rect.left + rect.width / 2 - 16, y: rect.top + rect.height / 2 - 16 }, runId);
+        if (!moved) {
+            passenger.remove();
+            return;
+        }
+        passenger.remove();
+        seats[targetIndex].classList.remove('target');
+        seats[targetIndex].classList.add('occupied');
+        seats[targetIndex].dataset.passenger = String(step.passenger);
+        if (targetIndex !== step.passenger - 1) seats[targetIndex].classList.add('wrong');
+        if (step.passenger === 5) seats[targetIndex].classList.add('current');
+        renderRulesStatus({
+            state: 'seated',
+            title: `乘客 ${step.passenger} 已入座`,
+            detail: step.passenger === 5 ? '五位乘客都已坐下。重点是：只有“没有指定座位”或“自己的座位被占”的乘客才需要随机选择。' : `现在 ${step.seat} 号座位由乘客 ${step.passenger} 占用，继续观察下一位。`
+        });
+        await sleep(step.passenger === 5 ? 280 : 360);
+        if (runId !== rulesDemoRunId || currentPageIndex !== 1) return;
+    }
+
+    rulesDemoRunning = false;
+    setRulesControls({ complete: true });
+}
+
 // ===== N = 2 情形演示 =====
 function setN2ChoiceControls(disabled) {
     document.querySelectorAll('.n2-seat-choice').forEach((seat) => {
@@ -190,12 +328,12 @@ async function moveN2Passenger(passenger, position, runId) {
     passenger.style.left = `${window.innerWidth / 2 - 16}px`;
     passenger.style.top = '4.6rem';
     await sleep(180);
-    if (runId !== n2AnimationRunId || currentPageIndex !== 1) return false;
+    if (runId !== n2AnimationRunId || currentPageIndex !== 2) return false;
 
     passenger.style.left = `${position.x}px`;
     passenger.style.top = `${position.y}px`;
     await sleep(620);
-    if (runId !== n2AnimationRunId || currentPageIndex !== 1) return false;
+    if (runId !== n2AnimationRunId || currentPageIndex !== 2) return false;
 
     passenger.classList.remove('is-flying');
     passenger.classList.add('is-arrived');
@@ -203,7 +341,7 @@ async function moveN2Passenger(passenger, position, runId) {
 }
 
 async function playN2Scenario(selectedSeatNumber) {
-    if (n2AnimationRunning || currentPageIndex !== 1) return;
+    if (n2AnimationRunning || currentPageIndex !== 2) return;
     const seats = Array.from(document.querySelectorAll('.card-n2 .seat.mini'));
     const scenarios = Array.from(document.querySelectorAll('.card-n2 .scenario'));
     if (seats.length !== 2 || selectedSeatNumber < 1 || selectedSeatNumber > 2) return;
@@ -247,7 +385,7 @@ async function playN2Scenario(selectedSeatNumber) {
         detail: '第一位乘客的入座动画已完成。接下来自动演示乘客 2 的入座。'
     });
     await sleep(360);
-    if (runId !== n2AnimationRunId || currentPageIndex !== 1) return;
+    if (runId !== n2AnimationRunId || currentPageIndex !== 2) return;
 
     seats[remainingSeat].classList.add('target');
     renderN2Status({
@@ -363,12 +501,12 @@ async function movePassenger(passenger, position, runId) {
     passenger.style.left = `${window.innerWidth / 2 - 16}px`;
     passenger.style.top = '4.6rem';
     await sleep(180);
-    if (runId !== n3AnimationRunId || currentPageIndex !== 2) return false;
+    if (runId !== n3AnimationRunId || currentPageIndex !== 3) return false;
 
     passenger.style.left = `${position.x}px`;
     passenger.style.top = `${position.y}px`;
     await sleep(620);
-    if (runId !== n3AnimationRunId || currentPageIndex !== 2) return false;
+    if (runId !== n3AnimationRunId || currentPageIndex !== 3) return false;
 
     passenger.classList.remove('is-flying');
     passenger.classList.add('is-arrived');
@@ -402,7 +540,7 @@ function completeN3Animation(plan, revealed = false) {
 }
 
 function startN3Stepper() {
-    if (currentPageIndex !== 2 || n3ActiveRun) return;
+    if (currentPageIndex !== 3 || n3ActiveRun) return;
 
     const seats = Array.from(document.querySelectorAll('.card-n3 .seat.mini'));
     const resultEl = document.getElementById('n3-result');
@@ -439,7 +577,7 @@ function startN3Stepper() {
 
 async function nextN3Step() {
     const run = n3ActiveRun;
-    if (!run || run.busy || run.complete || currentPageIndex !== 2) return;
+    if (!run || run.busy || run.complete || currentPageIndex !== 3) return;
 
     const action = run.actions[run.actionIndex];
     if (!action) return;
@@ -508,7 +646,7 @@ async function nextN3Step() {
 
 function showN3Result() {
     const run = n3ActiveRun;
-    if (!run || run.busy || currentPageIndex !== 2) return;
+    if (!run || run.busy || currentPageIndex !== 3) return;
     n3AnimationRunId += 1;
     run.passengers.forEach((passenger) => passenger.remove());
     completeN3Animation(run.plan, true);
@@ -674,7 +812,7 @@ function processBulkTick(runId) {
 }
 
 function runBulkSimulation(times) {
-    if (bulkRun || currentPageIndex !== 4) return;
+    if (bulkRun || currentPageIndex !== 5) return;
     const run = {
         id: ++bulkRunId,
         target: times,
@@ -808,7 +946,7 @@ function markUserSeat(seat, passenger, choice, isLast) {
 }
 
 function userSelectSeat(selectedSeat, n) {
-    if (currentPageIndex !== 6 || userGameRun) return;
+    if (currentPageIndex !== 7 || userGameRun) return;
     const seats = Array.from(document.querySelectorAll('#game-seats .seat.mini'));
     if (!seats.some((seat) => seat.classList.contains('available'))) return;
 
@@ -827,7 +965,7 @@ function userSelectSeat(selectedSeat, n) {
 
 function nextUserGameStep() {
     const run = userGameRun;
-    if (!run || currentPageIndex !== 6) return;
+    if (!run || currentPageIndex !== 7) return;
 
     const seats = Array.from(document.querySelectorAll('#game-seats .seat.mini'));
     const passenger = run.nextPassenger;
