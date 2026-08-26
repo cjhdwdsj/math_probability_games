@@ -184,7 +184,7 @@
                         <!-- 动态柱状图 -->
                     </div>
                     <p style="text-align: center; font-size: 0.78rem; color: var(--muted-ink); margin-top: 0.35rem;" id="harmonic-tip-text">
-                        柱子高度直观展示：越到后面越难抽，最后一只的难度等于前面所有阶段的总和！
+                        柱子高度直观展示：越到后面越难抽，最后一只（需买 6 次，占全套 41%）超过了前 4 只的总和！
                     </p>
                 </article>
             </section>
@@ -365,7 +365,7 @@
                                 </div>
                             </div>
                             <input type="range" class="custom-range-slider orange" id="ev-single-slider" min="15" max="80" value="45" oninput="updateEVFromSliders()">
-                            <div class="slider-minmax-row"><span>¥15</span><span>¥80</span></div>
+                            <div class="slider-minmax-row"><span id="ev-single-min-label">¥15</span><span id="ev-single-max-label">¥80</span></div>
                         </div>
 
                         <div class="ev-slider-card purple-theme">
@@ -377,7 +377,7 @@
                                 </div>
                             </div>
                             <input type="range" class="custom-range-slider purple" id="ev-full-slider" min="100" max="600" step="5" value="260" oninput="updateEVFromSliders()">
-                            <div class="slider-minmax-row"><span>¥100</span><span>¥600</span></div>
+                            <div class="slider-minmax-row"><span id="ev-full-min-label">¥100</span><span id="ev-full-max-label">¥600</span></div>
                         </div>
                     </div>
 
@@ -423,7 +423,7 @@
                             </div>
                             <div class="polaroid-body">
                                 <div class="polaroid-title">为什么最后一只那么难？</div>
-                                <div class="polaroid-desc">最后一只的搜寻难度，等于前面所有阶段的总和（调和级数效应）。</div>
+                                <div class="polaroid-desc">越到后面越难抽：最后一只独自消耗全套 41% 抽数，超过前 4 只的总和（调和级数陡增）。</div>
                             </div>
                         </div>
 

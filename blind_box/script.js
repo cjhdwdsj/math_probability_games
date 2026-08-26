@@ -849,7 +849,7 @@ function animateHarmonicPage(N = 6) {
 
     if (tipText) {
         if (N === 6) {
-            tipText.innerHTML = `柱子高度直观展示：越到后面越难抽，最后一只（需买 <strong>6 次</strong>）的难度等于前面所有阶段的总和！`;
+            tipText.innerHTML = `柱子高度直观展示：越到后面越难抽，最后一只（需买 <strong>6 次，占全套 41%</strong>）超过了前 4 只的总和！`;
         } else if (N === 8) {
             tipText.innerHTML = `8 款一套时，最后一只平均需要抽 <strong>8 次</strong>，总共需要买 <strong>21.7 次</strong>！`;
         } else {
@@ -1666,6 +1666,9 @@ function applyRecSinglePrice() {
     const singleSlider = document.getElementById("ev-single-slider");
     if (!priceSlider || !singleSlider) return;
     const pBox = parseFloat(priceSlider.value) || 29;
+
+    // 动态自适应调整二手滑块的 min/max/step/labels
+    syncEVSliderRanges(N, pBox);
     const rec = getRecSinglePrice(pBox);
     singleSlider.value = rec;
     updateEVFromSliders();
@@ -1681,6 +1684,69 @@ function applyRecFullPrice() {
     const rec = getRecFullPrice(N, pBox);
     fullSlider.value = rec;
     updateEVFromSliders();
+}
+
+// 记录上一次的 N 和 pBox，以便在基础参数变化时智能自适应二手滑块
+let lastEV_N = 6;
+let lastEV_PBox = 29;
+
+function syncEVSliderRanges(N, pBox) {
+    const singleSlider = document.getElementById("ev-single-slider");
+    const fullSlider = document.getElementById("ev-full-slider");
+    if (!singleSlider || !fullSlider) return;
+
+    // 1. 二手单买滑块动态区间（随单抽原价 pBox 动态缩放）
+    // 下界 0.4x（折价出），上界 2.8x（炒价溢价），黄金覆盖 1.55x 建议价
+    const minSingle = Math.max(5, Math.round(pBox * 0.4));
+    const maxSingle = Math.max(35, Math.round(pBox * 2.8));
+    singleSlider.min = minSingle;
+    singleSlider.max = maxSingle;
+
+    const singleMinLabel = document.getElementById("ev-single-min-label");
+    const singleMaxLabel = document.getElementById("ev-single-max-label");
+    if (singleMinLabel) singleMinLabel.textContent = "¥" + minSingle;
+    if (singleMaxLabel) singleMaxLabel.textContent = "¥" + maxSingle;
+
+    // 若原价变化，智能等比重缩放或夹逼单买价格
+    if (pBox !== lastEV_PBox) {
+        const ratio = pBox / (lastEV_PBox || 29);
+        let curVal = Math.round(parseFloat(singleSlider.value) * ratio);
+        singleSlider.value = Math.max(minSingle, Math.min(maxSingle, curVal));
+    } else {
+        let curVal = parseFloat(singleSlider.value);
+        if (curVal < minSingle) singleSlider.value = minSingle;
+        else if (curVal > maxSingle) singleSlider.value = maxSingle;
+    }
+
+    // 2. 二手打包滑块动态区间（随 全套款式 N 与 单抽原价 pBox 动态变动）
+    const baseTotal = N * pBox;
+    const minFull = Math.max(15, Math.round((baseTotal * 0.5) / 5) * 5);
+    const maxFull = Math.max(60, Math.round((baseTotal * 2.8) / 5) * 5);
+    const stepFull = maxFull > 800 ? 10 : 5;
+
+    fullSlider.min = minFull;
+    fullSlider.max = maxFull;
+    fullSlider.step = stepFull;
+
+    const fullMinLabel = document.getElementById("ev-full-min-label");
+    const fullMaxLabel = document.getElementById("ev-full-max-label");
+    if (fullMinLabel) fullMinLabel.textContent = "¥" + minFull;
+    if (fullMaxLabel) fullMaxLabel.textContent = "¥" + maxFull;
+
+    // 若 N 或 pBox 变化，智能等比重缩放或夹逼打包价格
+    if (N !== lastEV_N || pBox !== lastEV_PBox) {
+        const oldBase = (lastEV_N || 6) * (lastEV_PBox || 29);
+        const ratio = baseTotal / (oldBase || 174);
+        let curVal = Math.round((parseFloat(fullSlider.value) * ratio) / stepFull) * stepFull;
+        fullSlider.value = Math.max(minFull, Math.min(maxFull, curVal));
+    } else {
+        let curVal = parseFloat(fullSlider.value);
+        if (curVal < minFull) fullSlider.value = minFull;
+        else if (curVal > maxFull) fullSlider.value = maxFull;
+    }
+
+    lastEV_N = N;
+    lastEV_PBox = pBox;
 }
 
 function updateEVFromSliders() {
