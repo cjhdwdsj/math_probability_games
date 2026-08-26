@@ -444,13 +444,63 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 .ledger-actions {
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    gap: 0.4rem;
     margin-top: 0.35rem;
 }
 
 .ledger-actions .btn {
-    padding: 0.32rem 0.6rem;
+    padding: 0.36rem 0.6rem;
     font-size: 0.76rem;
+    font-weight: 700;
+    width: 100%;
+}
+
+/* 按钮专属暗色背景高对比度配色 */
+.ledger-actions .btn-primary {
+    background: var(--sun);
+    color: #2f2a25;
+    border: 1.5px solid #2f2a25;
+}
+
+.ledger-actions .btn-quiet {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fdf9ee;
+    border: 1.5px solid rgba(255, 255, 255, 0.35);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.ledger-actions .btn-quiet:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.26);
+    color: #ffffff;
+    border-color: #f7c84b;
+    transform: translate(-1px, -1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
+}
+
+.ledger-actions .btn-quiet:active:not(:disabled) {
+    background: rgba(255, 255, 255, 0.18);
+    transform: translate(1px, 1px);
+}
+
+.ledger-actions .btn-gold:disabled {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.38);
+    border: 1.5px dashed rgba(255, 255, 255, 0.2);
+    box-shadow: none;
+    opacity: 1;
+}
+
+.ledger-actions .btn-gold:not(:disabled) {
+    background: linear-gradient(135deg, #ffd369, #fa983a);
+    color: #2f2a25;
+    border: 1.5px solid #fff;
+    box-shadow: 0 0 14px rgba(247, 200, 75, 0.65);
+    animation: winPulse 1.5s infinite;
+}
+
+@keyframes winPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.03); }
 }
 
 /* 中间散落盲袋桌面 */
