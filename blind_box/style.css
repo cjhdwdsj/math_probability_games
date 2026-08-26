@@ -2101,16 +2101,18 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 .mini-sim-bars {
     display: flex;
     align-items: flex-end;
-    justify-content: center;
-    gap: 3px;
+    justify-content: space-between;
+    gap: 1.5px;
     height: 52px;
-    width: 100%;
+    width: 95%;
     border-bottom: 1.5px solid var(--soft-line);
     padding-bottom: 2px;
 }
 
 .mini-sim-bars .ms-bar {
-    width: 9px;
+    flex: 1;
+    min-width: 4px;
+    max-width: 8px;
     border-radius: 2px 2px 0 0;
 }
 
@@ -2120,9 +2122,10 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 .ms-bar.worst { background: #9b59b6; }
 
 .mini-sim-label {
-    font-size: 0.58rem;
+    font-size: 0.56rem;
     font-weight: 800;
     color: var(--coral);
+    white-space: nowrap;
 }
 
 /* SSR 微缩 */
