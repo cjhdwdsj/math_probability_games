@@ -1553,8 +1553,144 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 .ev-sliders-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 0.5rem;
-    margin-bottom: 0.4rem;
+    gap: 0.55rem;
+    margin-bottom: 0.45rem;
+}
+
+.ev-slider-card {
+    background: #fff;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    padding: 0.45rem 0.6rem 0.35rem;
+    box-shadow: 0 1px 3px rgba(47, 42, 37, 0.05);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.ev-slider-card:hover {
+    border-color: #2f2a25;
+    box-shadow: 0 3px 8px rgba(47, 42, 37, 0.08);
+}
+
+.ev-slider-title {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: var(--muted-ink);
+}
+
+.slider-val-badge {
+    font-size: 0.7rem;
+    font-weight: 900;
+    padding: 1px 6px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    color: var(--ink);
+    white-space: nowrap;
+}
+
+.slider-val-badge.blue {
+    background: #ebf5fb;
+    color: #2980b9;
+    border-color: rgba(41, 128, 185, 0.3);
+}
+
+.slider-val-badge.green {
+    background: #eafaf1;
+    color: #27ae60;
+    border-color: rgba(39, 174, 96, 0.3);
+}
+
+.slider-val-badge.orange {
+    background: #fef5e7;
+    color: #d35400;
+    border-color: rgba(211, 84, 0, 0.3);
+}
+
+.slider-val-badge.purple {
+    background: #f4ecf7;
+    color: #8e44ad;
+    border-color: rgba(142, 68, 173, 0.3);
+}
+
+/* 现代化精致滑动条 */
+.custom-range-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: rgba(47, 42, 37, 0.1);
+    border-radius: 999px;
+    outline: none;
+    margin: 0.35rem 0 0.15rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.custom-range-slider:hover {
+    background: rgba(47, 42, 37, 0.18);
+}
+
+/* Webkit 浏览器的滑块 Thumb */
+.custom-range-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #2f2a25;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+    cursor: grab;
+    transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.custom-range-slider.blue::-webkit-slider-thumb { background: #3498db; }
+.custom-range-slider.green::-webkit-slider-thumb { background: #27ae60; }
+.custom-range-slider.orange::-webkit-slider-thumb { background: #f39c12; }
+.custom-range-slider.purple::-webkit-slider-thumb { background: #9b59b6; }
+
+.custom-range-slider::-webkit-slider-thumb:hover,
+.custom-range-slider:active::-webkit-slider-thumb {
+    transform: scale(1.22);
+    cursor: grabbing;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+}
+
+/* Firefox 浏览器的滑块 Thumb */
+.custom-range-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #2f2a25;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+    cursor: grab;
+    transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.custom-range-slider.blue::-moz-range-thumb { background: #3498db; }
+.custom-range-slider.green::-moz-range-thumb { background: #27ae60; }
+.custom-range-slider.orange::-moz-range-thumb { background: #f39c12; }
+.custom-range-slider.purple::-moz-range-thumb { background: #9b59b6; }
+
+.custom-range-slider::-moz-range-thumb:hover,
+.custom-range-slider:active::-moz-range-thumb {
+    transform: scale(1.22);
+    cursor: grabbing;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+}
+
+.slider-minmax-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: var(--muted-ink);
+    opacity: 0.75;
+    padding: 0 2px;
 }
 
 .ev-chart-legend {
