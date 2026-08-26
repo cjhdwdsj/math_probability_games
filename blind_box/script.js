@@ -1548,23 +1548,34 @@ function updateEVFromSliders() {
     // 1. 构建所有策略列表
     const strategies = [];
 
-    // 判断一口价打包是否比单买 N 只确认款还要贵 (防止用户小心机与商家智商税)
+    // 判断一口价打包与分别单买 N 只哪个更划算
     const singleAllCost = N * pSingle;
-    const isOverpricedFull = (pFull > singleAllCost);
+    const isSingleCheaper = (singleAllCost < pFull);
 
-    // 策略 0：纯二手全套打包
-    strategies.push({
-        type: "used_full",
-        name: "【纯二手】全套打包",
-        blindDraws: 0,
-        blindCost: 0,
-        usedCost: pFull,
-        totalCost: pFull,
-        isPurple: !isOverpricedFull,
-        isWarningYellow: isOverpricedFull,
-        isOverpriced: isOverpricedFull,
-        singleAllCost: singleAllCost
-    });
+    if (isSingleCheaper) {
+        // 单买 N 只更便宜：直接显示橙色的单买 N 个策略
+        strategies.push({
+            type: "used_singles",
+            name: `【纯二手】单买 ${N} 个`,
+            blindDraws: 0,
+            blindCost: 0,
+            usedCost: singleAllCost,
+            totalCost: singleAllCost,
+            isOrange: true,
+            usedCount: N
+        });
+    } else {
+        // 打包一口价更便宜：显示紫色的全套打包策略
+        strategies.push({
+            type: "used_full",
+            name: "【纯二手】全套打包",
+            blindDraws: 0,
+            blindCost: 0,
+            usedCost: pFull,
+            totalCost: pFull,
+            isPurple: true
+        });
+    }
 
     // 计算盲抽前 k 款不同款式的期望抽数
     const harmonicPrefix = [0];
@@ -1631,10 +1642,10 @@ function updateEVFromSliders() {
         const usedSegPct = s.totalCost > 0 ? ((s.usedCost / s.totalCost) * 100).toFixed(1) : 0;
 
         let barSegmentsHtml = "";
-        if (s.isWarningYellow) {
-            barSegmentsHtml = `<div class="ev-bar-seg warning-yellow" style="width: 100%;">一口价 ¥${s.totalCost.toFixed(0)}（单买${N}个仅需 ¥${s.singleAllCost.toFixed(0)}）</div>`;
-        } else if (s.isPurple) {
+        if (s.isPurple) {
             barSegmentsHtml = `<div class="ev-bar-seg purple" style="width: 100%;">一口价 ¥${s.totalCost.toFixed(0)}</div>`;
+        } else if (s.isOrange) {
+            barSegmentsHtml = `<div class="ev-bar-seg orange" style="width: 100%;">单买${s.usedCount}只 ¥${s.totalCost.toFixed(0)}</div>`;
         } else {
             if (s.blindCost > 0) {
                 barSegmentsHtml += `<div class="ev-bar-seg blue" style="width: ${blindSegPct}%;">抽${s.blindDraws.toFixed(1)}次 ¥${s.blindCost.toFixed(0)}</div>`;
@@ -1647,7 +1658,6 @@ function updateEVFromSliders() {
         row.innerHTML = `
             <div class="ev-row-label">
                 <span class="ev-strategy-name">${s.name}</span>
-                ${s.isOverpriced ? `<span class="ev-warn-pill">不如单买 ${N} 个</span>` : ''}
                 ${isBest ? '<span class="ev-best-badge">🏆 最优解</span>' : ''}
             </div>
             <div class="ev-bar-track">
@@ -1665,19 +1675,14 @@ function updateEVFromSliders() {
         const saved = pureBlindCost - bestStrategy.totalCost;
         const savedPct = ((saved / pureBlindCost) * 100).toFixed(0);
 
-        let calloutHtml = "";
         if (bestStrategy.type === "used_full") {
-            calloutHtml = `💡 <strong>数学家决策：</strong>当前二手全套打包价 (¥${pFull}) 极具性价比！相比自己纯盲抽期望花费 (¥${pureBlindCost.toFixed(1)}) <strong>净省 ¥ ${saved.toFixed(1)} (立省 ${savedPct}%)</strong>，直接全套打包不仅省钱，还彻底免去开盒重复与非酋翻车风险！`;
+            summaryElem.innerHTML = `💡 <strong>数学家决策：</strong>当前二手全套打包价 (¥${pFull}) 极具性价比！相比自己纯盲抽期望花费 (¥${pureBlindCost.toFixed(1)}) <strong>净省 ¥ ${saved.toFixed(1)} (立省 ${savedPct}%)</strong>，直接全套打包不仅省钱，还彻底免去开盒重复与非酋翻车风险！`;
+        } else if (bestStrategy.type === "used_singles") {
+            summaryElem.innerHTML = `💡 <strong>数学家决策：</strong>当前分别【单买 ${N} 个确认款】(¥${singleAllCost}) 相比全套打包 (¥${pFull}) 与纯盲抽 (¥${pureBlindCost.toFixed(1)}) 都是最省钱的，<strong>净省 ¥ ${saved.toFixed(1)} (立省 ${savedPct}%)</strong>！`;
         } else if (bestStrategy.type === "pure_blind") {
-            calloutHtml = `💡 <strong>数学家决策：</strong>二手平台单买与打包溢价过高，自己纯盲抽期望总花费 (¥${pureBlindCost.toFixed(1)}) 反而是最优选择！`;
+            summaryElem.innerHTML = `💡 <strong>数学家决策：</strong>二手平台单买与打包溢价过高，自己纯盲抽期望总花费 (¥${pureBlindCost.toFixed(1)}) 反而是最优选择！`;
         } else {
-            calloutHtml = `💡 <strong>数学家决策：</strong>【抽 ${bestStrategy.k} 款 + 补 ${bestStrategy.usedCount} 只】是当前行情的<strong>黄金平衡解</strong>！平均只需花费 <strong>¥ ${bestStrategy.totalCost.toFixed(1)}</strong>，相比头铁纯盲抽 (¥${pureBlindCost.toFixed(1)}) <strong>净省 ¥ ${saved.toFixed(1)} (立省 ${savedPct}%)</strong>。既享受了前 ${bestStrategy.k} 次开箱的爽快感，又在难度最高的后 ${bestStrategy.usedCount} 只上果断二手单买精准止损！`;
+            summaryElem.innerHTML = `💡 <strong>数学家决策：</strong>【抽 ${bestStrategy.k} 款 + 补 ${bestStrategy.usedCount} 只】是当前行情的<strong>黄金平衡解</strong>！平均只需花费 <strong>¥ ${bestStrategy.totalCost.toFixed(1)}</strong>，相比头铁纯盲抽 (¥${pureBlindCost.toFixed(1)}) <strong>净省 ¥ ${saved.toFixed(1)} (立省 ${savedPct}%)</strong>。既享受了前 ${bestStrategy.k} 次开箱的爽快感，又在难度最高的后 ${bestStrategy.usedCount} 只上果断二手单买精准止损！`;
         }
-
-        if (isOverpricedFull) {
-            calloutHtml += `<br><span style="color:#f7c84b;font-size:0.71rem;">💡 <strong>价格提示</strong>：当前全套打包一口价 (¥${pFull}) 高于分别单买 ${N} 个确认款的总价 (¥${singleAllCost.toFixed(0)})，若想纯走二手渠道，建议直接单买 ${N} 个更划算（省 ¥${(pFull - singleAllCost).toFixed(0)}）。</span>`;
-        }
-
-        summaryElem.innerHTML = calloutHtml;
     }
 }
