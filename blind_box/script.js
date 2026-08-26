@@ -722,17 +722,40 @@ function drawRoundedRect(ctx, x, y, width, height, radius) {
 // ========================
 // 8. 第 8 页：商业定价期望收益 EV 计算器
 // ========================
+function setEVPreset(n, price, reward) {
+    const nSelect = document.getElementById("ev-n");
+    const priceInput = document.getElementById("ev-price");
+    const rewardInput = document.getElementById("ev-reward");
+    if (nSelect) nSelect.value = n;
+    if (priceInput) priceInput.value = price;
+    if (rewardInput) rewardInput.value = reward;
+    recalcEV();
+}
+
 function recalcEV() {
+    const nSelect = document.getElementById("ev-n");
     const priceInput = document.getElementById("ev-price");
     const rewardInput = document.getElementById("ev-reward");
     if (!priceInput || !rewardInput) return;
 
+    const N = nSelect ? parseInt(nSelect.value, 10) : 6;
     const price = parseFloat(priceInput.value) || 0;
     const reward = parseFloat(rewardInput.value) || 0;
 
-    const expectedDraws = 14.7;
+    // 动态计算理论期望 N * H_N
+    let harmonicN = 0;
+    for (let i = 1; i <= N; i++) harmonicN += 1 / i;
+    const expectedDraws = N * harmonicN;
     const expectedCost = expectedDraws * price;
     const expectedValue = reward - expectedCost;
+
+    // 步骤拆解显示
+    const stepDraws = document.getElementById("ev-step-draws");
+    const stepCost = document.getElementById("ev-step-cost");
+    const stepReward = document.getElementById("ev-step-reward");
+    if (stepDraws) stepDraws.textContent = `${expectedDraws.toFixed(1)} 次 (${N}款一套)`;
+    if (stepCost) stepCost.textContent = `¥${expectedCost.toFixed(2)}`;
+    if (stepReward) stepReward.textContent = `+¥${reward.toFixed(2)}`;
 
     const badge = document.getElementById("ev-badge");
     const valElem = document.getElementById("ev-val");
@@ -747,6 +770,6 @@ function recalcEV() {
         badge.className = "ev-result-badge";
         valElem.style.color = "var(--leaf)";
         valElem.textContent = `+ ¥ ${expectedValue.toFixed(2)}`;
-        tipElem.textContent = `玩家净收益为正，这属于商家倒贴的良心活动。`;
+        tipElem.textContent = `玩家净收益为正！这属于商家倒贴发福利。`;
     }
 }

@@ -989,50 +989,93 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     background: #fff;
     border: 2px solid var(--line);
     border-radius: 10px;
-    padding: 0.7rem 1rem;
+    padding: 0.6rem 0.9rem;
     box-shadow: var(--shadow-sm);
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.5rem;
+}
+
+.ev-presets-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--muted-ink);
+}
+
+.preset-pill {
+    background: var(--paper);
+    border: 1.5px solid var(--line);
+    border-radius: 6px;
+    padding: 0.15rem 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.preset-pill:hover {
+    background: var(--sun);
 }
 
 .ev-inputs {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.8rem;
-    margin-bottom: 0.5rem;
+    grid-template-columns: 1.1fr 1fr 1.1fr;
+    gap: 0.6rem;
+    margin-bottom: 0.4rem;
 }
 
 .ev-field label {
     display: block;
-    font-size: 0.78rem;
+    font-size: 0.74rem;
     font-weight: 700;
-    margin-bottom: 0.2rem;
+    margin-bottom: 0.15rem;
     color: var(--muted-ink);
 }
 
-.ev-field input {
+.ev-field input, .ev-field select {
     width: 100%;
-    padding: 0.35rem 0.6rem;
+    padding: 0.25rem 0.5rem;
     border: 1.5px solid var(--line);
     border-radius: 6px;
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    background: #fff;
+}
+
+.ev-steps-breakdown {
+    background: rgba(47, 42, 37, 0.04);
+    border: 1px dashed var(--soft-line);
+    border-radius: 6px;
+    padding: 0.3rem 0.6rem;
+    margin-bottom: 0.4rem;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--muted-ink);
+}
+.ev-steps-breakdown span strong {
+    color: var(--ink);
 }
 
 .ev-result-badge {
     text-align: center;
-    padding: 0.45rem;
+    padding: 0.35rem 0.6rem;
     border-radius: 8px;
     border: 1.5px solid var(--line);
     background: #fff6f4;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
 }
 
 .ev-result-badge.negative { background: #fff1f0; border-color: var(--coral); }
-.ev-result-val { font-size: 1.35rem; font-weight: 800; color: var(--coral); }
+.ev-result-val { font-size: 1.25rem; font-weight: 800; color: var(--coral); }
 
 .advice-cards {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0.8rem;
+    gap: 0.6rem;
 }
 
 .advice-card {
