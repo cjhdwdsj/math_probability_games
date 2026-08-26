@@ -1458,6 +1458,7 @@ function updateSSRVisual(isImmediate = false) {
 }
 
 function renderSSRSwarm(neededDraws, nVal) {
+    const swarmContainer = document.getElementById("ssr-orbit-swarm");
     if (swarmContainer) {
         swarmContainer.innerHTML = "";
         
