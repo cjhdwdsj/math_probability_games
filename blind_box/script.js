@@ -107,9 +107,30 @@ document.addEventListener("DOMContentLoaded", () => {
     animateHarmonicPage(6);
     runMonteCarloSim();
 
+    // 检查 URL 中的 ?p= 或 ?page= 参数并直接跳转（支持 1~8 页，大小写不敏感）
+    const params = new URLSearchParams(window.location.search);
+    let targetP = params.get("p") || params.get("P") || params.get("page") || params.get("PAGE");
+    if (targetP !== null) {
+        let pNum = parseInt(targetP, 10);
+        if (pNum >= 1 && pNum <= TOTAL_PAGES) {
+            goToPage(pNum - 1);
+        } else if (pNum === 0) {
+            goToPage(0);
+        }
+    }
+
     window.addEventListener("resize", () => {
         if (currentPage === 3) renderTrajectoryChart();
         if (currentPage === 5 && simCache) renderHistogram(1);
+    });
+
+    window.addEventListener("popstate", () => {
+        const p = new URLSearchParams(window.location.search);
+        let q = p.get("p") || p.get("P") || p.get("page") || p.get("PAGE");
+        if (q !== null) {
+            let n = parseInt(q, 10);
+            if (n >= 1 && n <= TOTAL_PAGES) goToPage(n - 1);
+        }
     });
 });
 
@@ -131,6 +152,13 @@ function goToPage(pageIndex) {
     });
 
     updateNavigation();
+
+    // 自动将当前页码实时同步回 URL（方便调试，刷新后直接停留在当前页）
+    try {
+        const url = new URL(window.location.href);
+        url.searchParams.set("p", pageIndex + 1);
+        window.history.replaceState(null, "", url.toString());
+    } catch (e) {}
 
     // 页面专属生命周期触发
     if (currentPage === 3) {
