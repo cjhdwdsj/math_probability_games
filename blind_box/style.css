@@ -1724,12 +1724,12 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     background: #fff;
     border: 2px solid var(--line);
     border-radius: 12px;
-    padding: 0.5rem 0.7rem;
+    padding: 0.45rem 0.65rem;
     box-shadow: var(--shadow-sm);
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
-    max-height: 220px;
+    gap: 0.25rem;
+    max-height: 285px;
     overflow-y: auto;
     margin-bottom: 0.45rem;
 }
@@ -1739,7 +1739,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     grid-template-columns: 185px 1fr 65px;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.2rem 0.4rem;
+    padding: 0.12rem 0.35rem;
     border-radius: 6px;
     transition: background 0.15s ease;
 }

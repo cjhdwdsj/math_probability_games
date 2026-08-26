@@ -1648,10 +1648,18 @@ function updateEVFromSliders() {
             barSegmentsHtml = `<div class="ev-bar-seg orange" style="width: 100%;">单买${s.usedCount}只 ¥${s.totalCost.toFixed(0)}</div>`;
         } else {
             if (s.blindCost > 0) {
-                barSegmentsHtml += `<div class="ev-bar-seg blue" style="width: ${blindSegPct}%;">抽${s.blindDraws.toFixed(1)}次 ¥${s.blindCost.toFixed(0)}</div>`;
+                const bPct = parseFloat(blindSegPct);
+                let text = "";
+                if (bPct >= 20) text = `抽${s.blindDraws.toFixed(1)}次 ¥${s.blindCost.toFixed(0)}`;
+                else if (bPct >= 9) text = `¥${s.blindCost.toFixed(0)}`;
+                barSegmentsHtml += `<div class="ev-bar-seg blue" style="width: ${blindSegPct}%;" title="盲抽期望：${s.blindDraws.toFixed(1)}次 (¥${s.blindCost.toFixed(0)})">${text}</div>`;
             }
             if (s.usedCost > 0) {
-                barSegmentsHtml += `<div class="ev-bar-seg orange" style="width: ${usedSegPct}%;">补${s.usedCount}只 ¥${s.usedCost.toFixed(0)}</div>`;
+                const uPct = parseFloat(usedSegPct);
+                let text = "";
+                if (uPct >= 20) text = `补${s.usedCount}只 ¥${s.usedCost.toFixed(0)}`;
+                else if (uPct >= 9) text = `¥${s.usedCost.toFixed(0)}`;
+                barSegmentsHtml += `<div class="ev-bar-seg orange" style="width: ${usedSegPct}%;" title="二手补齐：${s.usedCount}只 (¥${s.usedCost.toFixed(0)})">${text}</div>`;
             }
         }
 
