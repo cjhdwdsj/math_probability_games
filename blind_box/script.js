@@ -851,7 +851,7 @@ function initSimCanvasListeners() {
     const tooltip = document.getElementById("chart-tooltip");
     if (!canvas || !tooltip) return;
 
-    canvas.style.cursor = "pointer";
+    canvas.style.cursor = "crosshair";
 
     canvas.addEventListener("click", (e) => {
         if (!simCache || !simCache.layout) return;
