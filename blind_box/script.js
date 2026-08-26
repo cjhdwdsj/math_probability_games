@@ -1254,8 +1254,14 @@ function getFullSetProb(X, N, K) {
     return Math.max(0, Math.min(1, sum1 - sum2));
 }
 
+// 全图鉴计算缓存表，杜绝重复计算，查询时间 0ms
+const fullSetDrawsCache = {};
+
 // 二分法极速反解达成目标把握度 targetP 所需的最小抽数 X
 function calculateFullSetDraws(targetP, N, K) {
+    const cacheKey = `${N}_${K}_${targetP}`;
+    if (fullSetDrawsCache[cacheKey]) return fullSetDrawsCache[cacheKey];
+
     let low = N + 1;
     let high = 5000;
     let ans = high;
@@ -1269,23 +1275,26 @@ function calculateFullSetDraws(targetP, N, K) {
             low = mid + 1;
         }
     }
+    fullSetDrawsCache[cacheKey] = ans;
     return ans;
 }
 
+let ssrDebounceTimer = null;
+
 function initSSRKnobs() {
-    setupKnobControl("fl-dial-n", 0, SSR_N_OPTS.length - 1, ssrKnobState.nIdx, (val) => {
+    setupKnobControl("fl-dial-n", 0, SSR_N_OPTS.length - 1, ssrKnobState.nIdx, (val, isDone) => {
         ssrKnobState.nIdx = val;
-        updateSSRVisual();
+        updateSSRVisual(isDone);
     });
 
-    setupKnobControl("fl-dial-rate", 0, SSR_RATE_OPTS.length - 1, ssrKnobState.rateIdx, (val) => {
+    setupKnobControl("fl-dial-rate", 0, SSR_RATE_OPTS.length - 1, ssrKnobState.rateIdx, (val, isDone) => {
         ssrKnobState.rateIdx = val;
-        updateSSRVisual();
+        updateSSRVisual(isDone);
     });
 
-    setupKnobControl("fl-dial-prob", 0, SSR_PROB_OPTS.length - 1, ssrKnobState.probIdx, (val) => {
+    setupKnobControl("fl-dial-prob", 0, SSR_PROB_OPTS.length - 1, ssrKnobState.probIdx, (val, isDone) => {
         ssrKnobState.probIdx = val;
-        updateSSRVisual();
+        updateSSRVisual(isDone);
     });
 }
 
@@ -1311,12 +1320,12 @@ function setupKnobControl(dialId, minIdx, maxIdx, initialIdx, onChange) {
         startY = e.clientY;
         accumulatedDelta += deltaY;
 
-        if (Math.abs(accumulatedDelta) >= 18) {
+        if (Math.abs(accumulatedDelta) >= 16) {
             const step = accumulatedDelta > 0 ? 1 : -1;
             const newIdx = Math.max(minIdx, Math.min(maxIdx, currentIdx + step));
             if (newIdx !== currentIdx) {
                 currentIdx = newIdx;
-                onChange(currentIdx);
+                onChange(currentIdx, false);
             }
             accumulatedDelta = 0;
         }
@@ -1326,6 +1335,7 @@ function setupKnobControl(dialId, minIdx, maxIdx, initialIdx, onChange) {
         if (isDragging) {
             isDragging = false;
             document.body.style.userSelect = "";
+            onChange(currentIdx, true);
         }
     });
 
@@ -1342,19 +1352,22 @@ function setupKnobControl(dialId, minIdx, maxIdx, initialIdx, onChange) {
         startY = e.touches[0].clientY;
         accumulatedDelta += deltaY;
 
-        if (Math.abs(accumulatedDelta) >= 18) {
+        if (Math.abs(accumulatedDelta) >= 16) {
             const step = accumulatedDelta > 0 ? 1 : -1;
             const newIdx = Math.max(minIdx, Math.min(maxIdx, currentIdx + step));
             if (newIdx !== currentIdx) {
                 currentIdx = newIdx;
-                onChange(currentIdx);
+                onChange(currentIdx, false);
             }
             accumulatedDelta = 0;
         }
     }, { passive: true });
 
     window.addEventListener("touchend", () => {
-        isDragging = false;
+        if (isDragging) {
+            isDragging = false;
+            onChange(currentIdx, true);
+        }
     });
 
     // 滚轮微调
@@ -1364,7 +1377,7 @@ function setupKnobControl(dialId, minIdx, maxIdx, initialIdx, onChange) {
         const newIdx = Math.max(minIdx, Math.min(maxIdx, currentIdx + step));
         if (newIdx !== currentIdx) {
             currentIdx = newIdx;
-            onChange(currentIdx);
+            onChange(currentIdx, true);
         }
     }, { passive: false });
 
@@ -1372,15 +1385,16 @@ function setupKnobControl(dialId, minIdx, maxIdx, initialIdx, onChange) {
     dial.addEventListener("click", () => {
         const nextIdx = (currentIdx + 1) > maxIdx ? minIdx : (currentIdx + 1);
         currentIdx = nextIdx;
-        onChange(currentIdx);
+        onChange(currentIdx, true);
     });
 }
 
-function updateSSRVisual() {
+function updateSSRVisual(isImmediate = false) {
     const nVal = SSR_N_OPTS[ssrKnobState.nIdx];
     const rateInfo = SSR_RATE_OPTS[ssrKnobState.rateIdx];
     const probInfo = SSR_PROB_OPTS[ssrKnobState.probIdx];
 
+    // 1. 旋钮角度与文本胶囊：立刻更新（划归划，绝对丝滑 0 延迟）
     const dialN = document.getElementById("fl-dial-n");
     const dialRate = document.getElementById("fl-dial-rate");
     const dialProb = document.getElementById("fl-dial-prob");
@@ -1406,32 +1420,44 @@ function updateSSRVisual() {
     if (pillRate) pillRate.textContent = `${rateInfo.label}`;
     if (pillProb) pillProb.textContent = `${probInfo.label}`;
 
-    // 计算达成“全图鉴大满贯”（N款普通全套 + 1款隐藏款）目标把握度所需的最少抽数 X
-    const K = rateInfo.denom;
-    const P = probInfo.pct;
+    // 2. 异步防抖计算与海量立牌重绘（算归算）
+    if (ssrDebounceTimer) clearTimeout(ssrDebounceTimer);
 
-    const neededDraws = calculateFullSetDraws(P, nVal, K);
-    const totalCost = neededDraws * PRICE_PER_BOX;
+    const performUpdate = () => {
+        const K = rateInfo.denom;
+        const P = probInfo.pct;
 
-    const drawsElem = document.getElementById("verdict-draws-num");
-    const costElem = document.getElementById("verdict-cost-num");
-    const noteElem = document.getElementById("verdict-note-box");
+        const neededDraws = calculateFullSetDraws(P, nVal, K);
+        const totalCost = neededDraws * PRICE_PER_BOX;
 
-    if (drawsElem) drawsElem.textContent = `${neededDraws} 袋`;
-    if (costElem) costElem.textContent = `¥ ${totalCost.toLocaleString()}`;
+        const drawsElem = document.getElementById("verdict-draws-num");
+        const costElem = document.getElementById("verdict-cost-num");
+        const noteElem = document.getElementById("verdict-note-box");
 
-    const duplicateCount = Math.max(0, neededDraws - 1 - nVal);
+        if (drawsElem) drawsElem.textContent = `${neededDraws} 袋`;
+        if (costElem) costElem.textContent = `¥ ${totalCost.toLocaleString()}`;
 
-    if (noteElem) {
-        if (P <= 0.20) {
-            noteElem.innerHTML = `💡 <strong>欧皇速通！</strong>达成 <strong>${(P * 100).toFixed(0)}% 把握</strong> 集齐<strong>全套 ${nVal} 款普通款 + 1 款隐藏款</strong>（共 ${nVal + 1} 款大满贯），需购买 <strong>${neededDraws} 袋</strong>。产生 <strong>${duplicateCount} 个</strong> 普通款重复立牌。`;
-        } else {
-            noteElem.innerHTML = `💡 达成 <strong>${(P * 100).toFixed(0)}% 把握</strong> 集齐<strong>全套 ${nVal} 款普通款 + 1 款隐藏款</strong>（共 ${nVal + 1} 款大满贯），需购买整整 <strong>${neededDraws} 袋</strong>。为了这 1 只隐藏款，桌上堆满了 <strong>${duplicateCount} 个</strong> 普通款重复立牌！`;
+        const duplicateCount = Math.max(0, neededDraws - 1 - nVal);
+
+        if (noteElem) {
+            if (P <= 0.20) {
+                noteElem.innerHTML = `💡 <strong>欧皇速通！</strong>达成 <strong>${(P * 100).toFixed(0)}% 把握</strong> 集齐<strong>全套 ${nVal} 款普通款 + 1 款隐藏款</strong>（共 ${nVal + 1} 款大满贯），需购买 <strong>${neededDraws} 袋</strong>。产生 <strong>${duplicateCount} 个</strong> 普通款重复立牌。`;
+            } else {
+                noteElem.innerHTML = `💡 达成 <strong>${(P * 100).toFixed(0)}% 把握</strong> 集齐<strong>全套 ${nVal} 款普通款 + 1 款隐藏款</strong>（共 ${nVal + 1} 款大满贯），需购买整整 <strong>${neededDraws} 袋</strong>。为了这 1 只隐藏款，桌上堆满了 <strong>${duplicateCount} 个</strong> 普通款重复立牌！`;
+            }
         }
-    }
 
-    // 动态渲染层层包裹的普通款立牌茧
-    const swarmContainer = document.getElementById("ssr-orbit-swarm");
+        renderSSRSwarm(neededDraws, nVal);
+    };
+
+    if (isImmediate) {
+        performUpdate();
+    } else {
+        ssrDebounceTimer = setTimeout(performUpdate, 40);
+    }
+}
+
+function renderSSRSwarm(neededDraws, nVal) {
     if (swarmContainer) {
         swarmContainer.innerHTML = "";
         
