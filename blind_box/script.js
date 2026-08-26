@@ -1640,10 +1640,10 @@ function renderSSRSwarm(neededDraws, nVal) {
         const x = centerX + r * Math.cos(theta);
         const y = centerY + r * Math.sin(theta);
 
-        // 内圈 1.50x (内层大立牌) -> 外圈 0.70x (外层微缩)
-        const decayCurve = Math.pow(1 - norm, 1.1);
-        const scale = 0.70 + decayCurve * 0.80;
-        const itemSize = Math.max(4.0, Math.min(32, Math.round(baseSize * scale * 10) / 10));
+        // 内圈 1.50x (内层大立牌) -> 外圈 0.60x (外层微缩)
+        const decayCurve = Math.pow(1 - norm, 1.15);
+        const scale = 0.60 + decayCurve * 0.90;
+        const itemSize = Math.max(3.5, Math.min(32, Math.round(baseSize * scale * 10) / 10));
 
         const sprite = getEmojiSprite(char.icon);
         ctx.drawImage(sprite, x - itemSize / 2, y - itemSize / 2, itemSize, itemSize);
