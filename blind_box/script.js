@@ -1220,6 +1220,58 @@ function drawRoundedRect(ctx, x, y, width, height, radius) {
 // ========================
 // 9. 第 5 页：隐藏款 SSR 机制与 FL 旋钮环形图
 // ========================
+
+// 容斥原理精确求解“集齐全部 N 款普通款 + 1 款隐藏款”在 X 次抽取内的累积概率 CDF
+function getFullSetProb(X, N, K) {
+    if (X < N + 1) return 0;
+    const ps = 1 / K;
+    const pr = (1 - ps) / N;
+
+    function nCr(n, r) {
+        if (r < 0 || r > n) return 0;
+        if (r === 0 || r === n) return 1;
+        let res = 1;
+        for (let i = 1; i <= r; i++) {
+            res = res * (n - i + 1) / i;
+        }
+        return res;
+    }
+
+    let sum1 = 0;
+    for (let j = 0; j <= N; j++) {
+        const sign = (j % 2 === 0) ? 1 : -1;
+        const base = Math.max(0, 1 - j * pr);
+        sum1 += sign * nCr(N, j) * Math.pow(base, X);
+    }
+
+    let sum2 = 0;
+    for (let j = 0; j <= N; j++) {
+        const sign = (j % 2 === 0) ? 1 : -1;
+        const base = Math.max(0, 1 - ps - j * pr);
+        sum2 += sign * nCr(N, j) * Math.pow(base, X);
+    }
+
+    return Math.max(0, Math.min(1, sum1 - sum2));
+}
+
+// 二分法极速反解达成目标把握度 targetP 所需的最小抽数 X
+function calculateFullSetDraws(targetP, N, K) {
+    let low = N + 1;
+    let high = 5000;
+    let ans = high;
+
+    while (low <= high) {
+        const mid = Math.floor((low + high) / 2);
+        if (getFullSetProb(mid, N, K) >= targetP) {
+            ans = mid;
+            high = mid - 1;
+        } else {
+            low = mid + 1;
+        }
+    }
+    return ans;
+}
+
 function initSSRKnobs() {
     setupKnobControl("fl-dial-n", 0, SSR_N_OPTS.length - 1, ssrKnobState.nIdx, (val) => {
         ssrKnobState.nIdx = val;
@@ -1354,11 +1406,11 @@ function updateSSRVisual() {
     if (pillRate) pillRate.textContent = `${rateInfo.label}`;
     if (pillProb) pillProb.textContent = `${probInfo.label}`;
 
-    // 计算达成目标把握度所需的抽数 X
+    // 计算达成“全图鉴大满贯”（N款普通全套 + 1款隐藏款）目标把握度所需的最少抽数 X
     const K = rateInfo.denom;
     const P = probInfo.pct;
 
-    const neededDraws = Math.ceil(Math.log(1 - P) / Math.log(1 - 1 / K));
+    const neededDraws = calculateFullSetDraws(P, nVal, K);
     const totalCost = neededDraws * PRICE_PER_BOX;
 
     const drawsElem = document.getElementById("verdict-draws-num");
@@ -1368,26 +1420,13 @@ function updateSSRVisual() {
     if (drawsElem) drawsElem.textContent = `${neededDraws} 袋`;
     if (costElem) costElem.textContent = `¥ ${totalCost.toLocaleString()}`;
 
-    // 精确计算抽 neededDraws 时普通款的真实收集情况（赠券收集期望与占位分布）
-    const regularDraws = Math.max(0, neededDraws - 1);
-    let harmonicVal = 0;
-    for (let j = 1; j <= nVal; j++) harmonicVal += 1 / j;
-    const regularMeanDraws = nVal * harmonicVal; // 普通全套平均需要抽数 (如6款是14.7次, 12款是37.2次)
-
-    // R 次抽取中期望收集到的独立普通款数 E[U] = N * (1 - (1 - 1/N)^R)
-    const expectedUnique = regularDraws === 0 ? 0 : Math.round(nVal * (1 - Math.pow(1 - 1 / nVal, regularDraws)));
-    const uniqueCount = Math.min(nVal, Math.max(0, expectedUnique));
-    const duplicateCount = Math.max(0, regularDraws - uniqueCount);
+    const duplicateCount = Math.max(0, neededDraws - 1 - nVal);
 
     if (noteElem) {
-        if (neededDraws <= Math.round(regularMeanDraws)) {
-            if (uniqueCount < nVal) {
-                noteElem.innerHTML = `💡 <strong>欧皇附体！</strong>仅买 <strong>${neededDraws} 袋</strong>就神抽出了隐藏款！但此时普通 ${nVal} 款仅收集了 <strong>${uniqueCount} 款</strong>（还差 <strong>${nVal - uniqueCount} 款</strong>），重复立牌仅 <strong>${duplicateCount} 个</strong>。`;
-            } else {
-                noteElem.innerHTML = `💡 <strong>极速圆满！</strong>仅买 <strong>${neededDraws} 袋</strong>就抽到了隐藏款，并顺带集齐了普通全套！重复立牌仅 <strong>${duplicateCount} 个</strong>。`;
-            }
+        if (P <= 0.20) {
+            noteElem.innerHTML = `💡 <strong>欧皇速通！</strong>达成 <strong>${(P * 100).toFixed(0)}% 把握</strong> 集齐<strong>全套 ${nVal} 款普通款 + 1 款隐藏款</strong>（共 ${nVal + 1} 款大满贯），需购买 <strong>${neededDraws} 袋</strong>。产生 <strong>${duplicateCount} 个</strong> 普通款重复立牌。`;
         } else {
-            noteElem.innerHTML = `💡 达成 <strong>${(P * 100).toFixed(0)}% 把握</strong>需要买整整 <strong>${neededDraws} 袋</strong>。普通全套（平均 ${regularMeanDraws.toFixed(1)} 抽集齐）早已全满，桌上已堆满了整整 <strong>${duplicateCount} 个</strong> 普通款重复立牌！`;
+            noteElem.innerHTML = `💡 达成 <strong>${(P * 100).toFixed(0)}% 把握</strong> 集齐<strong>全套 ${nVal} 款普通款 + 1 款隐藏款</strong>（共 ${nVal + 1} 款大满贯），需购买整整 <strong>${neededDraws} 袋</strong>。为了这 1 只隐藏款，桌上堆满了 <strong>${duplicateCount} 个</strong> 普通款重复立牌！`;
         }
     }
 
