@@ -1384,8 +1384,21 @@ function updateSSRVisual() {
         const maxR = 114; // 外层延伸到舞台边缘
         const goldenAngle = 2.399963229728653; // 137.507764度 黄金角分布
 
-        // 基础自适应字号：根据总数动态缩放，保证 100% 装下且清晰可辨
-        const baseFontSize = Math.max(6, Math.min(18, Math.round(115 / Math.sqrt(displayCount))));
+        // 基础自适应字号曲线：
+        // 200袋左右放大到 12~14px（饱满明显），1000+袋缩小到 4.5~5.2px（银河星系般超高密铺）
+        let baseFontSize;
+        if (displayCount <= 40) {
+            baseFontSize = 19;
+        } else if (displayCount <= 120) {
+            baseFontSize = 19 - ((displayCount - 40) / 80) * 4.5; // 19 -> 14.5px
+        } else if (displayCount <= 300) {
+            baseFontSize = 14.5 - ((displayCount - 120) / 180) * 3.5; // 14.5 -> 11px (200袋约 13px)
+        } else if (displayCount <= 800) {
+            baseFontSize = 11 - ((displayCount - 300) / 500) * 4; // 11 -> 7px
+        } else {
+            baseFontSize = Math.max(4, 7 - ((displayCount - 800) / 800) * 2.8); // 7 -> 4.2px
+        }
+        baseFontSize = Math.round(baseFontSize * 10) / 10;
 
         // 初始前 nVal 个严格按 1..N 顺序排布，外部所有重复款随机混排（伪随机保持布局稳定）
         const chosenChars = [];
@@ -1413,7 +1426,7 @@ function updateSSRVisual() {
 
             const item = document.createElement("span");
             item.className = "ssr-cocoon-item";
-            item.style.fontSize = `${baseFontSize}px`;
+            item.style.fontSize = `${Math.max(4, Math.round(baseFontSize * scale))}px`;
             item.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(${scale})`;
             item.textContent = char.icon;
             item.title = `第 ${i + 1} 抽: ${char.name}`;
