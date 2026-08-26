@@ -765,11 +765,15 @@ function recalcEV() {
         badge.className = "ev-result-badge negative";
         valElem.style.color = "var(--coral)";
         valElem.textContent = `- ¥ ${Math.abs(expectedValue).toFixed(2)}`;
-        tipElem.textContent = `平均每玩一轮玩家净亏损 ${Math.abs(expectedValue).toFixed(1)} 元！商家稳赚。`;
+        if (reward > N * price) {
+            tipElem.textContent = `看似奖金高于全套原价 (¥${(N*price).toFixed(0)}) 稳赚，但因重复抽盒平均需花 ¥${expectedCost.toFixed(1)}，最终净亏 ¥${Math.abs(expectedValue).toFixed(1)}！商家稳赚。`;
+        } else {
+            tipElem.textContent = `奖金连全套原价 (¥${(N*price).toFixed(0)}) 都不到，属于纯亏损活动。`;
+        }
     } else {
         badge.className = "ev-result-badge";
         valElem.style.color = "var(--leaf)";
         valElem.textContent = `+ ¥ ${expectedValue.toFixed(2)}`;
-        tipElem.textContent = `玩家净收益为正！这属于商家倒贴发福利。`;
+        tipElem.textContent = `商家大放血！只要坚持抽齐，玩家平均期望净赚 +¥${expectedValue.toFixed(1)}！`;
     }
 }

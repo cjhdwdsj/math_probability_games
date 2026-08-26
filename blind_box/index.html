@@ -354,19 +354,20 @@
                     <!-- 期望收益 EV 计算器 -->
                     <div class="ev-calc-box">
                         <div class="ev-presets-row">
-                            <span>快速代入案例：</span>
-                            <button class="preset-pill" type="button" onclick="setEVPreset(6, 69, 300)">案例一：¥69手办(6款奖300)</button>
-                            <button class="preset-pill" type="button" onclick="setEVPreset(10, 5, 50)">案例二：课堂研讨(10款单抽¥5奖50)</button>
+                            <span>真实营销套路案例：</span>
+                            <button class="preset-pill" type="button" onclick="setEVPreset(6, 69, 800)">案例一：¥69手办 (6款奖¥800·看似翻倍)</button>
+                            <button class="preset-pill" type="button" onclick="setEVPreset(10, 5, 100)">案例二：课堂研讨 (10款抽卡¥5·奖¥100)</button>
+                            <button class="preset-pill" type="button" onclick="setEVPreset(6, 69, 1200)">案例三：良心大促 (6款奖¥1200·玩家正收益)</button>
                         </div>
 
                         <div class="ev-inputs">
                             <div class="ev-field">
                                 <label for="ev-n">盲盒总款式数：</label>
                                 <select id="ev-n" onchange="recalcEV()">
-                                    <option value="6" selected>一套 6 款 (平均14.7次)</option>
-                                    <option value="8">一套 8 款 (平均21.7次)</option>
-                                    <option value="10">一套 10 款 (平均29.3次)</option>
-                                    <option value="12">一套 12 款 (平均37.2次)</option>
+                                    <option value="6" selected>一套 6 款 (原价6个¥414)</option>
+                                    <option value="8">一套 8 款 (原价8个¥552)</option>
+                                    <option value="10">一套 10 款 (原价10个¥690)</option>
+                                    <option value="12">一套 12 款 (原价12个¥828)</option>
                                 </select>
                             </div>
                             <div class="ev-field">
@@ -374,8 +375,8 @@
                                 <input type="number" id="ev-price" value="69" min="1" oninput="recalcEV()">
                             </div>
                             <div class="ev-field">
-                                <label for="ev-reward">集齐奖励/回收价（元）：</label>
-                                <input type="number" id="ev-reward" value="300" min="0" oninput="recalcEV()">
+                                <label for="ev-reward">集齐大奖/回收价（元）：</label>
+                                <input type="number" id="ev-reward" value="800" min="0" oninput="recalcEV()">
                             </div>
                         </div>
 
