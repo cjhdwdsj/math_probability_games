@@ -1601,21 +1601,25 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 .ev-rec-pill {
     background: rgba(247, 200, 75, 0.16);
     color: #7d4e00;
-    border: 1px dashed rgba(212, 136, 6, 0.55);
+    border: 1px dashed rgba(212, 136, 6, 0.7);
     border-radius: 999px;
-    font-size: 0.61rem;
-    font-weight: 800;
-    padding: 1px 5px;
+    font-size: 0.7rem;
+    font-weight: 900;
+    padding: 1px 6px;
     cursor: pointer;
-    line-height: 1.25;
+    line-height: inherit;
     transition: all 0.15s ease;
     white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
 }
 
 .ev-rec-pill:hover {
     background: #f7c84b;
     color: #3b2800;
-    border-style: solid;
+    border: 1px solid #d48806;
     transform: translateY(-1px);
     box-shadow: 0 2px 5px rgba(212, 136, 6, 0.25);
 }
@@ -1633,6 +1637,10 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     background: var(--paper);
     color: var(--ink);
     white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
 }
 
 .slider-val-badge.blue {
