@@ -1,5 +1,5 @@
 /**
- * 盲盒收集大揭秘（趣味概率互动）脚本
+ * 盲盒收集大揭秘 - 趣味概率互动脚本
  */
 
 // ========================
@@ -28,39 +28,54 @@ const SSR_RATES = [
     { denom: 288, label: "1/288 (至尊典藏)" }
 ];
 
-// 玩家抽盒状态
-let gachaState = {
-    draws: 0,
+// 第 1 页：玩家猜想
+let userGuess = 14;
+
+// 第 2 页：桌面拆盒状态
+let tableState = {
+    boughtCount: 14,
+    openedCount: 0,
+    pouches: [],
     collectedMap: {},
-    isAnimating: false
+    trajectoryHistory: [] // { step, uniqueCount, cost }
 };
 
-// 第 4 页动画状态
+// 撕袋 & 抽拉立牌交互状态
+let activePouchIdx = -1;
+let activeCharacter = null;
+let isStandeeTorn = false;
+let isStandeePulled = false;
+let isDraggingStandee = false;
+let dragStartY = 0;
+let currentPullDist = 0;
+
+// 第 4 页（理论页）动画状态
 let currentHarmonicN = 6;
 let harmonicTimers = [];
 
-// 模拟器缓存数据
+// 第 7 页（模拟器）缓存数据
 let simCache = null;
-let animProgress = 1;
 let animFrameId = null;
 
 // ========================
-// 2. 初始化与页面导航
+// 2. 初始化与页面生命周期
 // ========================
 document.addEventListener("DOMContentLoaded", () => {
-    initAlbumGrid();
     updateNavigation();
     initKeyboardControls();
+    initStandeeDragListeners();
     initSimCanvasListeners();
+
+    // 默认初始化各组件
+    initTabletopScene(userGuess);
     updateLuckRank(14);
     updateSsrFromSliders();
     updateEVFromSliders();
     animateHarmonicPage(6);
 
     window.addEventListener("resize", () => {
-        if (currentPage === 6 && simCache) {
-            renderHistogram(1);
-        }
+        if (currentPage === 2) renderTrajectoryChart();
+        if (currentPage === 6 && simCache) renderHistogram(1);
     });
 });
 
@@ -83,12 +98,12 @@ function goToPage(pageIndex) {
 
     updateNavigation();
 
-    // 页面专属进入动画触发
-    if (currentPage === 3) {
+    // 页面专属生命周期触发
+    if (currentPage === 2) {
+        setTimeout(renderTrajectoryChart, 80);
+    } else if (currentPage === 3) {
         setTimeout(() => animateHarmonicPage(currentHarmonicN), 80);
-    }
-
-    if (currentPage === 6) {
+    } else if (currentPage === 6) {
         setTimeout(runMonteCarloSim, 80);
     }
 }
@@ -131,241 +146,476 @@ function initKeyboardControls() {
 }
 
 // ========================
-// 3. 第 1 页：直觉预测
+// 3. 第 1 页：猜想步进器
 // ========================
-function updateUserGuess(val) {
-    document.getElementById("user-guess-display").textContent = val;
+function adjustGuess(delta) {
+    userGuess = Math.max(6, Math.min(30, userGuess + delta));
+    const numElem = document.getElementById("stepper-guess-num");
+    if (numElem) numElem.textContent = userGuess;
+}
+
+function startTabletopGame() {
+    initTabletopScene(userGuess);
+    goToPage(1);
 }
 
 // ========================
-// 4. 第 2 页：开箱抽卡机 (Gacha Lab)
+// 4. 第 2 页：拟真桌面拆盒台
 // ========================
-function initAlbumGrid() {
-    const grid = document.getElementById("album-grid");
+function initTabletopScene(count = 14) {
+    tableState.boughtCount = count;
+    tableState.openedCount = 0;
+    tableState.collectedMap = {};
+    tableState.trajectoryHistory = [{ step: 0, uniqueCount: 0, cost: 0 }];
+    tableState.pouches = [];
+
+    // 生成随机倾斜角度的盲袋数据
+    for (let i = 0; i < count; i++) {
+        const tilt = (Math.random() * 20 - 10).toFixed(1); // -10deg ~ 10deg
+        tableState.pouches.push({
+            id: i,
+            isOpened: false,
+            character: null,
+            tilt: tilt
+        });
+    }
+
+    // 渲染桌面盲袋
+    renderTablePouches();
+
+    // 渲染右侧亚克力展架
+    renderShelfGrid();
+
+    // 更新左侧收银台账
+    updateLedgerUI();
+
+    // 更新标题文字
+    const titleElem = document.getElementById("tabletop-title");
+    if (titleElem) {
+        titleElem.textContent = `你猜了 ${count} 个？桌上已经备齐，亲手拆开看！`;
+    }
+
+    // 重置胜利按钮状态
+    const winBtn = document.getElementById("btn-victory-settle");
+    if (winBtn) {
+        winBtn.disabled = true;
+        winBtn.textContent = "🏆 胜利结算 (需集齐6款)";
+    }
+}
+
+function renderTablePouches() {
+    const area = document.getElementById("table-scatter-area");
+    if (!area) return;
+    area.innerHTML = "";
+
+    tableState.pouches.forEach((pouch, idx) => {
+        const div = document.createElement("div");
+        div.className = `foil-pouch ${pouch.isOpened ? 'opened' : ''}`;
+        div.id = `pouch-${idx}`;
+        div.style.transform = `rotate(${pouch.tilt}deg)`;
+        div.title = pouch.isOpened ? "已拆封" : "点击拿起拆袋";
+        div.innerHTML = pouch.isOpened ? `<span>${pouch.character ? pouch.character.icon : '✨'}</span>` : `<span>🎁</span>`;
+
+        if (!pouch.isOpened) {
+            div.onclick = () => openPouchModal(idx);
+        }
+        area.appendChild(div);
+    });
+}
+
+function renderShelfGrid() {
+    const grid = document.getElementById("shelf-grid");
     if (!grid) return;
     grid.innerHTML = "";
 
     CHARACTERS.forEach(char => {
-        const item = document.createElement("div");
-        item.className = "album-item";
-        item.id = `album-item-${char.id}`;
-        item.innerHTML = `
-            <div class="item-avatar">${char.icon}</div>
-            <div class="item-name">${char.name}</div>
-            <div class="item-count-badge" id="badge-${char.id}">0</div>
+        const count = tableState.collectedMap[char.id] || 0;
+        const slot = document.createElement("div");
+        slot.className = `standee-slot ${count > 0 ? 'unlocked' : ''} ${count > 1 ? 'has-dup' : ''}`;
+        slot.id = `shelf-slot-${char.id}`;
+        slot.innerHTML = `
+            <div class="standee-avatar">${char.icon}</div>
+            <div style="font-size: 0.65rem; font-weight: 700; color: var(--ink); margin-top: 2px;">${char.name}</div>
+            <div class="standee-count-badge" id="shelf-badge-${char.id}">×${count}</div>
         `;
-        grid.appendChild(item);
+        grid.appendChild(slot);
     });
 
-    gachaState = {
-        draws: 0,
-        collectedMap: {},
-        isAnimating: false
-    };
-    updateGachaUI();
+    const uniqueCount = Object.keys(tableState.collectedMap).length;
+    const progTag = document.getElementById("shelf-progress-tag");
+    if (progTag) progTag.textContent = `${uniqueCount} / 6`;
 }
 
-function drawSingle() {
-    if (gachaState.isAnimating) return;
-    gachaState.isAnimating = true;
+function updateLedgerUI() {
+    const boughtElem = document.getElementById("ledger-bought-count");
+    const openedElem = document.getElementById("ledger-opened-count");
+    const remainElem = document.getElementById("ledger-remain-count");
+    const costElem = document.getElementById("ledger-cost-display");
 
-    hideMultiTray();
+    const remain = Math.max(0, tableState.boughtCount - tableState.openedCount);
+    const cost = tableState.boughtCount * PRICE_PER_BOX;
 
-    const box = document.getElementById("mystery-box");
-    const card = document.getElementById("reveal-card");
-    const icon = document.getElementById("reveal-icon");
-    const name = document.getElementById("reveal-name");
-    const badge = document.getElementById("reveal-badge");
-
-    const randomIdx = Math.floor(Math.random() * CHARACTERS.length);
-    const chosen = CHARACTERS[randomIdx];
-
-    box.style.display = "flex";
-    box.classList.add("shaking");
-    card.classList.remove("popping");
-
-    setTimeout(() => {
-        box.classList.remove("shaking");
-
-        const isNew = !gachaState.collectedMap[chosen.id];
-        gachaState.draws++;
-        gachaState.collectedMap[chosen.id] = (gachaState.collectedMap[chosen.id] || 0) + 1;
-
-        icon.textContent = chosen.icon;
-        name.textContent = chosen.name;
-        if (isNew) {
-            badge.className = "reveal-badge new";
-            badge.textContent = "NEW! 全新点亮";
-        } else {
-            badge.className = "reveal-badge dup";
-            badge.textContent = `重复 (已有 ${gachaState.collectedMap[chosen.id]} 个)`;
-        }
-        card.classList.add("popping");
-
-        updateGachaUI(chosen.id, isNew);
-        checkCompletion();
-        gachaState.isAnimating = false;
-    }, 450);
+    if (boughtElem) boughtElem.textContent = `${tableState.boughtCount} 袋`;
+    if (openedElem) openedElem.textContent = `${tableState.openedCount} 袋`;
+    if (remainElem) remainElem.textContent = `${remain} 袋未拆`;
+    if (costElem) costElem.textContent = `¥ ${cost.toLocaleString()}`;
 }
 
-function drawMultipleAnimated(count = 5) {
-    if (gachaState.isAnimating) return;
-    gachaState.isAnimating = true;
-
-    const box = document.getElementById("mystery-box");
-    const card = document.getElementById("reveal-card");
-    const tray = document.getElementById("multi-reveal-tray");
-
-    box.style.display = "none";
-    card.classList.remove("popping");
-    tray.classList.add("show");
-    tray.innerHTML = "";
-
-    const results = [];
-    for (let i = 0; i < count; i++) {
-        const rand = Math.floor(Math.random() * CHARACTERS.length);
-        const char = CHARACTERS[rand];
-        const isNew = !gachaState.collectedMap[char.id];
-        gachaState.draws++;
-        gachaState.collectedMap[char.id] = (gachaState.collectedMap[char.id] || 0) + 1;
-        results.push({ char, isNew });
-    }
-
-    results.forEach((res, idx) => {
-        const mini = document.createElement("div");
-        mini.className = "mini-reveal-card";
-        mini.innerHTML = `
-            <div class="mini-icon">${res.char.icon}</div>
-            <div class="mini-name">${res.char.name}</div>
-            <div class="mini-status ${res.isNew ? 'new' : 'dup'}">${res.isNew ? 'NEW!' : '重复'}</div>
-        `;
-        tray.appendChild(mini);
-
-        setTimeout(() => {
-            mini.classList.add("popped");
-            updateGachaUI(res.char.id, res.isNew);
-        }, idx * 120 + 80);
+// 桌面加买、全退、重置
+function buyOneMoreBag() {
+    tableState.boughtCount++;
+    const newIdx = tableState.pouches.length;
+    const tilt = (Math.random() * 20 - 10).toFixed(1);
+    tableState.pouches.push({
+        id: newIdx,
+        isOpened: false,
+        character: null,
+        tilt: tilt
     });
 
-    setTimeout(() => {
-        checkCompletion();
-        gachaState.isAnimating = false;
-    }, count * 120 + 200);
+    renderTablePouches();
+    updateLedgerUI();
 }
 
-function drawUntilCompleteAnimated() {
-    if (gachaState.isAnimating) return;
-    if (Object.keys(gachaState.collectedMap).length >= CHARACTERS.length) {
-        resetGacha();
-    }
-    gachaState.isAnimating = true;
-    hideMultiTray();
-
-    const box = document.getElementById("mystery-box");
-    const card = document.getElementById("reveal-card");
-    box.style.display = "flex";
-    card.classList.remove("popping");
-
-    const timer = setInterval(() => {
-        if (Object.keys(gachaState.collectedMap).length >= CHARACTERS.length || gachaState.draws >= 100) {
-            clearInterval(timer);
-            gachaState.isAnimating = false;
-            updateGachaUI();
-            checkCompletion();
-            return;
-        }
-
-        const rand = Math.floor(Math.random() * CHARACTERS.length);
-        const char = CHARACTERS[rand];
-        const isNew = !gachaState.collectedMap[char.id];
-        gachaState.draws++;
-        gachaState.collectedMap[char.id] = (gachaState.collectedMap[char.id] || 0) + 1;
-        updateGachaUI(char.id, isNew);
-    }, 45);
+function refundUnopenedBags() {
+    tableState.pouches = tableState.pouches.filter(p => p.isOpened);
+    tableState.boughtCount = tableState.openedCount;
+    renderTablePouches();
+    updateLedgerUI();
 }
 
-function hideMultiTray() {
-    const tray = document.getElementById("multi-reveal-tray");
-    if (tray) {
-        tray.classList.remove("show");
-        tray.innerHTML = "";
-    }
-}
-
-function updateGachaUI(lastChoseId = null, isNew = false) {
-    const totalCollected = Object.keys(gachaState.collectedMap).length;
-    document.getElementById("collected-count").textContent = totalCollected;
-    document.getElementById("stat-total-draws").textContent = gachaState.draws;
-    document.getElementById("stat-total-cost").textContent = (gachaState.draws * PRICE_PER_BOX).toLocaleString();
-
-    let dupCount = Math.max(0, gachaState.draws - totalCollected);
-    document.getElementById("stat-dup-count").textContent = dupCount;
-
-    CHARACTERS.forEach(char => {
-        const item = document.getElementById(`album-item-${char.id}`);
-        const count = gachaState.collectedMap[char.id] || 0;
-        const badge = document.getElementById(`badge-${char.id}`);
-
-        if (count > 0) {
-            item.classList.add("collected");
-            if (count > 1) {
-                item.classList.add("has-dup");
-                badge.textContent = `×${count}`;
-            } else {
-                item.classList.remove("has-dup");
-            }
-        } else {
-            item.classList.remove("collected", "has-dup");
-        }
-    });
-
-    if (lastChoseId && isNew) {
-        const justFoundItem = document.getElementById(`album-item-${lastChoseId}`);
-        if (justFoundItem) {
-            justFoundItem.classList.add("just-found");
-            setTimeout(() => justFoundItem.classList.remove("just-found"), 600);
-        }
-    }
-}
-
-function checkCompletion() {
-    const totalCollected = Object.keys(gachaState.collectedMap).length;
-    const banner = document.getElementById("gacha-complete-banner");
-    const evalText = document.getElementById("gacha-eval-text");
-
-    if (totalCollected >= CHARACTERS.length) {
-        banner.style.display = "block";
-        const d = gachaState.draws;
-        if (d <= 8) {
-            evalText.innerHTML = `总共仅用了 <strong>${d} 次</strong>！这运气简直是天选欧皇！🌟`;
-        } else if (d <= 15) {
-            evalText.innerHTML = `用了 <strong>${d} 次</strong>（花费 ¥${d*PRICE_PER_BOX}），属于标准正常运气！👍`;
-        } else {
-            evalText.innerHTML = `用了整整 <strong>${d} 次</strong>（花费 ¥${d*PRICE_PER_BOX}）！遭遇了残酷的非酋时刻！😭`;
-        }
-    } else {
-        banner.style.display = "none";
-    }
-}
-
-function resetGacha() {
-    gachaState = {
-        draws: 0,
-        collectedMap: {},
-        isAnimating: false
-    };
-    hideMultiTray();
-    const box = document.getElementById("mystery-box");
-    const card = document.getElementById("reveal-card");
-    const banner = document.getElementById("gacha-complete-banner");
-    if (box) box.style.display = "flex";
-    if (card) card.classList.remove("popping");
-    if (banner) banner.style.display = "none";
-    updateGachaUI();
+function resetLife() {
+    initTabletopScene(userGuess);
 }
 
 // ========================
-// 5. 第 4 页：大白话求和与柱状图逐级累加动画
+// 5. 拟真撕铝箔袋 + 抽拉亚克力立牌 Modal
+// ========================
+function openPouchModal(pouchIdx) {
+    if (tableState.pouches[pouchIdx].isOpened) return;
+    activePouchIdx = pouchIdx;
+
+    // 随机抽取萌宠
+    const randChar = CHARACTERS[Math.floor(Math.random() * CHARACTERS.length)];
+    activeCharacter = randChar;
+    tableState.pouches[pouchIdx].character = randChar;
+
+    // 初始化 Modal 状态
+    isStandeeTorn = false;
+    isStandeePulled = false;
+    currentPullDist = 0;
+
+    const modal = document.getElementById("unboxing-modal");
+    const tearStrip = document.getElementById("modal-tear-strip");
+    const standee = document.getElementById("modal-standee");
+    const standeeIcon = document.getElementById("modal-standee-icon");
+    const standeeName = document.getElementById("modal-standee-name");
+
+    if (tearStrip) {
+        tearStrip.classList.remove("torn");
+        tearStrip.style.display = "flex";
+    }
+
+    if (standee) {
+        standee.style.display = "none";
+        standee.style.transform = "translateY(0)";
+    }
+
+    if (standeeIcon) standeeIcon.textContent = randChar.icon;
+    if (standeeName) standeeName.textContent = randChar.name;
+
+    if (modal) modal.classList.add("active");
+}
+
+function tearFoilStrip() {
+    if (isStandeeTorn) return;
+    isStandeeTorn = true;
+
+    const tearStrip = document.getElementById("modal-tear-strip");
+    const standee = document.getElementById("modal-standee");
+
+    if (tearStrip) tearStrip.classList.add("torn");
+
+    setTimeout(() => {
+        if (standee) {
+            standee.style.display = "flex";
+            standee.style.transform = "translateY(0)";
+        }
+    }, 280);
+}
+
+function initStandeeDragListeners() {
+    const standee = document.getElementById("modal-standee");
+    if (!standee) return;
+
+    // 鼠标手势
+    standee.addEventListener("mousedown", (e) => {
+        if (!isStandeeTorn || isStandeePulled) return;
+        isDraggingStandee = true;
+        dragStartY = e.clientY;
+        standee.style.transition = "none";
+    });
+
+    window.addEventListener("mousemove", (e) => {
+        if (!isDraggingStandee) return;
+        const deltaY = dragStartY - e.clientY; // 向上拖拽
+        if (deltaY > 0) {
+            currentPullDist = deltaY;
+            standee.style.transform = `translateY(-${Math.min(180, deltaY)}px)`;
+
+            if (deltaY >= 130 && !isStandeePulled) {
+                triggerPullComplete();
+            }
+        }
+    });
+
+    window.addEventListener("mouseup", () => {
+        if (!isDraggingStandee) return;
+        isDraggingStandee = false;
+        if (!isStandeePulled) {
+            standee.style.transition = "transform 0.3s var(--ease-bounce)";
+            standee.style.transform = "translateY(0)";
+        }
+    });
+
+    // 触屏手势
+    standee.addEventListener("touchstart", (e) => {
+        if (!isStandeeTorn || isStandeePulled) return;
+        isDraggingStandee = true;
+        dragStartY = e.touches[0].clientY;
+        standee.style.transition = "none";
+    }, { passive: true });
+
+    window.addEventListener("touchmove", (e) => {
+        if (!isDraggingStandee) return;
+        const deltaY = dragStartY - e.touches[0].clientY;
+        if (deltaY > 0) {
+            currentPullDist = deltaY;
+            standee.style.transform = `translateY(-${Math.min(180, deltaY)}px)`;
+
+            if (deltaY >= 130 && !isStandeePulled) {
+                triggerPullComplete();
+            }
+        }
+    }, { passive: true });
+
+    window.addEventListener("touchend", () => {
+        if (!isDraggingStandee) return;
+        isDraggingStandee = false;
+        if (!isStandeePulled) {
+            standee.style.transition = "transform 0.3s var(--ease-bounce)";
+            standee.style.transform = "translateY(0)";
+        }
+    });
+}
+
+function triggerPullComplete() {
+    isStandeePulled = true;
+    isDraggingStandee = false;
+
+    const standee = document.getElementById("modal-standee");
+    const modal = document.getElementById("unboxing-modal");
+
+    if (standee) {
+        standee.style.transition = "transform 0.4s var(--ease-bounce), box-shadow 0.3s ease";
+        standee.style.transform = "translateY(-170px) scale(1.06)";
+        standee.style.boxShadow = "0 0 25px rgba(247, 200, 75, 0.8)";
+    }
+
+    setTimeout(() => {
+        if (modal) modal.classList.remove("active");
+        completeUnboxingPouch();
+    }, 450);
+}
+
+function completeUnboxingPouch() {
+    if (activePouchIdx === -1 || !activeCharacter) return;
+
+    const pouch = tableState.pouches[activePouchIdx];
+    pouch.isOpened = true;
+    tableState.openedCount++;
+
+    const char = activeCharacter;
+    const isNew = !tableState.collectedMap[char.id];
+    tableState.collectedMap[char.id] = (tableState.collectedMap[char.id] || 0) + 1;
+
+    const uniqueCount = Object.keys(tableState.collectedMap).length;
+
+    // 记录轨迹点
+    tableState.trajectoryHistory.push({
+        step: tableState.openedCount,
+        uniqueCount: uniqueCount,
+        cost: tableState.openedCount * PRICE_PER_BOX
+    });
+
+    // 重新渲染桌面
+    renderTablePouches();
+    updateLedgerUI();
+
+    // 更新展示架
+    renderShelfGrid();
+    const shelfSlot = document.getElementById(`shelf-slot-${char.id}`);
+    if (shelfSlot && isNew) {
+        shelfSlot.classList.add("just-popped");
+        setTimeout(() => shelfSlot.classList.remove("just-popped"), 500);
+    }
+
+    // 判断是否胜利集齐
+    if (uniqueCount >= 6) {
+        const winBtn = document.getElementById("btn-victory-settle");
+        if (winBtn) {
+            winBtn.disabled = false;
+            winBtn.textContent = "🎉 全部集齐！立即胜利结算 👉";
+            winBtn.className = "btn btn-gold btn-sm";
+        }
+    }
+}
+
+// ========================
+// 6. 第 2.5 页：专属开箱战报过渡页
+// ========================
+function goToBattleReport() {
+    goToPage(2);
+}
+
+function renderTrajectoryChart() {
+    const canvas = document.getElementById("trajectory-canvas");
+    if (!canvas) return;
+
+    const opened = tableState.openedCount;
+    const totalCost = opened * PRICE_PER_BOX;
+
+    // 评语与段位结算
+    const titleElem = document.getElementById("report-main-title");
+    const descElem = document.getElementById("report-sub-desc");
+    const heroBadge = document.getElementById("report-badge-hero");
+    const rankTitle = document.getElementById("report-rank-title");
+
+    if (titleElem) titleElem.textContent = `你总共拆了 ${opened} 袋，累计花费 ¥ ${totalCost.toLocaleString()}！`;
+
+    if (opened <= 9) {
+        if (heroBadge) heroBadge.className = "report-badge-hero god";
+        if (rankTitle) rankTitle.textContent = "段位：天选神王 👑";
+        if (descElem) descElem.innerHTML = `仅用了 <strong>${opened} 次</strong>（¥${totalCost}）！你击败了全国 90% 的玩家，欧气爆棚！`;
+    } else if (opened <= 18) {
+        if (heroBadge) heroBadge.className = "report-badge-hero mid";
+        if (rankTitle) rankTitle.textContent = "段位：标准凡人 😐";
+        if (descElem) descElem.innerHTML = `总共用了 <strong>${opened} 次</strong>（¥${totalCost}），精准落在大数定律均值区间，看你的花费曲线：`;
+    } else {
+        if (heroBadge) heroBadge.className = "report-badge-hero bad";
+        if (rankTitle) rankTitle.textContent = "段位：至尊大非酋 😭";
+        if (descElem) descElem.innerHTML = `整整买了 <strong>${opened} 袋</strong>（¥${totalCost}）才把最后一只救出来！注意看最后一只那段漫长的横线：`;
+    }
+
+    // 绘制轨迹图
+    const rect = canvas.getBoundingClientRect();
+    const cssWidth = rect.width || 600;
+    const cssHeight = 155;
+
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.floor(cssWidth * dpr);
+    canvas.height = Math.floor(cssHeight * dpr);
+
+    const ctx = canvas.getContext("2d");
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, cssWidth, cssHeight);
+
+    const paddingLeft = 55;
+    const paddingBottom = 26;
+    const paddingTop = 20;
+    const paddingRight = 30;
+
+    const plotWidth = cssWidth - paddingLeft - paddingRight;
+    const plotHeight = cssHeight - paddingTop - paddingBottom;
+
+    // 坐标系范围：X 轴 0..6款，Y 轴 ¥0..totalCost
+    const maxCost = Math.max(totalCost, 14.7 * PRICE_PER_BOX);
+
+    // 1. 绘制网格线
+    ctx.strokeStyle = "rgba(47, 42, 37, 0.08)";
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]);
+
+    for (let c = 0; c <= 6; c++) {
+        const x = paddingLeft + (c / 6) * plotWidth;
+        ctx.beginPath();
+        ctx.moveTo(x, paddingTop);
+        ctx.lineTo(x, cssHeight - paddingBottom);
+        ctx.stroke();
+
+        ctx.fillStyle = "rgba(47, 42, 37, 0.5)";
+        ctx.font = "10px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(c === 0 ? "0款" : `${c}款`, x, cssHeight - 8);
+    }
+
+    const yTicks = [0, Math.round(maxCost / 2), Math.round(maxCost)];
+    yTicks.forEach(val => {
+        const y = paddingTop + plotHeight * (1 - val / maxCost);
+        ctx.beginPath();
+        ctx.moveTo(paddingLeft, y);
+        ctx.lineTo(cssWidth - paddingRight, y);
+        ctx.stroke();
+
+        ctx.fillStyle = "rgba(47, 42, 37, 0.5)";
+        ctx.font = "10px sans-serif";
+        ctx.textAlign = "right";
+        ctx.fillText(`¥${val}`, paddingLeft - 6, y + 3);
+    });
+    ctx.setLineDash([]);
+
+    // 2. 坐标轴
+    ctx.strokeStyle = "rgba(47, 42, 37, 0.8)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(paddingLeft, paddingTop);
+    ctx.lineTo(paddingLeft, cssHeight - paddingBottom);
+    ctx.lineTo(cssWidth - paddingRight, cssHeight - paddingBottom);
+    ctx.stroke();
+
+    // 3. 绘制玩家真实开箱轨迹折线 (X: uniqueCount, Y: cost)
+    const history = tableState.trajectoryHistory;
+    if (!history || history.length === 0) return;
+
+    // 提取每个 uniqueCount 达到的最小 cost 点
+    const points = [{ u: 0, cost: 0 }];
+    for (let u = 1; u <= 6; u++) {
+        const match = history.find(h => h.uniqueCount === u);
+        if (match) {
+            points.push({ u: match.uniqueCount, cost: match.cost });
+        }
+    }
+
+    if (points.length < 2) return;
+
+    ctx.beginPath();
+    points.forEach((pt, idx) => {
+        const x = paddingLeft + (pt.u / 6) * plotWidth;
+        const y = paddingTop + plotHeight * (1 - pt.cost / maxCost);
+        if (idx === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    });
+    ctx.strokeStyle = "#e96e56";
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    // 绘制数据圆点
+    points.forEach((pt) => {
+        const x = paddingLeft + (pt.u / 6) * plotWidth;
+        const y = paddingTop + plotHeight * (1 - pt.cost / maxCost);
+
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = "#fff";
+        ctx.fill();
+        ctx.strokeStyle = "#e96e56";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    });
+}
+
+// ========================
+// 7. 第 4 页：大白话求和与柱状图逐级累加动画
 // ========================
 function replayHarmonicAnimation() {
     animateHarmonicPage(currentHarmonicN);
@@ -499,7 +749,7 @@ function animateHarmonicPage(N = 6) {
 }
 
 // ========================
-// 6. 第 5 页：欧气段位测算器
+// 8. 第 5 页：欧气段位测算器
 // ========================
 function updateLuckRank(val) {
     const draws = parseInt(val, 10);
@@ -538,7 +788,7 @@ function updateLuckRank(val) {
 }
 
 // ========================
-// 7. 第 6 页：隐藏款 SSR 机制（滑块实时测算）
+// 9. 第 6 页：隐藏款 SSR 机制
 // ========================
 function updateSsrFromSliders() {
     const nSlider = document.getElementById("ssr-n-slider");
@@ -552,7 +802,6 @@ function updateSsrFromSliders() {
     document.getElementById("ssr-n-badge").textContent = `${N} 款一套`;
     document.getElementById("ssr-rate-badge").textContent = ssrInfo.label;
 
-    // 隐藏款概率计算
     const ssrDenom = ssrInfo.denom;
     const ssrProbPct = (1 / ssrDenom) * 100;
     const regularTotalPct = (1 - 1 / ssrDenom) * 100;
@@ -568,13 +817,11 @@ function updateSsrFromSliders() {
     if (ssrProbElem) ssrProbElem.textContent = `${ssrProbPct.toFixed(2)}%`;
     if (ssrFractionElem) ssrFractionElem.textContent = `1/${ssrDenom}`;
 
-    // 基础全套期望
     let harmonicN = 0;
     for (let i = 1; i <= N; i++) harmonicN += 1 / i;
     const regularDraws = N * harmonicN;
     const regularCost = regularDraws * PRICE_PER_BOX;
 
-    // 隐藏款期望
     const ssrDraws = ssrDenom;
     const ssrCost = ssrDraws * PRICE_PER_BOX;
     const ratio = (ssrDraws / regularDraws).toFixed(1);
@@ -589,7 +836,7 @@ function updateSsrFromSliders() {
 }
 
 // ========================
-// 8. 第 7 页：高清动态直方图模拟引擎
+// 10. 第 7 页：蒙特卡洛大规模模拟
 // ========================
 let hoveredBinIndex = -1;
 
@@ -709,7 +956,6 @@ function runMonteCarloSim() {
         layout: {}
     };
 
-    // 触发平滑生长动画
     if (animFrameId) cancelAnimationFrame(animFrameId);
     let startTime = null;
     const duration = 300;
@@ -748,7 +994,7 @@ function renderHistogram(progress = 1) {
     ctx.scale(dpr, dpr);
     ctx.clearRect(0, 0, cssWidth, cssHeight);
 
-    const { N, theoryMean, simMean, bucketMax, bins, maxFrequency, trials } = simCache;
+    const { N, theoryMean, bucketMax, bins, maxFrequency, trials } = simCache;
 
     const paddingLeft = 44;
     const paddingBottom = 26;
@@ -765,7 +1011,7 @@ function renderHistogram(progress = 1) {
 
     simCache.layout = { N, bucketMax, plotWidth, paddingLeft, totalBins };
 
-    // 1. 绘制 Y 轴背景网格虚线与百分比
+    // 1. Y 轴网格虚线
     ctx.lineWidth = 1;
     ctx.setLineDash([3, 3]);
     ctx.font = "10px sans-serif";
@@ -792,7 +1038,7 @@ function renderHistogram(progress = 1) {
         return paddingTop + plotHeight * (1 - ratio);
     }
 
-    // 2. 绘制每个频数柱子（圆角渐变柱）
+    // 2. 绘制频数柱子
     const curvePoints = [];
 
     for (let d = startX; d <= bucketMax; d++) {
@@ -804,16 +1050,15 @@ function renderHistogram(progress = 1) {
 
         curvePoints.push({ x: x + barWidth / 2, y });
 
-        // 颜色渐变：欧皇金 -> 正常蓝 -> 非酋紫
         const grad = ctx.createLinearGradient(x, y, x, cssHeight - paddingBottom);
         if (d <= N + Math.max(2, Math.floor(N * 0.3))) {
-            grad.addColorStop(0, "#f7c84b"); // 欧皇金
+            grad.addColorStop(0, "#f7c84b");
             grad.addColorStop(1, "#f39c12");
         } else if (d > theoryMean * 1.3) {
-            grad.addColorStop(0, "#b388ff"); // 非酋紫
+            grad.addColorStop(0, "#b388ff");
             grad.addColorStop(1, "#7c4dff");
         } else {
-            grad.addColorStop(0, "#5aabd9"); // 正常蓝
+            grad.addColorStop(0, "#5aabd9");
             grad.addColorStop(1, "#3498db");
         }
 
@@ -821,7 +1066,6 @@ function renderHistogram(progress = 1) {
         drawRoundedRect(ctx, x, y, barWidth, barH, Math.min(3, barWidth / 2));
         ctx.fill();
 
-        // 鼠标悬停高亮外边框
         if (hoveredBinIndex === d) {
             ctx.strokeStyle = "#2f2a25";
             ctx.lineWidth = 2;
@@ -830,7 +1074,7 @@ function renderHistogram(progress = 1) {
         }
     }
 
-    // 3. 绘制平滑拟合趋势曲线 (KDE Curve)
+    // 3. 绘制平滑拟合趋势曲线
     if (curvePoints.length > 2 && progress >= 0.7) {
         ctx.beginPath();
         ctx.moveTo(curvePoints[0].x, curvePoints[0].y);
@@ -844,7 +1088,7 @@ function renderHistogram(progress = 1) {
         ctx.stroke();
     }
 
-    // 4. 绘制理论期望参考线 (红色虚线)
+    // 4. 理论期望参考线
     const theoryX = paddingLeft + (theoryMean - startX) * binStep + binStep / 2;
     if (theoryX >= paddingLeft && theoryX <= cssWidth - paddingRight) {
         ctx.beginPath();
@@ -871,7 +1115,6 @@ function renderHistogram(progress = 1) {
     ctx.lineTo(cssWidth - paddingRight, cssHeight - paddingBottom);
     ctx.stroke();
 
-    // 动态生成 6 个均匀漂亮的 X 轴刻度
     ctx.fillStyle = "#6e665e";
     ctx.font = "10px sans-serif";
     ctx.textAlign = "center";
@@ -905,7 +1148,7 @@ function drawRoundedRect(ctx, x, y, width, height, radius) {
 }
 
 // ========================
-// 9. 第 8 页：商业定价期望收益 EV 计算器（滑块实时联动）
+// 11. 第 8 页：商业定价期望收益 EV 计算器
 // ========================
 function setEVPreset(n, price, reward) {
     const nSlider = document.getElementById("ev-n-slider");

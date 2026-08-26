@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="盲盒集齐为什么比直觉难得多？通俗互动带你探索赠券收集者概率现象。">
-    <title>盲盒收集问题 - 为什么最后一只总抽不到？</title>
+    <title>盲盒收集大揭秘 - 为什么最后一只总抽不到？</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
 </head>
@@ -32,155 +32,119 @@
         <!-- 主内容区：8 步居中卡片 -->
         <main class="lesson-stage" aria-label="盲盒收集问题互动课程">
 
-            <!-- 第 1 页：封面与直觉预测 -->
+            <!-- 第 1 页：封面与加减调节器 -->
             <section class="lesson-page active" data-page="0" aria-hidden="false">
                 <article class="lesson-card cover-card">
-                    <span class="eyebrow">生活中的反直觉现象</span>
                     <div class="cover-icon-box">
                         <span class="cover-icon" aria-hidden="true">🎁</span>
                     </div>
-                    <h1 class="cover-title">盲盒为什么总差最后一只？</h1>
-                    <p class="cover-subtitle">一套 6 款可爱的动物手办（单抽 ¥69，每款概率完全一样）。你觉得平均买几个，才能集齐一套？</p>
+                    <h1 class="cover-title">集齐一套 6 款盲盒，平均要买几个？</h1>
+                    <p class="cover-subtitle">很多人直觉觉得买 8~10 个就够了，猜猜你的直觉数字：</p>
 
-                    <!-- 互动猜想滑块 -->
-                    <div class="guess-box">
-                        <p class="guess-prompt">🎯 凭你的直觉盲猜：平均需要抽多少次？</p>
-                        <div class="guess-slider-wrap">
-                            <input type="range" id="user-guess-slider" class="guess-slider" min="6" max="30" value="8" oninput="updateUserGuess(this.value)">
-                            <div class="guess-val"><span id="user-guess-display">8</span> 次</div>
+                    <!-- 加减步进器 -->
+                    <div class="stepper-control-wrap">
+                        <button class="stepper-btn" type="button" onclick="adjustGuess(-10)">-10</button>
+                        <button class="stepper-btn" type="button" onclick="adjustGuess(-1)">-1</button>
+                        <div class="stepper-val-card">
+                            <span class="stepper-number" id="stepper-guess-num">14</span>
+                            <span class="stepper-unit">个</span>
                         </div>
-                        <p class="guess-hint">💡 大多数人都觉得买 6~8 个就够了，事实会打脸吗？</p>
+                        <button class="stepper-btn" type="button" onclick="adjustGuess(1)">+1</button>
+                        <button class="stepper-btn" type="button" onclick="adjustGuess(10)">+10</button>
                     </div>
 
-                    <button class="btn btn-primary start-btn" type="button" onclick="nextPage()">
-                        开个盲盒试一把 <span aria-hidden="true">→</span>
+                    <button class="btn btn-primary btn-gold" style="font-size: 1.05rem; padding: 0.55rem 1.6rem;" type="button" onclick="startTabletopGame()">
+                        带着我的直觉，开拆！👉
                     </button>
                 </article>
             </section>
 
-            <!-- 第 2 页：沉浸式开箱抽卡机 (Gacha Lab) -->
+            <!-- 第 2 页：拟真桌面拆盒台 (Tabletop Unboxing) -->
             <section class="lesson-page" data-page="1" aria-hidden="true">
                 <article class="lesson-card">
-                    <div class="section-kicker"><span aria-hidden="true">🎮</span> 互动抽盒机</div>
-                    <h2>亲自抽几发试试手气！</h2>
-                    <p class="lead">看看你需要抽多少次才能集齐 6 款萌宠，体验一下不断抽到重复款的绝望感！</p>
+                    <div class="section-kicker"><span aria-hidden="true">📦</span> 拟真桌面拆盒</div>
+                    <h2 id="tabletop-title">你猜了 14 个？桌上已经备齐，亲手拆开看！</h2>
+                    <p class="lead" id="tabletop-lead">点击桌上任意盲袋进入特写，撕开铝箔袋口并往上提拉立牌，把 6 款萌宠全部集齐：</p>
 
-                    <div class="gacha-layout">
-                        <!-- 左侧：3D 盲盒与操作 -->
-                        <div class="gacha-stage-box">
-                            <div class="box-scene" id="box-scene">
-                                <!-- 默认大盲盒 -->
-                                <div class="mystery-box" id="mystery-box" onclick="drawSingle()" title="点击摇盒单抽">
-                                    <span class="box-icon">❓</span>
+                    <div class="tabletop-layout">
+                        <!-- 左侧：收银台账与控制 -->
+                        <div class="ledger-card">
+                            <div>
+                                <div class="ledger-title">
+                                    <span>🧾 桌面记账单</span>
                                 </div>
-                                <!-- 单抽弹出卡片 -->
-                                <div class="reveal-card" id="reveal-card">
-                                    <div class="reveal-icon" id="reveal-icon">🦊</div>
-                                    <div class="reveal-name" id="reveal-name">闪电小狐</div>
-                                    <div class="reveal-badge new" id="reveal-badge">NEW! 全新点亮</div>
+                                <div class="ledger-stat-row">
+                                    <span>已购总数：</span>
+                                    <strong id="ledger-bought-count">14 袋</strong>
                                 </div>
-                                <!-- 五连抽托盘 -->
-                                <div class="multi-reveal-tray" id="multi-reveal-tray">
-                                    <!-- 动态生成 5 张卡片 -->
+                                <div class="ledger-stat-row">
+                                    <span>已拆开：</span>
+                                    <strong id="ledger-opened-count" style="color: var(--coral);">0 袋</strong>
                                 </div>
+                                <div class="ledger-stat-row">
+                                    <span>桌上剩余：</span>
+                                    <strong id="ledger-remain-count">14 袋未拆</strong>
+                                </div>
+                                <div class="ledger-total-cost" id="ledger-cost-display">¥ 966</div>
                             </div>
 
-                            <!-- 欧气评价横幅 -->
-                            <div class="gacha-complete-banner" id="gacha-complete-banner">
-                                🎉 恭喜集齐！欧气评价：<span id="gacha-eval-text">欧皇降世！</span>
-                            </div>
-
-                            <div class="btn-group" style="justify-content: center; margin-top: 0.4rem;">
-                                <button class="btn btn-coral" id="btn-draw-1" type="button" onclick="drawSingle()">🎲 单抽 (¥69)</button>
-                                <button class="btn btn-sky" id="btn-draw-5" type="button" onclick="drawMultipleAnimated(5)">⚡ 爽快五连抽</button>
-                                <button class="btn btn-primary" id="btn-draw-all" type="button" onclick="drawUntilCompleteAnimated()">🏆 一键抽到齐</button>
-                                <button class="btn btn-quiet" type="button" onclick="resetGacha()">↺ 重置</button>
+                            <div class="ledger-actions">
+                                <button class="btn btn-primary btn-sm" type="button" onclick="buyOneMoreBag()">➕ 再买一袋 (+¥69)</button>
+                                <button class="btn btn-quiet btn-sm" type="button" onclick="refundUnopenedBags()">↩️ 全退了 (退未拆)</button>
+                                <button class="btn btn-quiet btn-sm" type="button" onclick="resetLife()">🔄 重启人生</button>
+                                <button class="btn btn-gold btn-sm" id="btn-victory-settle" disabled type="button" onclick="goToBattleReport()">🏆 胜利结算 (需集齐6款)</button>
                             </div>
                         </div>
 
-                        <!-- 右侧：图鉴与账单 -->
-                        <div class="album-box">
-                            <div class="album-header">
-                                <h3>📦 萌宠图鉴收集册</h3>
-                                <div class="album-counter">已集齐 <span id="collected-count">0</span> / 6 款</div>
-                            </div>
+                        <!-- 中间：散落盲袋桌面 -->
+                        <div class="table-scatter-area" id="table-scatter-area">
+                            <!-- 动态生成铝箔盲袋 -->
+                        </div>
 
-                            <div class="album-grid" id="album-grid">
-                                <!-- 动态生成的 6 个卡槽 -->
+                        <!-- 右侧：6 格萌宠亚克力展示架 -->
+                        <div class="shelf-display">
+                            <div>
+                                <div class="shelf-title">
+                                    <span>🧸 萌宠展架</span>
+                                    <span id="shelf-progress-tag" style="color: var(--coral); font-weight: 800;">0 / 6</span>
+                                </div>
+                                <div class="shelf-grid" id="shelf-grid">
+                                    <!-- 6 个亚克力立牌槽位 -->
+                                </div>
                             </div>
-
-                            <div class="gacha-stats-bar">
-                                <div class="stat-col">
-                                    <div class="stat-metric">累计抽取次数</div>
-                                    <div class="stat-number" id="stat-total-draws">0</div>
-                                </div>
-                                <div class="stat-col">
-                                    <div class="stat-metric">已花费金额</div>
-                                    <div class="stat-number price">¥<span id="stat-total-cost">0</span></div>
-                                </div>
-                                <div class="stat-col">
-                                    <div class="stat-metric">重复抽中次数</div>
-                                    <div class="stat-number" id="stat-dup-count">0</div>
-                                </div>
+                            <div style="font-size: 0.72rem; color: var(--muted-ink); text-align: center; border-top: 1px dashed var(--soft-line); padding-top: 0.3rem;">
+                                💡 必须点亮全部 6 款才能开启【胜利结算】
                             </div>
                         </div>
                     </div>
                 </article>
             </section>
 
-            <!-- 第 3 页：阶段拆解：为什么最后一只像黑洞？ -->
+            <!-- 第 2.5 页：个人开箱战报过渡页 (Battle Report) -->
             <section class="lesson-page" data-page="2" aria-hidden="true">
-                <article class="lesson-card">
-                    <div class="section-kicker"><span aria-hidden="true">🔍</span> 深度拆解</div>
-                    <h2>为什么最后一款最难抽？</h2>
-                    <p class="lead">收集过程就像通关打怪，每多收集一只，抽到“新盲盒”的成功率就会暴跌一次！</p>
-
-                    <div class="difficulty-waterfall">
-                        <div class="stage-row">
-                            <div class="stage-tag">收集第 1 只</div>
-                            <div class="stage-bar-wrap"><div class="stage-bar-fill" style="width: 100%;"></div></div>
-                            <div class="stage-prob">必中全新 (100%)</div>
-                            <div class="stage-exp">平均 <span>1</span> 次搞定</div>
-                        </div>
-                        <div class="stage-row">
-                            <div class="stage-tag">收集第 2 只</div>
-                            <div class="stage-bar-wrap"><div class="stage-bar-fill" style="width: 83.3%;"></div></div>
-                            <div class="stage-prob">5/6 概率中新 (83%)</div>
-                            <div class="stage-exp">平均 <span>1.2</span> 次</div>
-                        </div>
-                        <div class="stage-row">
-                            <div class="stage-tag">收集第 3 只</div>
-                            <div class="stage-bar-wrap"><div class="stage-bar-fill" style="width: 66.7%;"></div></div>
-                            <div class="stage-prob">4/6 概率中新 (67%)</div>
-                            <div class="stage-exp">平均 <span>1.5</span> 次</div>
-                        </div>
-                        <div class="stage-row">
-                            <div class="stage-tag">收集第 4 只</div>
-                            <div class="stage-bar-wrap"><div class="stage-bar-fill" style="width: 50.0%;"></div></div>
-                            <div class="stage-prob">3/6 概率中新 (50%)</div>
-                            <div class="stage-exp">平均 <span>2</span> 次</div>
-                        </div>
-                        <div class="stage-row">
-                            <div class="stage-tag">收集第 5 只</div>
-                            <div class="stage-bar-wrap"><div class="stage-bar-fill" style="width: 33.3%;"></div></div>
-                            <div class="stage-prob">2/6 概率中新 (33%)</div>
-                            <div class="stage-exp">平均 <span>3</span> 次</div>
-                        </div>
-                        <div class="stage-row highlight-row">
-                            <div class="stage-tag" style="color: var(--coral);">最后第 6 只 🔥</div>
-                            <div class="stage-bar-wrap"><div class="stage-bar-fill" style="width: 16.7%;"></div></div>
-                            <div class="stage-prob" style="color: var(--coral);">仅 1/6 概率 (17%)</div>
-                            <div class="stage-exp">单拉它平均 <span>6</span> 次！</div>
+                <article class="lesson-card report-card">
+                    <div class="section-kicker"><span aria-hidden="true">📊</span> 专属开箱战报</div>
+                    <div id="report-badge-container">
+                        <div class="report-badge-hero mid" id="report-badge-hero">
+                            <span>😐</span>
+                            <span id="report-rank-title">段位：标准凡人</span>
                         </div>
                     </div>
+                    <h2 id="report-main-title">你总共拆了 15 袋，花费 ¥ 1,035！</h2>
+                    <p class="lead" id="report-sub-desc">这是你这轮收集过程的花费轨迹曲线——注意观察最后一只集齐时的陡峭程度：</p>
 
-                    <div class="story-callout">
-                        💡 <strong>大白话总结</strong>：当你手里已经有 5 款时，随便抽一个有 <strong>83% 的概率都是已有的废卡</strong>！为了凑齐最后一只，平均要单独再买 6 个！
+                    <!-- 个人开箱轨迹折线图 -->
+                    <div class="trajectory-chart-container">
+                        <canvas id="trajectory-canvas"></canvas>
                     </div>
+
+                    <button class="btn btn-primary btn-gold" style="font-size: 1.02rem; padding: 0.5rem 1.6rem; margin-top: 0.2rem;" type="button" onclick="nextPage()">
+                        📐 为什么最后一只曲线会急剧狂飙？看数学真相 👉
+                    </button>
                 </article>
             </section>
 
-            <!-- 第 4 页：大白话求和计算与柱状图 -->
+            <!-- 第 4 页：大白话求和计算与柱状图 (理论真相) -->
             <section class="lesson-page" data-page="3" aria-hidden="true">
                 <article class="lesson-card">
                     <div class="section-kicker"><span aria-hidden="true">📐</span> 逐级累加动画</div>
@@ -238,38 +202,39 @@
                         <div class="luck-card bad">
                             <div class="luck-title">
                                 <span style="font-size: 1.3rem;">😭</span>
-                                <strong>至尊非酋（抽 25 次仍未集齐）</strong>
+                                <strong>至尊大非酋（抽25次仍缺）</strong>
                             </div>
-                            <div class="luck-prob">~ 7.2%</div>
+                            <div class="luck-prob">7.32%</div>
                             <p class="luck-desc">
-                                花了 ¥1,725，家里堆满重复款却依然缺最后一只的概率高达 <strong>7%</strong>！每 14 人就有 1 个大冤种。
+                                相当于 <strong>每 14 个人就有 1 位</strong> 买了 25 个依然被最后一只卡死！
                             </p>
                         </div>
                     </div>
 
-                    <!-- 欧气段位测算滑块 -->
+                    <!-- 互动段位测算器 -->
                     <div class="luck-rank-box">
-                        <div style="display: flex; align-items: center; gap: 0.6rem; flex: 1;">
-                            <label for="rank-slider" style="font-size: 0.82rem; font-weight: 700; white-space: nowrap;">测测抽盒段位：</label>
-                            <input type="range" id="rank-slider" min="6" max="30" value="14" style="flex: 1; accent-color: var(--coral);" oninput="updateLuckRank(this.value)">
-                            <span id="rank-draws-text" style="font-weight: 800; min-width: 3.5rem; font-size: 0.9rem;">14 次</span>
+                        <div style="font-size: 0.88rem; font-weight: 700;">
+                            🎯 测测你的抽盒段位：
+                            <span id="rank-draws-text" style="color: var(--coral); font-size: 1.1rem; font-weight: 800;">14 次</span>
                         </div>
+                        <input type="range" class="custom-range-slider" id="luck-slider" min="6" max="30" value="14" style="max-width: 200px;" oninput="updateLuckRank(this.value)">
                         <div class="luck-rank-badge" id="luck-rank-badge">段位：普通凡人 😐</div>
                     </div>
                 </article>
             </section>
 
-            <!-- 第 6 页：隐藏款（SSR）机制的降维打击 -->
+            <!-- 第 6 页：隐藏款 SSR 的暴击陷阱 -->
             <section class="lesson-page" data-page="5" aria-hidden="true">
                 <article class="lesson-card">
-                    <div class="section-kicker"><span aria-hidden="true">✨</span> 隐藏款套路</div>
-                    <h2>超稀有隐藏款带来的成本断崖暴涨</h2>
-                    <p class="lead">拖动滑块调节基础款数与隐藏款稀有度，实时观察单抽隐藏与普通全套的断崖差距：</p>
+                    <div class="section-kicker"><span aria-hidden="true">💎</span> 终极陷阱</div>
+                    <h2>隐藏款 SSR：成本的指数级爆炸</h2>
+                    <p class="lead">商家加入 1/72 甚至 1/144 概率的超稀有隐藏款，抽齐难度会暴增多少倍？</p>
 
+                    <!-- 滑块控制区 -->
                     <div class="ssr-sliders-wrap">
                         <div class="slider-control-group">
                             <div class="slider-label-row">
-                                <span>基础款款式数 (N)：</span>
+                                <span>基础款数 (N)：</span>
                                 <span class="slider-val-badge" id="ssr-n-badge">6 款一套</span>
                             </div>
                             <input type="range" class="custom-range-slider" id="ssr-n-slider" min="4" max="16" value="6" oninput="updateSsrFromSliders()">
@@ -285,56 +250,59 @@
                     </div>
 
                     <div class="ssr-impact-banner">
-                        <div>
-                            <div style="font-size: 0.78rem; color: var(--muted-ink);">
-                                普通款总概率：<strong id="ssr-regular-prob" style="color: var(--sky-deep); font-size: 0.95rem;">98.61%</strong>
-                                <span style="font-size: 0.7rem;">(每款 <span id="ssr-single-regular-prob">16.4%</span>)</span>
+                        <div style="border-right: 1px dashed var(--soft-line); padding-right: 0.5rem;">
+                            <div style="font-size: 0.76rem; color: var(--muted-ink); margin-bottom: 2px;">
+                                🔵 普通款总概率: <strong id="ssr-regular-prob" style="color: var(--sky-deep);">98.61%</strong>
+                                <span style="font-size: 0.68rem; color: var(--muted-ink);">(每款 <span id="ssr-single-regular-prob">16.4%</span>)</span>
                             </div>
                             <div class="impact-num regular" id="ssr-regular-cost">¥ 1,014</div>
-                            <small style="color: var(--muted-ink);" id="ssr-regular-draws">普通全套平均抽 14.7 次</small>
+                            <small id="ssr-regular-draws" style="font-size: 0.72rem; color: var(--muted-ink);">普通全套平均抽 14.7 次</small>
                         </div>
-                        <div>
-                            <div style="font-size: 0.78rem; color: var(--coral);">
-                                隐藏款单抽概率：<strong id="ssr-prob" style="color: var(--coral); font-size: 0.95rem;">1.39%</strong>
-                                <span style="font-size: 0.7rem;">(<span id="ssr-fraction-display">1/72</span>)</span>
+                        <div style="padding-left: 0.5rem;">
+                            <div style="font-size: 0.76rem; color: var(--muted-ink); margin-bottom: 2px;">
+                                🔴 隐藏款单抽概率: <strong id="ssr-prob" style="color: var(--coral);">1.39%</strong>
+                                <span style="font-size: 0.68rem; color: var(--muted-ink);">(<span id="ssr-fraction-display">1/72</span>)</span>
                             </div>
                             <div class="impact-num ssr" id="ssr-cost-display">¥ 4,968</div>
-                            <small style="color: var(--coral);" id="ssr-draws-display">平均需要买 72 个！</small>
+                            <small id="ssr-draws-display" style="font-size: 0.72rem; color: var(--coral);">平均需要买 72 个！</small>
                         </div>
                     </div>
 
-                    <div class="story-callout" id="ssr-callout">
-                        💡 <strong>成本膨胀分析</strong>：单抽隐藏款的平均花费是普通全套的 <strong id="ssr-ratio-display" style="color: var(--coral); font-size: 1.05rem;">4.9 倍</strong>！想要单抽硬怼隐藏，成本直接断崖式飙升！
+                    <div class="story-callout" style="border-left-color: var(--coral); background: #fff5f3;">
+                        ⚠️ <strong>极其残酷的现实</strong>：单抽隐藏款的平均花费是普通全套的 <strong id="ssr-ratio-display" style="color: var(--coral);">4.9 倍</strong>！隐藏款是绝对的“吞金黑洞”。
                     </div>
                 </article>
             </section>
 
-            <!-- 第 7 页：蒙特卡洛大规模模拟实验室 -->
+            <!-- 第 7 页：蒙特卡洛 10000 人模拟 -->
             <section class="lesson-page" data-page="6" aria-hidden="true">
                 <article class="lesson-card">
-                    <div class="section-kicker"><span aria-hidden="true">📊</span> 上万次电脑模拟</div>
-                    <h2>大规模玩家抽盒实验室</h2>
-                    <p class="lead">让电脑一秒模拟上万名玩家抽盒的全过程，看看真实的数据分布长什么样：</p>
+                    <div class="section-kicker"><span aria-hidden="true">🧪</span> 大数定律验证</div>
+                    <h2>10,000 位玩家开箱模拟：看清长尾</h2>
+                    <p class="lead">通过计算机模拟上万名玩家集齐所需的次数分布，悬停柱子查看具体人数：</p>
 
+                    <!-- 参数控制栏 -->
                     <div class="sim-controls-panel">
                         <div class="sim-input-group">
-                            <label for="sim-n-select">盲盒种类：</label>
+                            <label for="sim-n-select">盲盒款式数：</label>
                             <select id="sim-n-select" onchange="runMonteCarloSim()">
-                                <option value="6" selected>6 款 (平均 14.7次)</option>
-                                <option value="8">8 款 (平均 21.7次)</option>
-                                <option value="10">10 款 (平均 29.3次)</option>
-                                <option value="12">12 款 (平均 37.2次)</option>
+                                <option value="6" selected>6 款一套</option>
+                                <option value="8">8 款一套</option>
+                                <option value="10">10 款一套</option>
+                                <option value="12">12 款一套 (大套)</option>
                             </select>
                         </div>
+
                         <div class="sim-input-group">
                             <label for="sim-trials-select">模拟人数：</label>
                             <select id="sim-trials-select" onchange="runMonteCarloSim()">
                                 <option value="1000">1,000 人</option>
                                 <option value="5000" selected>5,000 人</option>
-                                <option value="20000">20,000 人</option>
+                                <option value="10000">10,000 人</option>
                             </select>
                         </div>
-                        <button class="btn btn-coral" id="btn-run-sim" type="button" onclick="runMonteCarloSim()">🚀 开始模拟</button>
+
+                        <button class="btn btn-primary" type="button" onclick="runMonteCarloSim()">⚡ 重新模拟</button>
                     </div>
 
                     <!-- 图例说明 -->
@@ -437,38 +405,41 @@
                             <small id="ev-tip" style="color: var(--muted-ink); font-size: 0.75rem;">看似比官方原价 (¥414) 贵了 ¥236（溢价 57%），但相比自己盲抽的期望总花费 (¥1014.3)，直接买全套反而净省下 ¥364.3！省钱又省心。</small>
                         </div>
                     </div>
-
-                    <!-- 理性建议卡片 -->
-                    <div class="advice-cards">
-                        <div class="advice-card">
-                            <h4>🛑 拒绝沉没成本</h4>
-                            <p>“已经抽了 12 个就差最后一只”时，盲盒**没有记忆**，最后一只平均依然要再抽 6 次（¥414）！及时收手才是止损。</p>
-                        </div>
-                        <div class="advice-card">
-                            <h4>🛍️ 聪明消费建议</h4>
-                            <p>只想享受拆盒惊喜 ➔ <strong>买 1~2 个即可</strong>；<br>真想集齐一套 ➔ <strong>直接端盒或二手收全套</strong>（能省下一半以上的冤枉钱）！</p>
-                        </div>
-                    </div>
                 </article>
             </section>
-
         </main>
 
-        <!-- 底部翻页控制器 -->
-        <nav class="lesson-nav" aria-label="课程步骤切换">
-            <button class="btn btn-quiet" id="btn-prev" type="button" onclick="prevPage()" disabled>
+        <!-- 底部全局导航条 -->
+        <footer class="lesson-nav">
+            <button class="btn btn-quiet" id="btn-prev" type="button" onclick="prevPage()" disabled aria-label="上一页">
                 <span aria-hidden="true">←</span> 上一步
             </button>
             <div class="btn-group">
-                <button class="btn btn-quiet" type="button" onclick="goToPage(0)">首页</button>
-                <button class="btn btn-primary" id="btn-next" type="button" onclick="nextPage()">
+                <button class="btn btn-primary" id="btn-next" type="button" onclick="nextPage()" aria-label="下一页">
                     下一步 <span aria-hidden="true">→</span>
                 </button>
             </div>
-        </nav>
+        </footer>
     </div>
 
-    <!-- 交互脚本 -->
+    <!-- 拟真撕袋 + 抽拉亚克力立牌浮层 Modal -->
+    <div class="unboxing-modal-overlay" id="unboxing-modal">
+        <div class="unboxing-stage">
+            <!-- 铝箔袋外壳 -->
+            <div class="modal-foil-bag" id="modal-foil-bag">
+                <div class="tear-notch-strip" id="modal-tear-strip" onclick="tearFoilStrip()">
+                    ✂️ 点此撕开铝箔袋口
+                </div>
+            </div>
+            <!-- 内部抽拉亚克力立牌 -->
+            <div class="acrylic-standee-plate" id="modal-standee" style="display: none;">
+                <div class="pull-hint" id="modal-pull-hint">⬆️ 向上提拉出立牌！</div>
+                <div class="standee-icon" id="modal-standee-icon">🦊</div>
+                <div class="standee-name" id="modal-standee-name">闪电小狐</div>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
