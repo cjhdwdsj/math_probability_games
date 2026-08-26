@@ -101,10 +101,16 @@ function completeTutorial() {
     document.getElementById('completion-page').classList.remove('hidden');
 }
 
+// ===== 工具函数 =====
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // ===== 第2阶段：N=2 模拟 =====
 function simulateN2() {
-    const results = [];
     const simulations = 10;
+    let successCount = 0;
+    const results = [];
     
     for (let i = 0; i < simulations; i++) {
         // 第一个乘客随机选择座位1或2
@@ -114,10 +120,10 @@ function simulateN2() {
         // 如果第一个乘客选了座位2，第二个乘客坐座位1（失败）
         const lastPassengerSuccess = firstChoice === 1;
         results.push(lastPassengerSuccess);
+        if (lastPassengerSuccess) successCount++;
     }
     
     // 显示结果
-    const successCount = results.filter(r => r).length;
     const percentage = ((successCount / simulations) * 100).toFixed(1);
     
     document.getElementById('n2-count').textContent = successCount;
@@ -194,19 +200,15 @@ function animateN3() {
     const isSuccess = lastSeat === 2; // 第3个乘客应该坐座位3（index 2）
     
     // 显示结果
-    const resultText = document.createElement('div');
-    resultText.className = isSuccess ? 'success' : 'fail';
+    let resultText = document.querySelector('#stage-3 .animation-result');
+    if (!resultText) {
+        resultText = document.createElement('div');
+        resultText.className = 'animation-result';
+        document.querySelector('#stage-3 .simulation-box').appendChild(resultText);
+    }
+    
     resultText.textContent = isSuccess ? '✅ 最后一位坐到自己座位！' : '❌ 最后一位没坐到自己座位';
-    resultText.style.marginTop = '20px';
-    resultText.style.fontSize = '1.2rem';
-    resultText.style.fontWeight = '700';
-    
-    const simulationBox = document.querySelector('#stage-3 .simulation-box');
-    const existingResult = simulationBox.querySelector('.animation-result');
-    if (existingResult) existingResult.remove();
-    
     resultText.className = 'animation-result ' + (isSuccess ? 'success' : 'fail');
-    simulationBox.appendChild(resultText);
 }
 
 function simulateN3() {
@@ -301,7 +303,7 @@ function initializeChart() {
     });
 }
 
-function runBulkSimulation(times) {
+async function runBulkSimulation(times) {
     if (bulkSimulationRunning) return;
     
     bulkSimulationRunning = true;
@@ -340,7 +342,6 @@ function runBulkSimulation(times) {
         
         // 让UI有时间更新
         if (i % 10 === 0) {
-            // 使用setTimeout让浏览器有时间渲染
             await sleep(0);
         }
     }
@@ -435,8 +436,10 @@ function userSelectSeat(selectedSeat, n) {
     const seats = document.querySelectorAll('#game-seats .seat');
     
     // 标记第一位乘客的选择
-    seats[selectedSeat - 1].classList.remove('available');
-    seats[selectedSeat - 1].classList.add('occupied', 'wrong');
+    if (selectedSeat - 1 >= 0 && selectedSeat - 1 < seats.length) {
+        seats[selectedSeat - 1].classList.remove('available');
+        seats[selectedSeat - 1].classList.add('occupied', 'wrong');
+    }
     
     // 模拟后续乘客
     const seatsState = Array(n).fill(null);
@@ -447,28 +450,34 @@ function userSelectSeat(selectedSeat, n) {
         if (seatsState[p] === null) {
             // 自己的座位空着，坐下
             seatsState[p] = p;
-            seats[p].classList.remove('available');
-            seats[p].classList.add('occupied');
+            if (p < seats.length) {
+                seats[p].classList.remove('available');
+                seats[p].classList.add('occupied');
+            }
         } else {
             // 自己的座位被占，随机选剩下的
             const available = seatsState.map((s, idx) => s === null ? idx : null).filter(i => i !== null);
             const choice = available[Math.floor(Math.random() * available.length)];
             seatsState[choice] = p;
-            seats[choice].classList.remove('available');
-            seats[choice].classList.add('occupied');
-            
-            // 如果选了错误的座位
-            if (choice !== p) {
-                seats[choice].classList.add('wrong');
+            if (choice < seats.length) {
+                seats[choice].classList.remove('available');
+                seats[choice].classList.add('occupied');
+                
+                // 如果选了错误的座位
+                if (choice !== p) {
+                    seats[choice].classList.add('wrong');
+                }
             }
         }
     }
     
     // 最后一位乘客
     const lastSeat = seatsState.indexOf(null);
-    seatsState[lastSeat] = n - 1;
-    seats[lastSeat].classList.remove('available');
-    seats[lastSeat].classList.add('occupied', 'current');
+    if (lastSeat >= 0 && lastSeat < seats.length) {
+        seatsState[lastSeat] = n - 1;
+        seats[lastSeat].classList.remove('available');
+        seats[lastSeat].classList.add('occupied', 'current');
+    }
     
     // 判断是否成功
     const isSuccess = lastSeat === n - 1;
@@ -477,17 +486,17 @@ function userSelectSeat(selectedSeat, n) {
     const resultIndicator = document.getElementById('result-indicator');
     const resultText = document.getElementById('result-text');
     
-    resultIndicator.textContent = isSuccess ? '✅' : '❌';
-    resultIndicator.className = 'result-indicator ' + (isSuccess ? 'success' : 'fail');
-    resultText.textContent = isSuccess ? '最后一位坐到自己座位！' : '最后一位没坐到自己座位';
-    
-    document.getElementById('game-result').classList.remove('hidden');
+    if (resultIndicator && resultText) {
+        resultIndicator.textContent = isSuccess ? '✅' : '❌';
+        resultIndicator.className = 'result-indicator ' + (isSuccess ? 'success' : 'fail');
+        resultText.textContent = isSuccess ? '最后一位坐到自己座位！' : '最后一位没坐到自己座位';
+        
+        document.getElementById('game-result').classList.remove('hidden');
+    }
     
     // 更新统计
     userGameStats.total++;
     if (isSuccess) userGameStats.wins++;
-    
-    // 保存统计但不显示，等用户点击查看统计时再显示
 }
 
 function resetGame() {
@@ -501,22 +510,24 @@ function showUserStats() {
     const total = userGameStats.total;
     const rate = total > 0 ? ((wins / total) * 100).toFixed(1) : 0;
     
-    document.getElementById('user-wins').textContent = wins;
-    document.getElementById('user-total').textContent = total;
-    document.getElementById('user-rate').textContent = rate + '%';
+    if (document.getElementById('user-wins')) {
+        document.getElementById('user-wins').textContent = wins;
+        document.getElementById('user-total').textContent = total;
+        document.getElementById('user-rate').textContent = rate + '%';
+    }
     
-    userStats.classList.remove('hidden');
+    if (userStats) {
+        userStats.classList.remove('hidden');
+    }
 }
 
 function resetUserGame() {
     userGameStats = { wins: 0, total: 0 };
     generateUserGameSeats();
-    document.getElementById('user-stats').classList.add('hidden');
-}
-
-// ===== 工具函数 =====
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    const userStats = document.getElementById('user-stats');
+    if (userStats) {
+        userStats.classList.add('hidden');
+    }
 }
 
 // ===== 通用模拟函数 =====
@@ -548,13 +559,5 @@ function simulateAirplaneSeating(n) {
         isSuccess: isSuccess,
         seatsState: seatsState,
         lastSeat: lastSeat
-    };
-}
-
-// ===== 导出函数（用于测试） =====
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        simulateAirplaneSeating,
-        simulateOnce
     };
 }
