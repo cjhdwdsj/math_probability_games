@@ -122,6 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.addEventListener("resize", () => {
         if (currentPage === 3) renderTrajectoryChart();
         if (currentPage === 5 && simCache) renderHistogram(1);
+        if (currentPage === 6) updateSSRVisual(true);
     });
 
     window.addEventListener("popstate", () => {
@@ -1576,67 +1577,73 @@ function updateSSRVisual(isImmediate = false) {
 }
 
 function renderSSRSwarm(neededDraws, nVal) {
-    const swarmContainer = document.getElementById("ssr-orbit-swarm");
-    if (swarmContainer) {
-        swarmContainer.innerHTML = "";
-        
-        // 100% 真实全量装下所有 neededDraws
-        const displayCount = neededDraws;
-        const fragment = document.createDocumentFragment();
-        
-        const minR = 24;  // 内层贴近黄金核心
-        const maxR = 114; // 外层延伸到舞台边缘
-        const goldenAngle = 2.399963229728653; // 137.507764度 黄金角分布
+    const canvas = document.getElementById("ssr-swarm-canvas");
+    if (!canvas) return;
 
-        // 基础自适应字号曲线：
-        // 200袋左右放大到 12~14px（饱满明显），1000+袋缩小到 4.5~5.2px（银河星系般超高密铺）
-        let baseFontSize;
-        if (displayCount <= 40) {
-            baseFontSize = 19;
-        } else if (displayCount <= 120) {
-            baseFontSize = 19 - ((displayCount - 40) / 80) * 4.5; // 19 -> 14.5px
-        } else if (displayCount <= 300) {
-            baseFontSize = 14.5 - ((displayCount - 120) / 180) * 3.5; // 14.5 -> 11px (200袋约 13px)
-        } else if (displayCount <= 800) {
-            baseFontSize = 11 - ((displayCount - 300) / 500) * 4; // 11 -> 7px
+    const rect = canvas.getBoundingClientRect();
+    const cssWidth = rect.width || 260;
+    const cssHeight = rect.height || 240;
+
+    const dpr = window.devicePixelRatio || 2;
+    canvas.width = Math.floor(cssWidth * dpr);
+    canvas.height = Math.floor(cssHeight * dpr);
+
+    const ctx = canvas.getContext("2d");
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, cssWidth, cssHeight);
+
+    const centerX = cssWidth / 2;
+    const centerY = cssHeight / 2;
+
+    const displayCount = neededDraws;
+    const minR = 24;  // 内层贴近黄金核心
+    const maxR = Math.min(centerX, centerY) - 16; // 自适应最大外径
+    const goldenAngle = 2.399963229728653; // 137.507764度 黄金角分布
+
+    // 基础自适应字号曲线：
+    // 200袋左右放大到 12~14px（饱满明显），1000+袋缩小到 4.5~5.2px（银河星系般超高密铺）
+    let baseFontSize;
+    if (displayCount <= 40) {
+        baseFontSize = 19;
+    } else if (displayCount <= 120) {
+        baseFontSize = 19 - ((displayCount - 40) / 80) * 4.5;
+    } else if (displayCount <= 300) {
+        baseFontSize = 14.5 - ((displayCount - 120) / 180) * 3.5;
+    } else if (displayCount <= 800) {
+        baseFontSize = 11 - ((displayCount - 300) / 500) * 4;
+    } else {
+        baseFontSize = Math.max(4, 7 - ((displayCount - 800) / 800) * 2.8);
+    }
+    baseFontSize = Math.round(baseFontSize * 10) / 10;
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.shadowColor = "rgba(0, 0, 0, 0.16)";
+    ctx.shadowBlur = 2;
+    ctx.shadowOffsetY = 1;
+
+    for (let i = 0; i < displayCount; i++) {
+        let char;
+        if (i < nVal) {
+            char = ALL_CHARACTERS[i] || ALL_CHARACTERS[0];
         } else {
-            baseFontSize = Math.max(4, 7 - ((displayCount - 800) / 800) * 2.8); // 7 -> 4.2px
-        }
-        baseFontSize = Math.round(baseFontSize * 10) / 10;
-
-        // 初始前 nVal 个严格按 1..N 顺序排布，外部所有重复款随机混排（伪随机保持布局稳定）
-        const chosenChars = [];
-        for (let i = 0; i < displayCount; i++) {
-            if (i < nVal) {
-                chosenChars.push(ALL_CHARACTERS[i] || ALL_CHARACTERS[0]);
-            } else {
-                const pseudoRand = ((i * 9301 + 49297) % 233280) / 233280;
-                const randIdx = Math.floor(pseudoRand * nVal);
-                chosenChars.push(ALL_CHARACTERS[randIdx] || ALL_CHARACTERS[0]);
-            }
+            const pseudoRand = ((i * 9301 + 49297) % 233280) / 233280;
+            const randIdx = Math.floor(pseudoRand * nVal);
+            char = ALL_CHARACTERS[randIdx] || ALL_CHARACTERS[0];
         }
 
-        for (let i = 0; i < displayCount; i++) {
-            const norm = Math.sqrt((i + 0.5) / displayCount); // 均匀面积密度
-            const r = minR + norm * (maxR - minR);
-            const theta = i * goldenAngle;
+        const norm = Math.sqrt((i + 0.5) / displayCount); // 均匀面积密度
+        const r = minR + norm * (maxR - minR);
+        const theta = i * goldenAngle;
 
-            const x = Math.round(r * Math.cos(theta));
-            const y = Math.round(r * Math.sin(theta));
+        const x = centerX + r * Math.cos(theta);
+        const y = centerY + r * Math.sin(theta);
 
-            // 外层尺寸微调递减 (从 1.05x 递减到 0.72x)
-            const scale = (1.05 - norm * 0.33).toFixed(2);
-            const char = chosenChars[i];
+        const scale = 1.05 - norm * 0.33;
+        const fontSize = Math.max(4, Math.round(baseFontSize * scale));
 
-            const item = document.createElement("span");
-            item.className = "ssr-cocoon-item";
-            item.style.fontSize = `${Math.max(4, Math.round(baseFontSize * scale))}px`;
-            item.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(${scale})`;
-            item.textContent = char.icon;
-            item.title = `第 ${i + 1} 抽: ${char.name}`;
-            fragment.appendChild(item);
-        }
-        swarmContainer.appendChild(fragment);
+        ctx.font = `${fontSize}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif`;
+        ctx.fillText(char.icon, x, y);
     }
 }
 
