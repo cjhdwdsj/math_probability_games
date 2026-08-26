@@ -169,21 +169,55 @@ function updateNavigation() {
 
     const btnPrev = document.getElementById("btn-prev");
     const btnNext = document.getElementById("btn-next");
+    if (!btnPrev || !btnNext) return;
 
     btnPrev.disabled = (currentPage === 0);
-    if (currentPage === TOTAL_PAGES - 1) {
-        btnNext.textContent = "完成探索 🎉";
-        btnNext.onclick = () => goToPage(0);
-    } else {
-        btnNext.innerHTML = '下一步 <span aria-hidden="true">→</span>';
+    btnNext.disabled = false;
+    btnNext.className = "btn btn-primary";
+
+    if (currentPage === 0) {
+        btnNext.innerHTML = '全款购入 <span aria-hidden="true">→</span>';
+        btnNext.onclick = startTabletopGame;
+    } else if (currentPage === 1) {
+        btnNext.innerHTML = '准备开拆 <span aria-hidden="true">→</span>';
+        btnNext.onclick = () => goToPage(2);
+    } else if (currentPage === 2) {
+        const uniqueCount = Object.keys(tableState.collectedMap).length;
+        if (uniqueCount >= 6) {
+            btnNext.disabled = false;
+            btnNext.className = "btn btn-primary btn-gold";
+            btnNext.innerHTML = '胜利结算，查看战报 <span aria-hidden="true">→</span>';
+            btnNext.onclick = goToBattleReport;
+        } else {
+            btnNext.disabled = true;
+            btnNext.textContent = `拆盒中 (已集齐 ${uniqueCount}/6 款)...`;
+        }
+    } else if (currentPage === 3) {
+        btnNext.innerHTML = '为什么最后一只抽数急剧狂飙？ <span aria-hidden="true">→</span>';
         btnNext.onclick = nextPage;
+    } else if (currentPage === 4) {
+        btnNext.innerHTML = '为什么我买了 15 次依然抽不齐？ <span aria-hidden="true">→</span>';
+        btnNext.onclick = nextPage;
+    } else if (currentPage === 5) {
+        btnNext.innerHTML = '等等，如果还有隐藏款呢？ <span aria-hidden="true">→</span>';
+        btnNext.onclick = nextPage;
+    } else if (currentPage === 6) {
+        btnNext.innerHTML = '直接盲抽还是去二手？这是个问题 <span aria-hidden="true">→</span>';
+        btnNext.onclick = nextPage;
+    } else if (currentPage === 7) {
+        btnNext.className = "btn btn-primary btn-gold";
+        btnNext.innerHTML = '收官总结：全图鉴通关指南 <span aria-hidden="true">→</span>';
+        btnNext.onclick = () => goToPage(0);
     }
 }
 
 function initKeyboardControls() {
     document.addEventListener("keydown", (e) => {
         if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return;
-        if (e.key === "ArrowRight") nextPage();
+        const btnNext = document.getElementById("btn-next");
+        if (e.key === "ArrowRight") {
+            if (btnNext && !btnNext.disabled) btnNext.click();
+        }
         if (e.key === "ArrowLeft") prevPage();
     });
 }
@@ -510,10 +544,11 @@ function completeUnboxingPouch() {
         const winBtn = document.getElementById("btn-victory-settle");
         if (winBtn) {
             winBtn.disabled = false;
-            winBtn.textContent = "🎉 全部集齐！立即胜利结算 👉";
+            winBtn.textContent = "全部集齐！立即胜利结算 →";
             winBtn.className = "btn btn-gold btn-sm";
         }
     }
+    updateNavigation();
 }
 
 // ========================
