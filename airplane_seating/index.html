@@ -22,430 +22,236 @@
             <div class="title-box">
                 <span class="emoji">✈️</span>
                 <h1>飞机座位错配问题</h1>
-                <p class="subtitle">一个经典的概率悖论</p>
+                <p class="subtitle">一个经典的概率悖论 - 为什么最后一位乘客坐到自己座位的概率恒为1/2？</p>
             </div>
         </header>
 
-        <!-- 渐进式教学流程 -->
-        <main class="main-content">
+        <!-- 单页内容区域 -->
+        <main class="single-page-content">
             
-            <!-- 第1阶段：引入问题 -->
-            <section id="stage-1" class="stage active">
-                <div class="stage-content">
-                    <div class="intro-box">
-                        <p class="intro-text">今天我们来看一个看似简单，但结果却非常反直觉的问题。</p>
-                        <p class="intro-text">在飞机上，当N个乘客依次登机时...</p>
-                        
-                        <div class="problem-statement">
-                            <div class="problem-item">
-                                <span class="icon">👥</span>
-                                <span>N个乘客 + N个座位</span>
-                            </div>
-                            <div class="problem-item">
-                                <span class="icon">❌</span>
-                                <span>第一个乘客随机选座位</span>
-                            </div>
-                            <div class="problem-item">
-                                <span class="icon">✅</span>
-                                <span>后续乘客优先坐自己座位</span>
-                            </div>
-                        </div>
-                        
-                        <div class="question-box">
-                            <span class="question-mark">🎯</span>
-                            <p>最后一位坐到自己座位的概率是多少？</p>
-                        </div>
-                        
-                        <button class="btn btn-primary btn-next" onclick="nextStage()">
-                            开始学习 →
-                        </button>
+            <!-- 第1行：问题引入 + N=2特例 -->
+            <div class="row">
+                <div class="card card-intro">
+                    <div class="card-header">
+                        <span class="card-icon">🎯</span>
+                        <h2>核心问题</h2>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>N个乘客 + N个座位</strong></p>
+                        <p>❌ 第一个乘客随机选座位</p>
+                        <p>✅ 后续乘客优先坐自己座位</p>
+                        <p class="question">🎯 最后一位坐到自己座位的概率是多少？</p>
                     </div>
                 </div>
-            </section>
-
-            <!-- 第2阶段：最简单特例 N=2 -->
-            <section id="stage-2" class="stage">
-                <div class="stage-content">
-                    <div class="stage-header">
-                        <span class="stage-number">2</span>
-                        <h2>从最简单的情况开始：2个乘客</h2>
+                
+                <div class="card card-n2">
+                    <div class="card-header">
+                        <span class="card-icon">🔬</span>
+                        <h2>N=2特例</h2>
                     </div>
-                    
-                    <div class="simulation-box">
-                        <div class="seats-row">
-                            <div class="seat seat-1" data-seat="1">
-                                <span class="seat-number">1</span>
-                            </div>
-                            <div class="seat seat-2" data-seat="2">
-                                <span class="seat-number">2</span>
-                            </div>
+                    <div class="card-body">
+                        <div class="seats-small">
+                            <div class="seat mini" data-seat="1">1</div>
+                            <div class="seat mini" data-seat="2">2</div>
                         </div>
-                        
-                        <div class="passenger-indicator">
-                            <span class="passenger-label">乘客1</span>
-                            <span class="action">随机选择座位</span>
-                        </div>
-                        
-                        <div class="scenario-grid">
+                        <div class="n2-scenarios">
                             <div class="scenario">
-                                <div class="scenario-title">💡 如果乘客1选了座位1：</div>
-                                <div class="scenario-result success">
-                                    乘客2 → 坐座位2 ✅（成功）
-                                </div>
+                                <span>乘客1选座位1 → </span>
+                                <span class="success">乘客2坐座位2 ✅</span>
                             </div>
                             <div class="scenario">
-                                <div class="scenario-title">💡 如果乘客1选了座位2：</div>
-                                <div class="scenario-result fail">
-                                    乘客2 → 坐座位1 ❌（失败）
-                                </div>
+                                <span>乘客1选座位2 → </span>
+                                <span class="fail">乘客2坐座位1 ❌</span>
                             </div>
                         </div>
-                        
-                        <div class="simulation-controls">
-                            <button class="btn btn-secondary" onclick="simulateN2()">🎲 模拟10次</button>
-                            <button class="btn btn-secondary" onclick="showN2Stats()">📊 看统计</button>
-                        </div>
-                        
-                        <div id="n2-results" class="results-box hidden">
-                            <p>结果：<span id="n2-count"></span>/10 = <span id="n2-percent"></span>%</p>
-                        </div>
-                    </div>
-                    
-                    <div class="stage-footer">
-                        <button class="btn btn-nav btn-prev" onclick="prevStage()">← 上一步</button>
-                        <button class="btn btn-nav btn-next" onclick="nextStage()">下一步 →</button>
+                        <p class="result">概率：<span class="highlight">50%</span></p>
+                        <button class="btn btn-sm" onclick="simulateN2()">🎲 模拟验证</button>
                     </div>
                 </div>
-            </section>
+            </div>
 
-            <!-- 第3阶段：稍复杂案例 N=3 -->
-            <section id="stage-3" class="stage">
-                <div class="stage-content">
-                    <div class="stage-header">
-                        <span class="stage-number">3</span>
-                        <h2>现在试试3个乘客</h2>
+            <!-- 第2行：N=3演示 + 规律发现 -->
+            <div class="row">
+                <div class="card card-n3">
+                    <div class="card-header">
+                        <span class="card-icon">📊</span>
+                        <h2>N=3演示</h2>
                     </div>
-                    
-                    <div class="simulation-box">
-                        <div class="seats-row">
-                            <div class="seat" data-seat="1"><span class="seat-number">1</span></div>
-                            <div class="seat" data-seat="2"><span class="seat-number">2</span></div>
-                            <div class="seat" data-seat="3"><span class="seat-number">3</span></div>
+                    <div class="card-body">
+                        <div class="seats-small">
+                            <div class="seat mini" data-seat="1">1</div>
+                            <div class="seat mini" data-seat="2">2</div>
+                            <div class="seat mini" data-seat="3">3</div>
                         </div>
-                        
-                        <div class="animation-demo">
-                            <div class="demo-step">
-                                <span class="step-number">1</span>
-                                <span>乘客1随机坐（假设坐了座位2）</span>
-                            </div>
-                            <div class="demo-step">
-                                <span class="step-number">2</span>
-                                <span>乘客2要坐2号 → 被占 → 随机选[1,3]</span>
-                            </div>
-                            <div class="demo-step">
-                                <span class="step-number">3</span>
-                                <span>假设选了座位1</span>
-                            </div>
-                            <div class="demo-step">
-                                <span class="step-number">4</span>
-                                <span>乘客3 → 坐座位3 ✅（成功）</span>
-                            </div>
+                        <div class="animation-area" id="n3-animation">
+                            <p class="animation-text">点击演示动画</p>
                         </div>
-                        
-                        <div class="simulation-controls">
-                            <button class="btn btn-secondary" onclick="animateN3()">🔁 动画演示</button>
-                            <button class="btn btn-secondary" onclick="simulateN3()">📊 模拟50次</button>
-                        </div>
-                        
-                        <div id="n3-results" class="results-box hidden">
-                            <p>结果：<span id="n3-count"></span>/50 = <span id="n3-percent"></span>% ≈ 50%</p>
-                        </div>
-                    </div>
-                    
-                    <div class="stage-footer">
-                        <button class="btn btn-nav btn-prev" onclick="prevStage()">← 上一步</button>
-                        <button class="btn btn-nav btn-next" onclick="nextStage()">下一步 →</button>
+                        <button class="btn btn-sm" onclick="animateN3()">🎬 动画演示</button>
+                        <button class="btn btn-sm" onclick="simulateN3()">📈 模拟50次</button>
+                        <p class="result" id="n3-result"></p>
                     </div>
                 </div>
-            </section>
-
-            <!-- 第4阶段：发现规律 -->
-            <section id="stage-4" class="stage">
-                <div class="stage-content">
-                    <div class="stage-header">
-                        <span class="stage-number">4</span>
-                        <h2>规律发现：不同N值的结果</h2>
+                
+                <div class="card card-pattern">
+                    <div class="card-header">
+                        <span class="card-icon">💡</span>
+                        <h2>发现规律</h2>
                     </div>
-                    
-                    <div class="pattern-discovery">
-                        <div class="pattern-intro">
-                            <p>奇怪，N=2和N=3时结果都接近50%？这不是巧合，这是数学规律！</p>
+                    <div class="card-body">
+                        <div class="pattern-results">
+                            <div class="result-item"><span>N=2:</span> <span>51.2%</span></div>
+                            <div class="result-item"><span>N=3:</span> <span>49.8%</span></div>
+                            <div class="result-item"><span>N=5:</span> <span>50.3%</span></div>
+                            <div class="result-item"><span>N=10:</span> <span>49.5%</span></div>
+                            <div class="result-item"><span>N=20:</span> <span>50.1%</span></div>
                         </div>
-                        
-                        <div class="results-table">
-                            <div class="result-row">
-                                <span class="n-value">N=2</span>
-                                <span class="result-value">512/1000 = <span class="highlight">51.2%</span> ✅</span>
-                            </div>
-                            <div class="result-row">
-                                <span class="n-value">N=3</span>
-                                <span class="result-value">498/1000 = <span class="highlight">49.8%</span> ✅</span>
-                            </div>
-                            <div class="result-row">
-                                <span class="n-value">N=5</span>
-                                <span class="result-value">503/1000 = <span class="highlight">50.3%</span> ✅</span>
-                            </div>
-                            <div class="result-row">
-                                <span class="n-value">N=10</span>
-                                <span class="result-value">495/1000 = <span class="highlight">49.5%</span> ✅</span>
-                            </div>
-                            <div class="result-row">
-                                <span class="n-value">N=20</span>
-                                <span class="result-value">501/1000 = <span class="highlight">50.1%</span> ✅</span>
-                            </div>
-                        </div>
-                        
-                        <div class="key-insight">
-                            <span class="lightbulb">💡</span>
-                            <p>无论N是多少，概率都接近50%！</p>
-                            <p>这不是巧合，这是数学规律！</p>
-                        </div>
-                        
-                        <button class="btn btn-primary" onclick="nextStage()">
-                            为什么？→
-                        </button>
-                    </div>
-                    
-                    <div class="stage-footer">
-                        <button class="btn btn-nav btn-prev" onclick="prevStage()">← 上一步</button>
-                        <button class="btn btn-nav btn-next" onclick="nextStage()">下一步 →</button>
+                        <p class="insight">💡 无论N是多少，概率都接近<span class="highlight">50%</span>！</p>
                     </div>
                 </div>
-            </section>
+            </div>
 
-            <!-- 第5阶段：大规模验证 -->
-            <section id="stage-5" class="stage">
-                <div class="stage-content">
-                    <div class="stage-header">
-                        <span class="stage-number">5</span>
-                        <h2>大规模验证：N=100</h2>
+            <!-- 第3行：大规模验证 -->
+            <div class="row full-width">
+                <div class="card card-bulk">
+                    <div class="card-header">
+                        <span class="card-icon">🧮</span>
+                        <h2>大规模验证 (N=100)</h2>
                     </div>
-                    
-                    <div class="bulk-simulation">
+                    <div class="card-body">
                         <div class="chart-container">
                             <canvas id="probability-chart"></canvas>
                         </div>
-                        
-                        <div class="stats-display">
-                            <div class="stat-item">
-                                <span class="stat-label">已模拟：</span>
-                                <span id="total-simulations" class="stat-value">0</span>
-                                <span class="stat-unit">次</span>
+                        <div class="bulk-controls">
+                            <div class="stats">
+                                <span>已模拟: <span id="total-simulations">0</span> 次</span>
+                                <span>成功: <span id="success-count">0</span> 次</span>
+                                <span>概率: <span id="current-probability">0%</span></span>
                             </div>
-                            <div class="stat-item">
-                                <span class="stat-label">最后一位成功：</span>
-                                <span id="success-count" class="stat-value">0</span>
-                                <span class="stat-unit">次</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-label">当前概率：</span>
-                                <span id="current-probability" class="stat-value">0%</span>
+                            <div class="btn-group">
+                                <button class="btn btn-sm" onclick="runBulkSimulation(100)">⚡ 100次</button>
+                                <button class="btn btn-sm" onclick="runBulkSimulation(1000)">⚡ 1000次</button>
+                                <button class="btn btn-sm" onclick="resetBulkSimulation()">🔄 重置</button>
                             </div>
                         </div>
-                        
-                        <div class="simulation-controls bulk-controls">
-                            <button class="btn btn-secondary" onclick="runBulkSimulation(100)">⚡ 模拟100次</button>
-                            <button class="btn btn-secondary" onclick="runBulkSimulation(1000)">⚡ 模拟1000次</button>
-                            <button class="btn btn-secondary" onclick="resetBulkSimulation()">🔄 重置</button>
-                        </div>
-                    </div>
-                    
-                    <div class="stage-footer">
-                        <button class="btn btn-nav btn-prev" onclick="prevStage()">← 上一步</button>
-                        <button class="btn btn-nav btn-next" onclick="nextStage()">下一步 →</button>
                     </div>
                 </div>
-            </section>
+            </div>
 
-            <!-- 第6阶段：理论解释 -->
-            <section id="stage-6" class="stage">
-                <div class="stage-content">
-                    <div class="stage-header">
-                        <span class="stage-number">6</span>
-                        <h2>理论解释：为什么是1/2？</h2>
+            <!-- 第4行：理论解释 -->
+            <div class="row full-width">
+                <div class="card card-theory">
+                    <div class="card-header">
+                        <span class="card-icon">🧠</span>
+                        <h2>为什么是1/2？</h2>
                     </div>
-                    
-                    <div class="theory-explanation">
-                        <div class="explanation-section">
-                            <h3>💡 关键洞察</h3>
-                            <p>关键在于：<strong>第一位乘客的选择决定了最后一位的命运！</strong></p>
-                            
-                            <div class="cases-grid">
-                                <div class="case">
-                                    <div class="case-title">情况1：第一位坐了座位1</div>
-                                    <div class="case-result">
-                                        → 最后一位坐不到自己座位 ❌
+                    <div class="card-body">
+                        <div class="theory-content">
+                            <div class="theory-section">
+                                <h3>关键洞察</h3>
+                                <p><strong>第一位乘客的选择决定了最后结果！</strong></p>
+                                <div class="cases">
+                                    <div class="case">
+                                        <div class="case-header">情况1: 第一位坐了座位1</div>
+                                        <div class="case-body">→ 最后一位坐不到自己座位 ❌<br><small>概率: 1/N</small></div>
                                     </div>
-                                    <div class="case-prob">概率：1/N</div>
+                                    <div class="case">
+                                        <div class="case-header">情况2: 第一位坐了座位N</div>
+                                        <div class="case-body">→ 最后一位坐到自己座位 ✅<br><small>概率: 1/N</small></div>
+                                    </div>
+                                    <div class="case">
+                                        <div class="case-header">情况3: 第一位坐了其他座位</div>
+                                        <div class="case-body">→ 连锁反应，最终还是50%概率<br><small>概率: (N-2)/N</small></div>
+                                    </div>
                                 </div>
-                                <div class="case">
-                                    <div class="case-title">情况2：第一位坐了座位N</div>
-                                    <div class="case-result">
-                                        → 最后一位坐到自己座位 ✅
-                                    </div>
-                                    <div class="case-prob">概率：1/N</div>
-                                </div>
-                                <div class="case">
-                                    <div class="case-title">情况3：第一位坐了其他座位</div>
-                                    <div class="case-result">
-                                        → 会引发连锁反应，但最终...<br>
-                                        → 最后一位坐到自己座位的概率是1/2
-                                    </div>
-                                    <div class="case-prob">概率：(N-2)/N</div>
+                                <div class="formula">
+                                    总概率 = (1/N)×0 + (1/N)×1 + ((N-2)/N)×(1/2) = <span class="highlight">1/2</span>
                                 </div>
                             </div>
-                            
-                            <div class="formula">
-                                <p>总概率 = (1/N)×0 + (1/N)×1 + ((N-2)/N)×(1/2) = <span class="highlight">1/2</span></p>
-                            </div>
-                        </div>
-                        
-                        <div class="explanation-section">
-                            <h3>🎯 更简单的解释</h3>
-                            <p>最后一位坐到自己座位，当且仅当：</p>
-                            <p class="highlight">座位1和座位N中，有一个被第一位选中，且选中的不是最后一位的座位。</p>
-                            <p>因为第一位随机选择，所以座位1和座位N是对称的！</p>
-                            
-                            <div class="symmetry-diagram">
-                                <div class="symmetry-item">
+                            <div class="theory-section">
+                                <h3>简单理解</h3>
+                                <p>最后一位坐到自己座位，当且仅当：</p>
+                                <p class="highlight large">座位1和座位N中，有一个被第一位选中</p>
+                                <div class="symmetry">
                                     <span class="seat-badge">座位1</span>
                                     <span class="arrow">↔</span>
                                     <span class="seat-badge">座位N</span>
                                 </div>
-                                <p>对称性保证了50%的概率</p>
+                                <p><strong>对称性保证了50%的概率！</strong></p>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="stage-footer">
-                        <button class="btn btn-nav btn-prev" onclick="prevStage()">← 上一步</button>
-                        <button class="btn btn-nav btn-next" onclick="nextStage()">下一步 →</button>
-                    </div>
                 </div>
-            </section>
+            </div>
 
-            <!-- 第7阶段：互动体验 -->
-            <section id="stage-7" class="stage">
-                <div class="stage-content">
-                    <div class="stage-header">
-                        <span class="stage-number">7</span>
-                        <h2>🕹️ 你来试试：自己当第一位乘客</h2>
+            <!-- 第5行：互动体验 -->
+            <div class="row full-width">
+                <div class="card card-interactive">
+                    <div class="card-header">
+                        <span class="card-icon">🕹️</span>
+                        <h2>你来试试：当第一位乘客</h2>
                     </div>
-                    
-                    <div class="interactive-game">
+                    <div class="card-body">
                         <div class="game-controls">
-                            <label class="control-label">选择N值：</label>
-                            <select id="user-n-select" class="n-select">
+                            <label>选择N值:</label>
+                            <select id="user-n-select" onchange="generateUserGameSeats()">
                                 <option value="3">3</option>
                                 <option value="5">5</option>
                                 <option value="10" selected>10</option>
                                 <option value="20">20</option>
+                                <option value="50">50</option>
                             </select>
                         </div>
-                        
-                        <div class="game-seats" id="game-seats">
-                            <!-- 座位将通过JS动态生成 -->
-                        </div>
-                        
+                        <div class="game-seats" id="game-seats"></div>
                         <div class="game-instructions">
-                            <p>🎯 点击一个座位，让第一位乘客坐下</p>
-                            <p>（系统会自动运行后续过程）</p>
+                            <p>🎯 点击一个座位，让第一位乘客坐下<br><small>(系统会自动运行后续过程)</small></p>
                         </div>
-                        
                         <div id="game-result" class="game-result hidden">
                             <div class="result-indicator" id="result-indicator"></div>
                             <p id="result-text"></p>
                         </div>
-                        
-                        <div class="simulation-controls">
-                            <button class="btn btn-secondary" onclick="resetGame()">🔁 再试一次</button>
-                            <button class="btn btn-secondary" onclick="showUserStats()">📊 看统计</button>
+                        <div class="btn-group">
+                            <button class="btn btn-sm" onclick="resetGame()">🔁 再试一次</button>
+                            <button class="btn btn-sm" onclick="showUserStats()">📊 查看统计</button>
                         </div>
-                        
                         <div id="user-stats" class="user-stats hidden">
-                            <p>你的选择统计：</p>
-                            <p>成功次数：<span id="user-wins">0</span> / <span id="user-total">0</span></p>
-                            <p>成功率：<span id="user-rate">0%</span></p>
+                            <p>你的统计: <span id="user-wins">0</span>/<span id="user-total">0</span> = <span id="user-rate">0%</span></p>
                         </div>
                     </div>
-                    
-                    <div class="stage-footer">
-                        <button class="btn btn-nav btn-prev" onclick="prevStage()">← 上一步</button>
-                        <button class="btn btn-nav btn-next" onclick="nextStage()">下一步 →</button>
-                    </div>
                 </div>
-            </section>
+            </div>
 
-            <!-- 第8阶段：总结与应用 -->
-            <section id="stage-8" class="stage">
-                <div class="stage-content">
-                    <div class="stage-header">
-                        <span class="stage-number">8</span>
-                        <h2>🎓 总结</h2>
+            <!-- 第6行：总结 -->
+            <div class="row full-width">
+                <div class="card card-summary">
+                    <div class="card-header">
+                        <span class="card-icon">🎓</span>
+                        <h2>总结</h2>
                     </div>
-                    
-                    <div class="summary-content">
-                        <div class="summary-section">
-                            <h3>✅ 核心洞察</h3>
-                            <p class="large-text">无论N是多少（2人、100人、1000人），最后一位乘客坐到自己座位的概率恒为 <span class="highlight huge">1/2 = 50%</span></p>
-                        </div>
-                        
-                        <div class="summary-section">
-                            <h3>💡 为什么？</h3>
-                            <ul class="summary-list">
-                                <li>第一位乘客的选择决定了最后结果</li>
-                                <li>座位1和座位N的对称性保证了50%的概率</li>
-                                <li>连锁反应最终总是回到这两个座位的选择</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="summary-section">
-                            <h3>🌟 应用</h3>
-                            <p>这个问题展示了概率中的对称性原理，类似的思维方式可以应用到其他复杂的概率问题中。</p>
-                        </div>
-                        
-                        <div class="final-buttons">
-                            <button class="btn btn-secondary" onclick="restartTutorial()">🔁 从头开始</button>
-                            <button class="btn btn-primary" onclick="completeTutorial()">✅ 完成学习</button>
+                    <div class="card-body">
+                        <div class="summary-content">
+                            <p class="huge">✅ 无论N是多少，最后一位乘客坐到自己座位的概率恒为</p>
+                            <p class="huge highlight">1/2 = 50%</p>
+                            <div class="summary-points">
+                                <div class="point">
+                                    <span class="point-icon">💡</span>
+                                    <span>第一位乘客的选择决定了最后结果</span>
+                                </div>
+                                <div class="point">
+                                    <span class="point-icon">⚖️</span>
+                                    <span>座位1和座位N的对称性保证了50%概率</span>
+                                </div>
+                                <div class="point">
+                                    <span class="point-icon">🔗</span>
+                                    <span>连锁反应最终总是回到这两个座位的选择</span>
+                                </div>
+                            </div>
+                            <p class="application">🌟 <strong>应用：</strong>这个问题展示了概率中的对称性原理，类似的思维方式可以应用到其他复杂的概率问题中。</p>
                         </div>
                     </div>
                 </div>
-            </section>
+            </div>
 
         </main>
-
-        <!-- 完成页面 -->
-        <div id="completion-page" class="completion-page hidden">
-            <div class="completion-content">
-                <div class="checkmark">✅</div>
-                <h2>恭喜完成学习！</h2>
-                <p>你现在已经掌握了飞机座位错配问题的精髓。</p>
-                <p>记住：无论有多少乘客，最后一位坐到自己座位的概率总是50%！</p>
-                <button class="btn btn-primary" onclick="restartTutorial()">再学一次</button>
-            </div>
-        </div>
-
-        <!-- 页面导航 -->
-        <nav class="stage-nav">
-            <button class="nav-btn" onclick="goToStage(0)" title="第1阶段">1</button>
-            <button class="nav-btn" onclick="goToStage(1)" title="第2阶段">2</button>
-            <button class="nav-btn" onclick="goToStage(2)" title="第3阶段">3</button>
-            <button class="nav-btn" onclick="goToStage(3)" title="第4阶段">4</button>
-            <button class="nav-btn" onclick="goToStage(4)" title="第5阶段">5</button>
-            <button class="nav-btn" onclick="goToStage(5)" title="第6阶段">6</button>
-            <button class="nav-btn" onclick="goToStage(6)" title="第7阶段">7</button>
-            <button class="nav-btn" onclick="goToStage(7)" title="第8阶段">8</button>
-        </nav>
 
     </div>
 
