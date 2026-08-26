@@ -2150,16 +2150,30 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     height: 66px;
     border-radius: 50%;
     border: 1.5px dashed rgba(212, 136, 6, 0.4);
-    background: radial-gradient(circle, rgba(255, 230, 150, 0.35) 0%, transparent 70%);
+    background: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .mini-ssr-crown {
-    font-size: 1.5rem;
-    filter: drop-shadow(0 0 10px rgba(243, 156, 18, 0.85));
-    animation: corePulse 2s infinite ease-in-out;
+    font-size: 1.55rem;
+    line-height: 1;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    animation: crownFloatPulse 2s infinite ease-in-out;
+}
+
+@keyframes crownFloatPulse {
+    0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 5px rgba(243, 156, 18, 0.6));
+    }
+    50% {
+        transform: scale(1.16);
+        filter: drop-shadow(0 0 12px rgba(247, 200, 75, 0.95)) drop-shadow(0 0 20px rgba(243, 156, 18, 0.7));
+    }
 }
 
 .orbit-dot {
