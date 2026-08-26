@@ -1609,18 +1609,18 @@ function renderSSRSwarm(neededDraws, nVal) {
     const maxR = 114; // 外层延伸到圆环边缘
     const goldenAngle = 2.399963229728653; // 137.507764度 黄金角分布
 
-    // 基础自适应字号：少时大立牌（28px~21px）饱满不空旷，多时（1500+）自适应微缩
+    // 基础自适应字号：少时大立牌（26px~20px）饱满不空旷，多时（1500+）自适应微缩
     let baseSize;
     if (displayCount <= 20) {
-        baseSize = 28;
+        baseSize = 26;
     } else if (displayCount <= 60) {
-        baseSize = 28 - ((displayCount - 20) / 40) * 7; // 28 -> 21px
+        baseSize = 26 - ((displayCount - 20) / 40) * 6; // 26 -> 20px
     } else if (displayCount <= 180) {
-        baseSize = 21 - ((displayCount - 60) / 120) * 6.5; // 21 -> 14.5px
+        baseSize = 20 - ((displayCount - 60) / 120) * 6; // 20 -> 14px
     } else if (displayCount <= 500) {
-        baseSize = 14.5 - ((displayCount - 180) / 320) * 4.5; // 14.5 -> 10px
+        baseSize = 14 - ((displayCount - 180) / 320) * 4.5; // 14 -> 9.5px
     } else {
-        baseSize = Math.max(5.5, 10 - ((displayCount - 500) / 1150) * 4.2); // 10 -> 5.8px
+        baseSize = Math.max(6, 9.5 - ((displayCount - 500) / 1150) * 3.5); // 9.5 -> 6.0px
     }
 
     for (let i = 0; i < displayCount; i++) {
@@ -1640,12 +1640,10 @@ function renderSSRSwarm(neededDraws, nVal) {
         const x = centerX + r * Math.cos(theta);
         const y = centerY + r * Math.sin(theta);
 
-        // 强烈的非线性指数级内外反差（悬殊7倍比差）：
-        // 内圈 norm=0 放大到 2.20x (内层极度醒目大立牌，清晰可辨)
-        // 外圈 norm=1 陡降衰减至 0.30x (边缘极其微小星砂微尘)
-        const decayCurve = Math.pow(1 - norm, 1.3);
-        const scale = 0.30 + decayCurve * 1.90;
-        const itemSize = Math.max(2.5, Math.min(36, Math.round(baseSize * scale * 10) / 10));
+        // 内圈 1.70x (内层大立牌) -> 外圈 0.50x (外层微缩) 黄金自然衰减
+        const decayCurve = Math.pow(1 - norm, 1.2);
+        const scale = 0.50 + decayCurve * 1.20;
+        const itemSize = Math.max(3.2, Math.min(32, Math.round(baseSize * scale * 10) / 10));
 
         const sprite = getEmojiSprite(char.icon);
         ctx.drawImage(sprite, x - itemSize / 2, y - itemSize / 2, itemSize, itemSize);
