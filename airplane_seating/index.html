@@ -114,16 +114,22 @@
                     <h2 id="page-title-5" tabindex="-1">大规模验证：N = 100</h2>
                     <p class="lead">每一次实验都独立；曲线会逐渐稳定在 50% 附近。</p>
                     <div class="chart-container" role="img" aria-label="最后一位乘客成功概率的模拟曲线；虚线表示理论值百分之五十。"><svg id="probability-chart" viewBox="0 0 720 250" preserveAspectRatio="none" aria-hidden="true"></svg></div>
+                    <div class="simulation-process" aria-live="polite" aria-atomic="true">
+                        <div class="process-heading"><span class="process-orb" id="bulk-process-orb" aria-hidden="true"></span><strong id="bulk-process-status">等待开始</strong><span id="bulk-trial-outcome" class="trial-outcome">尚未进行试验</span></div>
+                        <div class="process-track" role="progressbar" aria-label="模拟进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="bulk-progress-fill"></span></div>
+                        <p id="bulk-process-detail">选择样本数量后，逐次观察成功、失败与曲线如何形成。</p>
+                    </div>
                     <div class="bulk-controls">
                         <div class="stats" aria-live="polite">
                             <span>已模拟 <b id="total-simulations">0</b> 次</span>
                             <span>成功 <b id="success-count">0</b> 次</span>
                             <span>当前 <b id="current-probability">0%</b></span>
                         </div>
-                        <div class="btn-group">
-                            <button class="btn btn-secondary" type="button" onclick="runBulkSimulation(100)">⚡ 100 次</button>
-                            <button class="btn btn-outline" type="button" onclick="runBulkSimulation(1000)">⚡ 1000 次</button>
-                            <button class="btn btn-quiet" type="button" onclick="resetBulkSimulation()">重置</button>
+                        <div class="btn-group bulk-buttons">
+                            <button class="btn btn-secondary" id="start-bulk-100" type="button" onclick="runBulkSimulation(100)">▶ 播放 100 次</button>
+                            <button class="btn btn-outline" id="start-bulk-1000" type="button" onclick="runBulkSimulation(1000)">▶ 播放 1000 次</button>
+                            <button class="btn btn-primary" id="toggle-bulk" type="button" onclick="toggleBulkSimulation()" disabled>⏸ 暂停</button>
+                            <button class="btn btn-quiet" id="reset-bulk" type="button" onclick="resetBulkSimulation()">重置</button>
                         </div>
                     </div>
                 </article>

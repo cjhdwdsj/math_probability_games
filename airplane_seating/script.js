@@ -1,6 +1,9 @@
 // ===== 全局状态 =====
 let probabilityChart = null;
 let bulkSimulationRunning = false;
+let bulkRun = null;
+let bulkRunId = 0;
+let bulkTimer = null;
 let userGameStats = { wins: 0, total: 0 };
 let userGameRun = null;
 let n3AnimationRunning = false;
@@ -69,6 +72,7 @@ function goToPage(index, shouldFocus = true) {
     const newPage = pages[nextIndex];
 
     document.querySelectorAll('.passenger').forEach((passenger) => passenger.remove());
+    if (previousIndex === 4 && nextIndex !== 4) pauseBulkSimulation('已暂停：返回本页后可继续观看。');
     n3AnimationRunId += 1;
     n3AnimationRunning = false;
     n3ActiveRun = null;
@@ -429,8 +433,9 @@ function simulateN3() {
 function initializeChart() {
     const svg = document.getElementById('probability-chart');
     if (!(svg instanceof SVGElement)) return;
-    probabilityChart = { svg, samples: Array(100).fill(50) };
+    probabilityChart = { svg, samples: Array(100).fill(null) };
     renderProbabilityChart();
+    resetBulkProcessUI();
 }
 
 function renderProbabilityChart() {
@@ -474,26 +479,143 @@ function renderProbabilityChart() {
     `;
 }
 
-function runBulkSimulation(times) {
-    if (bulkSimulationRunning) return;
-    bulkSimulationRunning = true;
-    const n = 100;
-    let successCount = 0;
-    const samples = Array(100).fill(null);
+function getBulkElements() {
+    return {
+        process: document.querySelector('.simulation-process'),
+        status: document.getElementById('bulk-process-status'),
+        outcome: document.getElementById('bulk-trial-outcome'),
+        detail: document.getElementById('bulk-process-detail'),
+        fill: document.getElementById('bulk-progress-fill'),
+        track: document.querySelector('.process-track'),
+        total: document.getElementById('total-simulations'),
+        success: document.getElementById('success-count'),
+        probability: document.getElementById('current-probability'),
+        start100: document.getElementById('start-bulk-100'),
+        start1000: document.getElementById('start-bulk-1000'),
+        toggle: document.getElementById('toggle-bulk')
+    };
+}
 
-    for (let index = 0; index < times; index += 1) {
-        if (simulateOnce(n)) successCount += 1;
-        if (index < 100) samples[index] = Number(((successCount / (index + 1)) * 100).toFixed(1));
+function updateBulkControls() {
+    const { start100, start1000, toggle } = getBulkElements();
+    const paused = Boolean(bulkRun && bulkRun.paused && !bulkRun.complete);
+    if (start100) start100.disabled = Boolean(bulkRun);
+    if (start1000) start1000.disabled = Boolean(bulkRun);
+    if (toggle) {
+        toggle.disabled = !bulkRun || bulkRun.complete;
+        toggle.textContent = paused ? '▶ 继续' : '⏸ 暂停';
+        toggle.setAttribute('aria-label', paused ? '继续模拟动画' : '暂停模拟动画');
+    }
+}
+
+function updateBulkProcessUI(run, state, detailOverride = '') {
+    const elements = getBulkElements();
+    const progress = run ? Math.round((run.total / run.target) * 100) : 0;
+    const probability = run && run.total ? ((run.successes / run.total) * 100).toFixed(1) : '0.0';
+    if (elements.process) elements.process.className = `simulation-process is-${state}`;
+    if (elements.status) elements.status.textContent = state === 'running' ? `模拟进行中 · ${run.target} 次` : state === 'paused' ? '模拟已暂停' : state === 'complete' ? '模拟完成' : '等待开始';
+    if (elements.outcome) {
+        elements.outcome.className = `trial-outcome ${run?.lastOutcome === true ? 'is-success' : run?.lastOutcome === false ? 'is-fail' : ''}`;
+        elements.outcome.textContent = run && run.total ? `第 ${run.total} 次：${run.lastOutcome ? '成功' : '失败'}` : '尚未进行试验';
+    }
+    if (elements.detail) {
+        elements.detail.textContent = detailOverride || (run && run.total
+            ? `已完成 ${run.total} / ${run.target} 次；累计成功 ${run.successes} 次，当前概率 ${probability}%。`
+            : '选择样本数量后，逐次观察成功、失败与曲线如何形成。');
+    }
+    if (elements.fill) elements.fill.style.width = `${progress}%`;
+    if (elements.track) elements.track.setAttribute('aria-valuenow', String(progress));
+    if (elements.total) elements.total.textContent = String(run?.total ?? 0);
+    if (elements.success) elements.success.textContent = String(run?.successes ?? 0);
+    if (elements.probability) elements.probability.textContent = `${probability}%`;
+}
+
+function resetBulkProcessUI() {
+    updateBulkProcessUI(null, 'idle');
+    updateBulkControls();
+}
+
+function scheduleBulkTick(run, delay) {
+    if (bulkTimer) window.clearTimeout(bulkTimer);
+    bulkTimer = window.setTimeout(() => processBulkTick(run.id), delay);
+}
+
+function processBulkTick(runId) {
+    const run = bulkRun;
+    if (!run || run.id !== runId || run.paused || run.complete) return;
+
+    const trialsPerFrame = run.target === 100 ? 1 : 10;
+    let chartChanged = false;
+    for (let step = 0; step < trialsPerFrame && run.total < run.target; step += 1) {
+        run.lastOutcome = simulateOnce(100);
+        run.total += 1;
+        if (run.lastOutcome) run.successes += 1;
+        const sampleIndex = Math.min(99, Math.ceil((run.total / run.target) * 100) - 1);
+        run.samples[sampleIndex] = Number(((run.successes / run.total) * 100).toFixed(1));
+        chartChanged = true;
     }
 
-    document.getElementById('total-simulations').textContent = String(times);
-    document.getElementById('success-count').textContent = String(successCount);
-    document.getElementById('current-probability').textContent = `${((successCount / times) * 100).toFixed(1)}%`;
-    if (probabilityChart) {
-        probabilityChart.samples = samples;
+    if (chartChanged && probabilityChart) {
+        probabilityChart.samples = run.samples;
         renderProbabilityChart();
     }
+    updateBulkProcessUI(run, 'running');
+
+    if (run.total >= run.target) {
+        run.complete = true;
+        bulkSimulationRunning = false;
+        updateBulkProcessUI(run, 'complete', `已完成 ${run.target} 次模拟；最终成功 ${run.successes} 次，概率 ${((run.successes / run.target) * 100).toFixed(1)}%。`);
+        bulkRun = null;
+        updateBulkControls();
+        return;
+    }
+    scheduleBulkTick(run, run.target === 100 ? 58 : 42);
+}
+
+function runBulkSimulation(times) {
+    if (bulkRun || currentPageIndex !== 4) return;
+    const run = {
+        id: ++bulkRunId,
+        target: times,
+        total: 0,
+        successes: 0,
+        samples: Array(100).fill(null),
+        lastOutcome: null,
+        paused: false,
+        complete: false
+    };
+    bulkRun = run;
+    bulkSimulationRunning = true;
+    if (probabilityChart) {
+        probabilityChart.samples = run.samples;
+        renderProbabilityChart();
+    }
+    updateBulkControls();
+    updateBulkProcessUI(run, 'running', `即将逐次运行 ${times} 次模拟；观察每一次成功或失败如何改变曲线。`);
+    scheduleBulkTick(run, 260);
+}
+
+function pauseBulkSimulation(detail = '') {
+    if (!bulkRun || bulkRun.paused || bulkRun.complete) return;
+    bulkRun.paused = true;
     bulkSimulationRunning = false;
+    if (bulkTimer) window.clearTimeout(bulkTimer);
+    bulkTimer = null;
+    updateBulkProcessUI(bulkRun, 'paused', detail || `停在第 ${bulkRun.total} 次；点击“继续”后从这里接着播放。`);
+    updateBulkControls();
+}
+
+function toggleBulkSimulation() {
+    if (!bulkRun || bulkRun.complete) return;
+    if (!bulkRun.paused) {
+        pauseBulkSimulation();
+        return;
+    }
+    bulkRun.paused = false;
+    bulkSimulationRunning = true;
+    updateBulkProcessUI(bulkRun, 'running', `从第 ${bulkRun.total + 1} 次继续逐次模拟。`);
+    updateBulkControls();
+    scheduleBulkTick(bulkRun, 80);
 }
 
 function simulateOnce(n) {
@@ -508,13 +630,16 @@ function simulateOnce(n) {
 }
 
 function resetBulkSimulation() {
+    bulkRunId += 1;
+    if (bulkTimer) window.clearTimeout(bulkTimer);
+    bulkTimer = null;
+    bulkRun = null;
+    bulkSimulationRunning = false;
     if (probabilityChart) {
-        probabilityChart.samples = Array(100).fill(50);
+        probabilityChart.samples = Array(100).fill(null);
         renderProbabilityChart();
     }
-    document.getElementById('total-simulations').textContent = '0';
-    document.getElementById('success-count').textContent = '0';
-    document.getElementById('current-probability').textContent = '0%';
+    resetBulkProcessUI();
 }
 
 // ===== 互动游戏 =====

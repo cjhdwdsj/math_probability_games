@@ -345,11 +345,27 @@ h2 { font-size: clamp(1.55rem, 3vw, 2.3rem); line-height: 1.25; margin-top: 0.28
 .chart-theory { stroke: #e96e56; stroke-width: 2; stroke-dasharray: 7 5; }
 .chart-theory-label { fill: #c95441; font-size: 12px; font-family: "Noto Sans SC", system-ui, sans-serif; font-weight: 700; }
 .chart-line { fill: none; stroke: #3c8ec0; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.simulation-process { margin: 0.65rem 0; padding: 0.55rem 0.7rem; border: 1.5px dashed rgba(47, 42, 37, 0.3); border-radius: 0.7rem; background: #f7f1e6; transition: background-color 160ms var(--ease-out), border-color 160ms var(--ease-out); }
+.process-heading { display: flex; align-items: center; gap: 0.45rem; min-width: 0; color: var(--ink); font-size: 0.8rem; }
+.process-orb { width: 0.58rem; height: 0.58rem; flex: 0 0 auto; border: 1.5px solid var(--ink); border-radius: 50%; background: #d8d4cd; }
+.simulation-process.is-running { border-color: var(--sky); background: #eef8fc; }
+.simulation-process.is-running .process-orb { background: var(--sun); animation: status-pulse 760ms var(--ease-out) infinite; }
+.simulation-process.is-paused { border-color: #d4aa5b; background: #fff9e7; }
+.simulation-process.is-paused .process-orb { background: var(--sun); }
+.simulation-process.is-complete { border-color: var(--leaf); background: #edf7ea; }
+.simulation-process.is-complete .process-orb { background: var(--leaf); }
+.trial-outcome { margin-left: auto; padding: 0.16rem 0.42rem; border-radius: 1rem; background: #ded9d0; color: var(--muted-ink); font-size: 0.69rem; font-weight: 700; white-space: nowrap; transition: color 160ms var(--ease-out), background-color 160ms var(--ease-out), transform 160ms var(--ease-out); }
+.trial-outcome.is-success { background: #cbe9bd; color: #377528; transform: scale(1.03); }
+.trial-outcome.is-fail { background: #f5c1b5; color: #9c4134; transform: scale(1.03); }
+.process-track { height: 0.46rem; margin: 0.45rem 0 0.35rem; overflow: hidden; border: 1px solid rgba(47, 42, 37, 0.18); border-radius: 1rem; background: #e0ddd6; }
+.process-track span { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--sky), #78c9e1); transition: width 120ms var(--ease-out); }
+#bulk-process-detail { min-height: 1.35rem; margin: 0; color: var(--muted-ink); font-size: 0.76rem; line-height: 1.45; }
 .bulk-controls { display: flex; align-items: center; justify-content: space-between; gap: 0.7rem; }
 .stats { display: flex; flex-wrap: wrap; gap: 0.45rem; }
 .stats span { padding: 0.35rem 0.55rem; border-radius: 0.5rem; background: #edf7ea; font-size: 0.79rem; }
 .stats b { color: var(--sky-deep); font-variant-numeric: tabular-nums; }
 .bulk-controls .btn-group { margin: 0; }
+.bulk-buttons { justify-content: flex-end; }
 
 /* Theory */
 .card-theory { max-width: 60rem; }
