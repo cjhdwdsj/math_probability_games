@@ -1596,23 +1596,22 @@ function renderSSRSwarm(neededDraws, nVal) {
     const centerY = cssHeight / 2;
 
     const displayCount = neededDraws;
-    const minR = 24;  // 内层贴近黄金核心
-    const maxR = Math.min(centerX, centerY) - 16; // 自适应最大外径
+    const minR = 52;  // 内层贴近黄金核心立牌边缘 (半宽约 50px)
+    const maxR = 114; // 外层延伸到圆环边缘
     const goldenAngle = 2.399963229728653; // 137.507764度 黄金角分布
 
     // 基础自适应字号曲线：
-    // 200袋左右放大到 12~14px（饱满明显），1000+袋缩小到 4.5~5.2px（银河星系般超高密铺）
     let baseFontSize;
     if (displayCount <= 40) {
-        baseFontSize = 19;
+        baseFontSize = 18;
     } else if (displayCount <= 120) {
-        baseFontSize = 19 - ((displayCount - 40) / 80) * 4.5;
+        baseFontSize = 18 - ((displayCount - 40) / 80) * 4;
     } else if (displayCount <= 300) {
-        baseFontSize = 14.5 - ((displayCount - 120) / 180) * 3.5;
+        baseFontSize = 14 - ((displayCount - 120) / 180) * 3.5;
     } else if (displayCount <= 800) {
-        baseFontSize = 11 - ((displayCount - 300) / 500) * 4;
+        baseFontSize = 10.5 - ((displayCount - 300) / 500) * 3.5;
     } else {
-        baseFontSize = Math.max(4, 7 - ((displayCount - 800) / 800) * 2.8);
+        baseFontSize = Math.max(4.5, 7 - ((displayCount - 800) / 800) * 2.5);
     }
     baseFontSize = Math.round(baseFontSize * 10) / 10;
 
@@ -1632,15 +1631,16 @@ function renderSSRSwarm(neededDraws, nVal) {
             char = ALL_CHARACTERS[randIdx] || ALL_CHARACTERS[0];
         }
 
-        const norm = Math.sqrt((i + 0.5) / displayCount); // 均匀面积密度
+        const norm = Math.sqrt((i + 0.5) / displayCount); // 均匀面积密度 (0 -> 1 从内到外)
         const r = minR + norm * (maxR - minR);
         const theta = i * goldenAngle;
 
         const x = centerX + r * Math.cos(theta);
         const y = centerY + r * Math.sin(theta);
 
-        const scale = 1.05 - norm * 0.33;
-        const fontSize = Math.max(4, Math.round(baseFontSize * scale));
+        // 从内到外严格呈现“由大到小”的明显层级衰减 (内层 1.35x 放大 -> 外层 0.65x 密集微缩)
+        const scale = 1.35 - norm * 0.70;
+        const fontSize = Math.max(4, Math.round(baseFontSize * scale * 10) / 10);
 
         ctx.font = `${fontSize}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif`;
         ctx.fillText(char.icon, x, y);
