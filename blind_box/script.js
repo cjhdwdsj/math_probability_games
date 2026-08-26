@@ -5,7 +5,7 @@
 // ========================
 // 1. 全局配置与状态
 // ========================
-const TOTAL_PAGES = 8;
+const TOTAL_PAGES = 9;
 let currentPage = 0;
 
 const CHARACTERS = [
@@ -233,10 +233,21 @@ function updateNavigation() {
         btnNext.innerHTML = '直接盲抽还是去二手？这是个问题 <span aria-hidden="true">→</span>';
         btnNext.onclick = nextPage;
     } else if (currentPage === 7) {
-        btnNext.className = "btn btn-primary btn-gold";
         btnNext.innerHTML = '收官总结：全图鉴通关指南 <span aria-hidden="true">→</span>';
-        btnNext.onclick = () => goToPage(0);
+        btnNext.onclick = nextPage;
+    } else if (currentPage === 8) {
+        btnNext.className = "btn btn-primary btn-gold";
+        btnNext.innerHTML = '回到开头，重新开箱 🔄';
+        btnNext.onclick = resetAllAndGoToStart;
     }
+}
+
+function resetAllAndGoToStart() {
+    userGuess = 14;
+    const guessElem = document.getElementById("stepper-guess-num");
+    if (guessElem) guessElem.textContent = userGuess;
+    initTabletopScene(userGuess);
+    goToPage(0);
 }
 
 function initKeyboardControls() {
