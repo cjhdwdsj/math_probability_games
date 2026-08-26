@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📦 单文件 HTML 一键打包工具 - 数学与概率探索实验室</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700&family=Noto+Sans+SC:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fdf9ee;
+            --ink: #2f2a25;
+            --muted: #6e665e;
+            --coral: #e96e56;
+            --gold: #f7c84b;
+            --sky: #5aabd9;
+            --leaf: #79ad62;
+            --purple: #9a6bc7;
+            --paper: #fffef9;
+            --line: rgba(47, 42, 37, 0.85);
+            --shadow: 5px 6px 0 rgba(47, 42, 37, 0.16);
+            --shadow-hover: 8px 9px 0 var(--line);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: "Noto Sans SC", system-ui, sans-serif;
+            background:
+                radial-gradient(circle at 10% 15%, rgba(247, 200, 75, 0.25), transparent 18rem),
+                radial-gradient(circle at 90% 85%, rgba(90, 171, 217, 0.2), transparent 22rem),
+                radial-gradient(circle at 85% 15%, rgba(233, 110, 86, 0.15), transparent 16rem),
+                var(--bg);
+            color: var(--ink);
+            padding: 2.5rem 1.2rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .nav-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            text-decoration: none;
+            color: var(--muted);
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            padding: 0.35rem 0.8rem;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.04);
+            transition: all 0.2s ease;
+        }
+        .nav-back:hover {
+            color: var(--ink);
+            background: rgba(0,0,0,0.08);
+        }
+
+        .eyebrow {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--coral);
+            letter-spacing: 0.1em;
+            margin-bottom: 0.4rem;
+        }
+
+        h1 {
+            font-family: "Noto Serif SC", serif;
+            font-size: 2.2rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 1.05rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .info-callout {
+            background: rgba(90, 171, 217, 0.12);
+            border: 2px dashed var(--sky);
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .pack-card {
+            background: var(--paper);
+            border: 2.5px solid var(--line);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .pack-card:hover {
+            transform: translate(-3px, -3px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .card-icon {
+            font-size: 2.2rem;
+        }
+
+        .card-title {
+            font-family: "Noto Serif SC", serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .card-desc {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-bottom: 1.2rem;
+            line-height: 1.5;
+        }
+
+        .card-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-bottom: 1.2rem;
+            padding: 0.4rem 0.6rem;
+            background: rgba(0,0,0,0.03);
+            border-radius: 6px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.6rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 0.7rem 0.8rem;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border: 2px solid var(--line);
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            transition: transform 0.12s ease, box-shadow 0.12s ease;
+            box-shadow: 2px 3px 0 var(--line);
+        }
+
+        .btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 5px 0 var(--line);
+        }
+        .btn:active {
+            transform: translate(1px, 1px);
+            box-shadow: 1px 1px 0 var(--line);
+        }
+
+        .btn-primary {
+            background: var(--gold);
+            color: var(--ink);
+        }
+
+        .btn-outline {
+            background: #fff;
+            color: var(--ink);
+        }
+
+        .batch-section {
+            background: var(--paper);
+            border: 2.5px solid var(--line);
+            border-radius: 16px;
+            padding: 1.5rem 1.8rem;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .batch-title {
+            font-family: "Noto Serif SC", serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .batch-desc {
+            color: var(--muted);
+            font-size: 0.95rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--ink);
+            color: #fff;
+            padding: 0.8rem 1.4rem;
+            border-radius: 10px;
+            font-weight: 600;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="index.html" class="nav-back">← 返回主页探索实验室</a>
+            <div class="eyebrow">PORTABLE OFFLINE BUNDLER</div>
+            <h1>📦 单文件 HTML 一键打包工具</h1>
+            <p class="subtitle">将多页面游戏中的所有 CSS 样式、JavaScript 逻辑与资源全量内嵌为一个纯净独立的单个 `.html` 文件，免服务器直接双击运行！</p>
+        </header>
+
+        <div class="info-callout">
+            💡 <strong>使用说明：</strong>
+            单文件 HTML 将所有依赖全部内联，无需配置任何本地服务器、无跨域限制、不依赖网络即可离线完美运行，极度方便离线分享、投屏演示或归档留存！
+        </div>
+
+        <div class="projects-grid">
+            <!-- 盲盒游戏卡片 -->
+            <div class="pack-card">
+                <div>
+                    <div class="card-header">
+                        <span class="card-icon">🎁</span>
+                        <div class="card-title">盲盒收集大揭秘</div>
+                    </div>
+                    <p class="card-desc">全流程 9 大章节交互：拟真拆盒台、大满贯波浪走马灯、调和级数台阶、万人模拟、SSR GPU Canvas 星云与拍立得防坑锦囊。</p>
+                    <div class="card-meta">📁 目录: <code>blind_box/</code> ｜ 包含 3 个源文件</div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="bundleInBrowser('blind_box', '盲盒收集大揭秘.standalone.html')">📦 一键打包下载</button>
+                    <a href="dist/blind_box.standalone.html" target="_blank" class="btn btn-outline">🚀 运行单文件</a>
+                </div>
+            </div>
+
+            <!-- 飞机座位卡片 -->
+            <div class="pack-card">
+                <div>
+                    <div class="card-header">
+                        <span class="card-icon">✈️</span>
+                        <div class="card-title">飞机座位错配问题</div>
+                    </div>
+                    <p class="card-desc">登机座序大乱斗：经典的 50% 概率悖论探秘与万人蒙特卡洛模拟演算交互。</p>
+                    <div class="card-meta">📁 目录: <code>airplane_seating/</code> ｜ 包含 3 个源文件</div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="bundleInBrowser('airplane_seating', '飞机座位问题.standalone.html')">📦 一键打包下载</button>
+                    <a href="dist/airplane_seating.standalone.html" target="_blank" class="btn btn-outline">🚀 运行单文件</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 批量打包卡片 -->
+        <div class="batch-section">
+            <div class="batch-title">⚡ 极速批量打包与脚本模式</div>
+            <p class="batch-desc">您也可以在项目根目录下双击运行 <strong><code>打包单文件.bat</code></strong> 或在终端执行 <strong><code>node bundle.js all</code></strong>，一键全量生成所有单文件至 <code>dist/</code> 目录！</p>
+            <button class="btn btn-primary" style="max-width: 320px; margin: 0 auto; display: block;" onclick="bundleAllInBrowser()">📦 在浏览器中全部依次下载</button>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function showToast(msg) {
+            const toast = document.getElementById("toast");
+            toast.textContent = msg;
+            toast.classList.add("show");
+            setTimeout(() => toast.classList.remove("show"), 3000);
+        }
+
+        async function bundleInBrowser(folder, filename) {
+            showToast(`正在读取 ${folder}/ 并打包内嵌中...`);
+            try {
+                // 1. 读取 HTML
+                const htmlRes = await fetch(`${folder}/index.html`);
+                if (!htmlRes.ok) throw new Error("无法读取 index.html");
+                let html = await htmlRes.text();
+
+                // 2. 读取并内联 CSS
+                const cssRes = await fetch(`${folder}/style.css`);
+                if (cssRes.ok) {
+                    const css = await cssRes.text();
+                    html = html.replace(/<link[^>]*rel=["']stylesheet["'][^>]*href=["'][^"']*style\.css[^"']*["'][^>]*\/?>|<link[^>]*href=["'][^"']*style\.css[^"']*["'][^>]*rel=["']stylesheet["'][^>]*\/?>/i, `<style>\n/* Inlined style.css */\n${css}\n</style>`);
+                }
+
+                // 3. 读取并内联 JS
+                const jsRes = await fetch(`${folder}/script.js`);
+                if (jsRes.ok) {
+                    const js = await jsRes.text();
+                    const safeJs = js.replace(/<\/script>/gi, '<\\/script>');
+                    html = html.replace(/<script[^>]*src=["'][^"']*script\.js[^"']*["'][^>]*>\s*<\/script>/i, `<script>\n/* Inlined script.js */\n${safeJs}\n<\/script>`);
+                }
+
+                // 4. 触发浏览器单文件下载
+                const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                showToast(`✅ 打包成功！已触发下载：${filename}`);
+            } catch (err) {
+                console.error(err);
+                showToast(`⚠️ 打包失败: ${err.message} (若从 file:// 协议打开请使用 bundle.js 或 .bat 脚本)`);
+            }
+        }
+
+        async function bundleAllInBrowser() {
+            await bundleInBrowser('blind_box', '盲盒收集大揭秘.standalone.html');
+            setTimeout(() => {
+                bundleInBrowser('airplane_seating', '飞机座位问题.standalone.html');
+            }, 800);
+        }
+    </script>
+</body>
+</html>

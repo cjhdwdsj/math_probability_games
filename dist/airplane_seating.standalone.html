@@ -1,0 +1,1833 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="通过逐页互动演示理解飞机座位错配问题为何恒为二分之一。">
+    <title>飞机座位错配问题 - 经典概率悖论</title>
+    <style>
+/* Inlined from style.css */
+:root {
+    --bg-color: #fdf9ee;
+    --ink: #2f2a25;
+    --muted-ink: #6e665e;
+    --sky: #5aabd9;
+    --sky-deep: #3c8ec0;
+    --leaf: #79ad62;
+    --coral: #e96e56;
+    --sun: #f7c84b;
+    --paper: #fffef9;
+    --line: rgba(47, 42, 37, 0.82);
+    --soft-line: rgba(47, 42, 37, 0.14);
+    --shadow: 6px 7px 0 rgba(47, 42, 37, 0.14);
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overscroll-behavior: none;
+    overflow: hidden;
+}
+
+body {
+    color: var(--ink);
+    background:
+        radial-gradient(circle at 9% 13%, rgba(247, 200, 75, 0.22), transparent 17rem),
+        radial-gradient(circle at 92% 86%, rgba(90, 171, 217, 0.18), transparent 20rem),
+        var(--bg-color);
+    font-family: "Noto Sans SC", system-ui, sans-serif;
+    line-height: 1.5;
+}
+
+button, select { font: inherit; }
+button:not(:disabled), select:not(:disabled) { cursor: pointer; }
+button:focus-visible, select:focus-visible, a:focus-visible { outline: 3px solid var(--sun); outline-offset: 3px; }
+
+/* Decorative stationery marks */
+.doodle {
+    position: fixed;
+    z-index: -1;
+    width: 5rem;
+    height: 5rem;
+    opacity: 0.42;
+    pointer-events: none;
+    border: 2px dashed var(--ink);
+}
+.doodle-1 { top: 14%; right: 6%; border-radius: 48% 52% 42% 58%; transform: rotate(21deg); }
+.doodle-2 { bottom: 15%; left: 5%; width: 3.5rem; height: 3.5rem; border-radius: 50%; }
+.doodle-3 { top: 29%; left: 7%; width: 3.5rem; height: 1.5rem; border-width: 0 0 2px; transform: rotate(-14deg); }
+.doodle-4 { bottom: 23%; right: 7%; width: 2.8rem; height: 2.8rem; border-radius: 6px; transform: rotate(25deg); }
+
+.lesson-app {
+    height: 100dvh;
+    min-height: 0;
+    display: grid;
+    grid-template-rows: 4.2rem minmax(0, 1fr) 4.8rem;
+    padding: 0 1.25rem;
+    isolation: isolate;
+}
+
+.lesson-topbar, .lesson-navigation {
+    width: min(100%, 72rem);
+    margin-inline: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.lesson-topbar {
+    border-bottom: 1px solid var(--soft-line);
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    color: var(--ink);
+    text-decoration: none;
+    font-family: "Noto Serif SC", serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.progress-copy {
+    color: var(--muted-ink);
+    font-size: 0.82rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+.progress-copy #current-page { color: var(--ink); }
+.progress-separator { margin: 0 0.2rem; color: rgba(47, 42, 37, 0.45); }
+.progress-label { margin-left: 0.45rem; font-weight: 400; }
+
+.lesson-stage {
+    position: relative;
+    width: min(100%, 66rem);
+    min-height: 0;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+.lesson-page {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: clamp(0.8rem, 2vh, 1.5rem) 0;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(1.75rem);
+    transition: opacity 220ms var(--ease-out), transform 260ms var(--ease-out);
+}
+.lesson-page.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+}
+.lesson-page.exit-left { opacity: 0; transform: translateX(-1.75rem); }
+
+.lesson-card {
+    width: min(100%, 58rem);
+    max-height: 100%;
+    overflow: hidden;
+    position: relative;
+    padding: clamp(1rem, 3vw, 2.4rem);
+    background: rgba(255, 254, 249, 0.94);
+    border: 2px solid var(--line);
+    border-radius: 1.25rem 1.55rem 1.2rem 1.4rem;
+    box-shadow: var(--shadow);
+}
+.lesson-card::before {
+    content: "";
+    position: absolute;
+    top: 0.45rem;
+    right: 1.2rem;
+    width: 3.4rem;
+    border-top: 2px solid var(--sun);
+    transform: rotate(-2deg);
+}
+
+h1, h2, h3, p { margin: 0; }
+h1, h2 { font-family: "Noto Serif SC", serif; letter-spacing: 0.01em; }
+h1 { font-size: clamp(2rem, 4.6vw, 3.8rem); line-height: 1.2; }
+h2 { font-size: clamp(1.55rem, 3vw, 2.3rem); line-height: 1.25; margin-top: 0.28rem; }
+.lead { color: var(--muted-ink); margin-top: 0.55rem; font-size: clamp(0.9rem, 1.7vw, 1.03rem); }
+.eyebrow, .section-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--sky-deep);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+/* Cover */
+.cover-card {
+    max-width: 52rem;
+    text-align: center;
+    border-width: 2px;
+    background: linear-gradient(132deg, rgba(255, 255, 255, 0.96), rgba(231, 247, 255, 0.89));
+}
+.cover-icon { margin: 0.35rem 0; font-size: clamp(2.5rem, 6.5vw, 4.5rem); animation: float 2.4s ease-in-out infinite; }
+.cover-subtitle { max-width: 37rem; margin: 0.6rem auto 0.4rem; color: var(--muted-ink); font-size: clamp(0.95rem, 1.8vw, 1.13rem); }
+.cover-intro { max-width: 31rem; margin: 0 auto 1rem; color: var(--ink); font-size: 0.92rem; line-height: 1.7; }
+.cover-subtitle strong, .summary-answer strong { color: var(--coral); }
+.rule-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.65rem;
+    max-width: 46rem;
+    margin: 0 auto 1rem;
+}
+.rule-list p {
+    min-height: 4.6rem;
+    display: grid;
+    align-content: center;
+    gap: 0.1rem;
+    padding: 0.65rem;
+    border: 1.5px dashed rgba(47, 42, 37, 0.38);
+    border-radius: 0.8rem;
+    background: rgba(255, 254, 249, 0.65);
+    font-size: clamp(0.78rem, 1.5vw, 0.9rem);
+}
+.question { margin-bottom: 1rem; color: var(--ink); font-weight: 700; }
+
+/* Buttons and lower navigation */
+.btn {
+    border: 2px solid var(--line);
+    border-radius: 0.72rem 0.9rem 0.8rem 0.85rem;
+    padding: 0.58rem 0.85rem;
+    color: var(--ink);
+    background: var(--paper);
+    box-shadow: 2px 3px 0 rgba(47, 42, 37, 0.22);
+    font-size: 0.84rem;
+    font-weight: 700;
+    transition: transform 160ms var(--ease-out), box-shadow 160ms var(--ease-out), background-color 160ms var(--ease-out);
+}
+.btn:hover { transform: translate(-1px, -1px); box-shadow: 4px 5px 0 rgba(47, 42, 37, 0.2); }
+.btn:active { transform: scale(0.97); box-shadow: 1px 1px 0 rgba(47, 42, 37, 0.2); }
+.btn-primary { border-color: var(--ink); color: var(--ink); background: var(--sun); }
+.btn-secondary { background: #b9e0f3; }
+.btn-outline { background: transparent; }
+.btn-quiet { border-color: transparent; background: transparent; box-shadow: none; color: var(--muted-ink); }
+.start-btn { padding-inline: 1.05rem; }
+.btn-group { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.55rem; margin-top: 0.85rem; }
+
+.lesson-navigation {
+    min-height: 0;
+    border-top: 1px solid var(--soft-line);
+    gap: 0.8rem;
+}
+.nav-button {
+    min-width: 5.5rem;
+    border: 0;
+    background: transparent;
+    color: var(--ink);
+    padding: 0.45rem 0;
+    font-size: 0.87rem;
+    font-weight: 700;
+    transition: color 160ms var(--ease-out), transform 160ms var(--ease-out);
+}
+.nav-button:hover:not(:disabled) { color: var(--sky-deep); transform: translateX(2px); }
+.nav-prev:hover:not(:disabled) { transform: translateX(-2px); }
+.nav-button:disabled { color: rgba(47, 42, 37, 0.3); cursor: not-allowed; }
+.page-dots { display: flex; gap: 0.42rem; align-items: center; justify-content: center; }
+.page-dot {
+    width: 0.58rem;
+    height: 0.58rem;
+    padding: 0;
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+    background: transparent;
+    transition: width 180ms var(--ease-out), border-radius 180ms var(--ease-out), background-color 180ms var(--ease-out);
+}
+.page-dot.active { width: 1.35rem; border-radius: 1rem; background: var(--sun); }
+
+/* Seat illustrations and N=2 / N=3 */
+.seats-small { display: flex; justify-content: center; gap: 0.7rem; margin: 1rem 0; }
+.seat.mini {
+    position: relative;
+    width: 3rem;
+    height: 3rem;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border: 2px solid var(--line);
+    border-radius: 0.7rem 0.85rem 0.7rem 0.8rem;
+    background: #fff;
+    color: var(--ink);
+    font-weight: 700;
+    transition: transform 160ms var(--ease-out), background-color 180ms var(--ease-out), box-shadow 180ms var(--ease-out);
+}
+.seat.mini::after { content: ""; position: absolute; left: 0.34rem; right: 0.34rem; bottom: -0.26rem; border-bottom: 2px solid var(--line); border-radius: 50%; }
+.seat.mini.available:hover { transform: translateY(-0.2rem); background: #fff7cf; }
+.seat.mini.last { box-shadow: inset 0 0 0 3px rgba(247, 200, 75, 0.46); }
+.seat.mini.occupied { background: #bde2ae; }
+.seat.mini.wrong { background: #f7b4a4; }
+.seat.mini.current { box-shadow: 0 0 0 4px rgba(247, 200, 75, 0.75); animation: seat-result-pulse 920ms var(--ease-out) 2; }
+.seat.mini.checking { background: #fff3bd; animation: seat-check 520ms var(--ease-out) infinite alternate; }
+.seat.mini.target { background: #d7eef9; box-shadow: 0 0 0 5px rgba(90, 171, 217, 0.28); animation: seat-target-pulse 760ms var(--ease-out) infinite; }
+.rule-seat.rolling { background: #fff3bd; box-shadow: 0 0 0 4px rgba(247, 200, 75, 0.72); animation: rule-roll 150ms var(--ease-out) both; }
+
+/* Rules introduction */
+.card-rules { max-width: 53rem; padding: clamp(0.7rem, 1.8vh, 1.15rem) clamp(0.9rem, 2.2vw, 1.6rem); text-align: center; }
+.card-rules h2 { font-size: clamp(1.35rem, 2.5vw, 1.9rem); }
+.card-rules .lead { max-width: 46rem; margin: 0.3rem auto 0; font-size: clamp(0.76rem, 1.45vw, 0.9rem); line-height: 1.45; }
+.rule-flow { display: grid; grid-template-columns: minmax(0, 0.95fr) 0.75rem minmax(0, 1.08fr) 0.75rem minmax(0, 1.35fr) 0.75rem minmax(0, 0.75fr); align-items: center; max-width: 48rem; margin: 0.35rem auto 0.22rem; }
+.flow-node, .flow-branch { min-width: 0; padding: 0.23rem 0.38rem; border: 1.5px solid rgba(47, 42, 37, 0.32); border-radius: 0.6rem; background: #f7f1e6; color: var(--muted-ink); text-align: center; transition: background-color 180ms var(--ease-out), border-color 180ms var(--ease-out), box-shadow 180ms var(--ease-out), transform 180ms var(--ease-out); }
+.flow-node strong, .flow-branch strong { display: block; color: var(--ink); font-size: 0.73rem; line-height: 1.2; }
+.flow-node small { display: block; margin-top: 0.04rem; font-size: 0.61rem; line-height: 1.2; }
+.flow-tag, .branch-label { display: inline-block; margin-bottom: 0.04rem; padding: 0.04rem 0.3rem; border-radius: 1rem; background: rgba(47, 42, 37, 0.1); color: var(--muted-ink); font-size: 0.56rem; font-weight: 700; }
+.flow-arrow { display: grid; place-items: center; color: rgba(47, 42, 37, 0.58); font-size: 1rem; line-height: 1; }
+.flow-split { display: none; }
+.flow-branches { display: grid; grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 0.28rem; min-width: 0; }
+.flow-branch { min-height: 2.1rem; display: grid; align-content: center; padding: 0.2rem 0.28rem; }
+.flow-branch strong { font-size: 0.64rem; line-height: 1.15; }
+.flow-node.is-active, .flow-branch.is-active { border-color: var(--ink); background: #fff4bd; box-shadow: 0 0 0 3px rgba(247, 200, 75, 0.48); color: var(--ink); transform: translateY(-0.05rem); }
+.flow-node.is-active .flow-tag, .flow-branch.is-active .branch-label { background: var(--sun); color: var(--ink); }
+.rule-flow-hint, .rules-note { display: none; }
+.rules-seat-row { display: flex; justify-content: center; gap: 0.45rem; margin: 0.28rem 0; }
+.rules-animation-area { min-height: 3.55rem; max-width: 43rem; margin: 0 auto; padding: 0.38rem 0.58rem; overflow: hidden; border: 1.5px dashed rgba(47, 42, 37, 0.32); border-radius: 0.65rem; background: linear-gradient(90deg, rgba(90, 171, 217, 0.06) 1px, transparent 1px) 0 0 / 1.2rem 1.2rem, #f7f1e6; text-align: left; }
+.rules-animation-area .animation-text { min-height: 0; margin-bottom: 0; font-size: 0.74rem; line-height: 1.35; }
+.rules-controls { margin-top: 0.42rem; }
+.rules-controls .btn { padding: 0.42rem 0.68rem; font-size: 0.76rem; }
+
+.card-n2, .card-n3, .card-pattern { max-width: 48rem; text-align: center; }
+.n2-choice-guide { margin: 0.3rem 0 0; color: var(--muted-ink); font-size: 0.81rem; }
+.n2-choice-seats { margin: 0.55rem 0 0.65rem; }
+.n2-seat-choice { font: inherit; cursor: pointer; }
+.n2-seat-choice:focus-visible { outline: 3px solid var(--sky); outline-offset: 3px; }
+.n2-animation-area { min-height: 4.5rem; max-width: 38rem; margin: 0 auto 0.65rem; padding: 0.58rem 0.75rem; overflow: hidden; border: 1.5px dashed rgba(47, 42, 37, 0.32); border-radius: 0.75rem; background: linear-gradient(90deg, rgba(90, 171, 217, 0.06) 1px, transparent 1px) 0 0 / 1.2rem 1.2rem, #f7f1e6; text-align: left; }
+.n2-animation-area .animation-text { min-height: 0; margin-bottom: 0; }
+.n2-scenarios { display: grid; gap: 0.55rem; max-width: 39rem; margin: 0 auto; text-align: left; }
+.scenario {
+    display: grid;
+    grid-template-columns: auto minmax(7rem, 1fr) minmax(9rem, 1.2fr);
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.62rem 0.8rem;
+    border-radius: 0.68rem;
+    background: #f7f1e6;
+    font-size: 0.86rem;
+}
+.scenario-dot { width: 0.56rem; height: 0.56rem; border-radius: 50%; }
+.scenario.is-active { background: #fff4bd; box-shadow: inset 0 0 0 2px var(--sun); transform: translateY(-0.05rem); }
+.success-dot { background: var(--leaf); } .fail-dot { background: var(--coral); }
+.success { color: #4e8639; } .fail { color: #c95441; }
+.result { margin-top: 0.8rem; font-size: 0.94rem; font-weight: 700; }
+.n2-explanation { max-width: 36rem; margin: 0.45rem auto 0; padding: 0.46rem 0.7rem; border-radius: 0.6rem; background: #fff4bd; color: #67562d; font-size: 0.8rem; line-height: 1.5; }
+.highlight { color: var(--sky-deep); }
+.animation-area {
+    min-height: 8.7rem;
+    display: grid;
+    align-items: center;
+    max-width: 38rem;
+    margin: 0.8rem auto;
+    padding: 0.75rem 0.9rem;
+    overflow: hidden;
+    border: 1.5px dashed rgba(47, 42, 37, 0.32);
+    border-radius: 0.75rem;
+    background:
+        linear-gradient(90deg, rgba(90, 171, 217, 0.06) 1px, transparent 1px) 0 0 / 1.2rem 1.2rem,
+        #f7f1e6;
+    text-align: left;
+}
+.animation-status { width: 100%; }
+.status-line { display: flex; align-items: center; gap: 0.45rem; color: var(--ink); font-size: 0.9rem; }
+.status-orb { width: 0.62rem; height: 0.62rem; flex: 0 0 auto; border: 1.5px solid var(--ink); border-radius: 50%; background: #d8d4cd; }
+.is-running .status-orb, .is-checking .status-orb { background: var(--sun); animation: status-pulse 760ms var(--ease-out) infinite; }
+.is-seated .status-orb, .is-success .status-orb { background: var(--leaf); }
+.is-fail .status-orb { background: var(--coral); }
+.animation-text { min-height: 2.7em; margin: 0.25rem 0 0.55rem; color: var(--muted-ink); font-size: 0.84rem; line-height: 1.6; }
+.animation-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.35rem; padding: 0; margin: 0; list-style: none; }
+.animation-steps li { display: flex; align-items: center; gap: 0.32rem; min-width: 0; color: #857c72; font-size: 0.7rem; line-height: 1.25; }
+.animation-steps b { display: grid; place-items: center; width: 1.1rem; height: 1.1rem; flex: 0 0 auto; border: 1px solid currentColor; border-radius: 50%; font-size: 0.66rem; }
+.animation-steps span { min-width: 0; }
+.animation-steps li.is-active { color: var(--sky-deep); font-weight: 700; }
+.animation-steps li.is-active b { color: var(--ink); border-color: var(--ink); background: var(--sun); }
+.animation-steps li.is-done { color: #4e8639; }
+.animation-steps li.is-done b { border-color: #4e8639; background: #bde2ae; }
+.btn:disabled { cursor: not-allowed; opacity: 0.58; box-shadow: none; transform: none; }
+
+/* Pattern */
+.pattern-results { display: grid; gap: 0.5rem; max-width: 36rem; margin: 1.05rem auto; }
+.result-item {
+    display: grid;
+    grid-template-columns: 3.5rem 3.4rem minmax(4rem, 1fr);
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.88rem;
+    text-align: left;
+}
+.result-item span:nth-child(2) { color: var(--sky-deep); font-weight: 700; text-align: right; }
+.result-item i { display: block; height: 0.55rem; border-radius: 1rem; background: linear-gradient(90deg, var(--sky) var(--bar), #d9e8dc var(--bar)); }
+.insight {
+    max-width: 39rem;
+    margin: 0 auto;
+    padding: 0.8rem 1rem;
+    border: 1.5px solid var(--sun);
+    border-radius: 0.8rem;
+    background: #fff9d8;
+    font-size: 0.93rem;
+}
+
+/* Bulk experiment */
+.card-bulk { max-width: 56rem; }
+.chart-container { height: clamp(9rem, 24vh, 13rem); margin: 0.85rem 0; padding: 0.55rem; border-radius: 0.8rem; background: #f7f1e6; }
+#probability-chart { display: block; width: 100%; height: 100%; overflow: visible; }
+.chart-grid { stroke: rgba(47, 42, 37, 0.14); stroke-width: 1; }
+.chart-label { fill: #6e665e; font-size: 12px; font-family: "Noto Sans SC", system-ui, sans-serif; }
+.chart-theory { stroke: #e96e56; stroke-width: 2; stroke-dasharray: 7 5; }
+.chart-theory-label { fill: #c95441; font-size: 12px; font-family: "Noto Sans SC", system-ui, sans-serif; font-weight: 700; }
+.chart-line { fill: none; stroke: #3c8ec0; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.simulation-process { margin: 0.65rem 0; padding: 0.55rem 0.7rem; border: 1.5px dashed rgba(47, 42, 37, 0.3); border-radius: 0.7rem; background: #f7f1e6; transition: background-color 160ms var(--ease-out), border-color 160ms var(--ease-out); }
+.process-heading { display: flex; align-items: center; gap: 0.45rem; min-width: 0; color: var(--ink); font-size: 0.8rem; }
+.process-orb { width: 0.58rem; height: 0.58rem; flex: 0 0 auto; border: 1.5px solid var(--ink); border-radius: 50%; background: #d8d4cd; }
+.simulation-process.is-running { border-color: var(--sky); background: #eef8fc; }
+.simulation-process.is-running .process-orb { background: var(--sun); animation: status-pulse 760ms var(--ease-out) infinite; }
+.simulation-process.is-paused { border-color: #d4aa5b; background: #fff9e7; }
+.simulation-process.is-paused .process-orb { background: var(--sun); }
+.simulation-process.is-complete { border-color: var(--leaf); background: #edf7ea; }
+.simulation-process.is-complete .process-orb { background: var(--leaf); }
+.trial-outcome { margin-left: auto; padding: 0.16rem 0.42rem; border-radius: 1rem; background: #ded9d0; color: var(--muted-ink); font-size: 0.69rem; font-weight: 700; white-space: nowrap; transition: color 160ms var(--ease-out), background-color 160ms var(--ease-out), transform 160ms var(--ease-out); }
+.trial-outcome.is-success { background: #cbe9bd; color: #377528; transform: scale(1.03); }
+.trial-outcome.is-fail { background: #f5c1b5; color: #9c4134; transform: scale(1.03); }
+.process-track { height: 0.46rem; margin: 0.45rem 0 0.35rem; overflow: hidden; border: 1px solid rgba(47, 42, 37, 0.18); border-radius: 1rem; background: #e0ddd6; }
+.process-track span { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--sky), #78c9e1); transition: width 120ms var(--ease-out); }
+#bulk-process-detail { min-height: 1.35rem; margin: 0; color: var(--muted-ink); font-size: 0.76rem; line-height: 1.45; }
+.bulk-controls { display: flex; align-items: center; justify-content: space-between; gap: 0.7rem; }
+.stats { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.stats span { padding: 0.35rem 0.55rem; border-radius: 0.5rem; background: #edf7ea; font-size: 0.79rem; }
+.stats b { color: var(--sky-deep); font-variant-numeric: tabular-nums; }
+.bulk-controls .btn-group { margin: 0; }
+.bulk-buttons { justify-content: flex-end; }
+
+/* Theory */
+.card-theory { max-width: 60rem; }
+.cases { display: grid; gap: 0.5rem; margin: 0.85rem 0; }
+.case {
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr) auto;
+    gap: 0.65rem;
+    align-items: center;
+    padding: 0.55rem 0.75rem;
+    border-left: 4px solid var(--sky);
+    border-radius: 0 0.7rem 0.7rem 0;
+    background: #f7f1e6;
+}
+.case-number { display: grid; place-items: center; width: 1.55rem; height: 1.55rem; border: 1.5px solid var(--ink); border-radius: 50%; font-family: "Noto Serif SC", serif; font-weight: 700; }
+.case strong, .case span { display: block; }
+.case strong { font-size: 0.89rem; }
+.case span { color: var(--muted-ink); font-size: 0.8rem; }
+.case b { padding: 0.2rem 0.5rem; border-radius: 1rem; font-size: 0.72rem; }
+.neutral { color: var(--muted-ink); background: #ded9d0; }
+.symmetry { display: flex; align-items: center; justify-content: center; gap: 0.8rem; margin: 0.75rem 0; }
+.seat-badge { padding: 0.38rem 0.85rem; border: 2px solid var(--ink); border-radius: 1rem; background: #b9e0f3; font-weight: 700; }
+.arrow { font-size: 1.5rem; color: var(--coral); }
+.formula { padding: 0.7rem; border-radius: 0.7rem; background: #fff4bd; text-align: center; font-family: "Noto Serif SC", serif; font-size: 0.96rem; }
+.formula strong { color: var(--coral); }
+
+/* Interactive game */
+.card-interactive { max-width: 54rem; text-align: center; }
+.game-controls { display: flex; align-items: center; justify-content: center; gap: 0.55rem; margin-top: 0.75rem; }
+.game-controls label { font-weight: 700; font-size: 0.9rem; }
+.game-controls select { padding: 0.38rem 0.7rem; border: 2px solid var(--line); border-radius: 0.55rem; background: #fffdf7; color: var(--ink); }
+.game-instructions { margin: 0.65rem 0; color: var(--muted-ink); font-size: 0.86rem; }
+.game-seats { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.55rem; max-width: 46rem; min-height: 3.3rem; margin: 0 auto; }
+#game-seats .seat.mini[data-passenger]::before, .card-n2 .seat.mini[data-passenger]::before, .card-rules .seat.mini[data-passenger]::before { content: "P" attr(data-passenger); position: absolute; top: -0.55rem; right: -0.5rem; display: grid; place-items: center; width: 1.15rem; height: 1.15rem; border: 1.5px solid var(--ink); border-radius: 50%; background: var(--sky); color: white; font-size: 0.58rem; font-weight: 700; z-index: 1; }
+.game-step-status { max-width: 38rem; min-height: 2.6rem; margin: 0.65rem auto 0; padding: 0.48rem 0.7rem; border: 1.5px dashed rgba(47, 42, 37, 0.27); border-radius: 0.65rem; background: #f7f1e6; color: var(--muted-ink); font-size: 0.8rem; line-height: 1.5; }
+.game-result { margin: 0.65rem auto 0; padding: 0.55rem; max-width: 25rem; border-radius: 0.7rem; background: #f7f1e6; }
+.game-result.hidden, .user-stats.hidden { display: none; }
+.result-indicator { font-size: 1.55rem; line-height: 1; }
+#result-text { margin-top: 0.25rem; font-size: 0.9rem; font-weight: 700; }
+.user-stats { margin: 0.6rem auto 0; padding: 0.45rem; max-width: 23rem; border-radius: 0.55rem; background: #edf7ea; font-size: 0.84rem; }
+
+/* Summary */
+.card-summary { max-width: 54rem; text-align: center; background: linear-gradient(135deg, #fffef9, #fff7d4); }
+.summary-icon { margin: 0.25rem 0; font-size: clamp(2.5rem, 5vw, 3.9rem); }
+.summary-answer { margin: 0.75rem auto; font-family: "Noto Serif SC", serif; font-size: clamp(1rem, 2.2vw, 1.38rem); line-height: 1.65; }
+.summary-points { display: grid; gap: 0.5rem; max-width: 39rem; margin: 0.75rem auto 0.9rem; text-align: left; }
+.point { display: flex; align-items: center; gap: 0.6rem; padding: 0.55rem 0.7rem; border-radius: 0.65rem; background: rgba(255, 255, 255, 0.68); font-size: 0.86rem; }
+.point span:first-child { font-size: 1.05rem; }
+
+/* Animated passengers */
+.passenger {
+    position: fixed;
+    z-index: 20;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7ac3e9, var(--sky-deep));
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    box-shadow: 2px 3px 0 rgba(47, 42, 37, 0.2);
+    transition: left 620ms var(--ease-out), top 620ms var(--ease-out), transform 180ms var(--ease-out);
+}
+.passenger::after { content: "乘客 " attr(data-passenger); position: absolute; top: calc(100% + 0.2rem); left: 50%; transform: translateX(-50%); padding: 0.08rem 0.3rem; border-radius: 0.3rem; background: rgba(47, 42, 37, 0.84); color: white; font-size: 0.59rem; line-height: 1.25; white-space: nowrap; }
+.passenger.is-flying { animation: passenger-float 620ms var(--ease-out) infinite alternate; }
+.passenger.is-arrived { transform: scale(0.94); box-shadow: 0 0 0 5px rgba(247, 200, 75, 0.32), 2px 3px 0 rgba(47, 42, 37, 0.2); }
+
+@keyframes float { 0%, 100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-0.35rem) rotate(4deg); } }
+@keyframes status-pulse { from { transform: scale(0.82); } to { transform: scale(1.18); } }
+@keyframes seat-check { from { transform: rotate(-2deg) scale(0.98); } to { transform: rotate(2deg) scale(1.03); } }
+@keyframes seat-target-pulse { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-0.15rem); } }
+@keyframes seat-result-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+@keyframes passenger-float { from { transform: translateY(-0.15rem) rotate(-4deg); } to { transform: translateY(0.15rem) rotate(4deg); } }
+@keyframes rule-roll { from { transform: translateY(-0.22rem) rotate(-3deg); } to { transform: translateY(0) rotate(0); } }
+
+@media (max-width: 700px) {
+    .lesson-app { grid-template-rows: 3.7rem minmax(0, 1fr) 4.3rem; padding: 0 0.8rem; }
+    .brand { font-size: 0.88rem; }
+    .progress-label { display: none; }
+    .lesson-page { padding: 0.6rem 0; }
+    .lesson-card { padding: 1rem; border-radius: 1rem; }
+    .rule-list { grid-template-columns: 1fr; gap: 0.4rem; }
+    .rule-list p { min-height: auto; display: block; padding: 0.45rem 0.6rem; }
+    .scenario { grid-template-columns: auto minmax(0, 1fr); }
+    .scenario strong { grid-column: 2; }
+    .rule-flow { grid-template-columns: minmax(0, 0.9fr) 0.55rem minmax(0, 1.05fr) 0.55rem minmax(0, 1.28fr) 0.55rem minmax(0, 0.72fr); margin-top: 0.3rem; }
+    .flow-node, .flow-branch { padding: 0.16rem 0.2rem; }
+    .flow-node strong, .flow-branch strong { font-size: 0.62rem; }
+    .flow-node small { font-size: 0.52rem; }
+    .flow-tag, .branch-label { font-size: 0.49rem; padding-inline: 0.22rem; }
+    .flow-arrow { font-size: 0.76rem; }
+    .flow-branches { gap: 0.2rem; }
+    .flow-branch { min-height: 2rem; }
+    .rules-seat-row { gap: 0.32rem; }
+    .rules-seat-row .seat.mini { width: 2.55rem; height: 2.55rem; }
+    .bulk-controls { flex-direction: column; }
+    .chart-container { height: 10rem; }
+    .nav-button { min-width: 3.6rem; }
+    .nav-button span { display: none; }
+    .page-dots { gap: 0.28rem; }
+    .page-dot { width: 0.5rem; height: 0.5rem; }
+    .page-dot.active { width: 1rem; }
+    .case { grid-template-columns: 1.7rem minmax(0, 1fr); gap: 0.45rem; }
+    .case b { grid-column: 2; justify-self: start; }
+}
+
+@media (max-height: 660px) and (min-width: 701px) {
+    .lesson-app { grid-template-rows: 3.55rem minmax(0, 1fr) 3.9rem; }
+    .lesson-card { padding: 0.85rem 1.5rem; }
+    .card-rules { padding: 0.52rem 1rem; }
+    .card-rules .lead { font-size: 0.7rem; line-height: 1.32; }
+    .rule-flow { margin: 0.22rem auto 0.12rem; }
+    .flow-node, .flow-branch { padding: 0.16rem 0.38rem; }
+    .flow-node small { font-size: 0.58rem; }
+    .flow-arrow { height: 0.36rem; line-height: 0.36rem; }
+    .flow-branch { min-height: 2.2rem; }
+    .rules-seat-row { margin: 0.2rem 0; }
+    .rules-animation-area { min-height: 3rem; padding: 0.28rem 0.48rem; }
+    .rules-controls { margin-top: 0.28rem; }
+    .rules-controls .btn { padding: 0.34rem 0.55rem; }
+    .cover-icon, .summary-icon { font-size: 2.2rem; }
+    .cover-subtitle { margin: 0.35rem auto 0.6rem; }
+    .rule-list { margin-bottom: 0.55rem; }
+    .rule-list p { min-height: 3.65rem; padding: 0.4rem; }
+    .seats-small { margin: 0.55rem 0; }
+    .pattern-results { margin: 0.6rem auto; }
+    .chart-container { height: 8.5rem; margin: 0.55rem 0; }
+    .cases { margin: 0.55rem 0; }
+    .case { padding-block: 0.4rem; }
+    .summary-points { margin: 0.45rem auto 0.6rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+}
+
+</style>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="doodle doodle-1" aria-hidden="true"></div>
+    <div class="doodle doodle-2" aria-hidden="true"></div>
+    <div class="doodle doodle-3" aria-hidden="true"></div>
+    <div class="doodle doodle-4" aria-hidden="true"></div>
+
+    <div class="lesson-app">
+        <header class="lesson-topbar">
+            <a class="brand" href="#" onclick="goToPage(0); return false;" aria-label="回到课程开始">
+                <span aria-hidden="true">✈️</span>
+                <span>飞机座位错配</span>
+            </a>
+            <div class="progress-copy" aria-live="polite">
+                <span id="current-page">1</span><span class="progress-separator">/</span><span id="page-count">8</span>
+                <span class="progress-label">正在学习</span>
+            </div>
+        </header>
+
+        <main class="lesson-stage" aria-label="飞机座位错配互动课程">
+            <section class="lesson-page active" data-page="0" aria-hidden="false" aria-labelledby="page-title-1">
+                <article class="lesson-card cover-card">
+                    <span class="eyebrow">渐进式概率实验</span>
+                    <div class="cover-icon" aria-hidden="true">✈️</div>
+                    <h1 id="page-title-1" tabindex="-1">飞机座位错配问题</h1>
+                    <p class="cover-subtitle">一个从“坐错座位”开始的概率谜题。</p>
+                    <p class="cover-intro">先用一段小动画看懂所有人如何选座，再一步步探索最后会发生什么。</p>
+                    <button class="btn btn-primary start-btn" type="button" onclick="nextPage()">先了解规则 <span aria-hidden="true">→</span></button>
+                </article>
+            </section>
+
+            <section class="lesson-page" data-page="1" aria-hidden="true" aria-labelledby="page-title-2">
+                <article class="lesson-card card-rules">
+                    <div class="section-kicker"><span aria-hidden="true">🧭</span> 先看懂规则</div>
+                    <h2 id="page-title-2" tabindex="-1">五个座位，大家怎么坐？</h2>
+                    <p class="lead">每位乘客都有自己的编号座位。关键规则只有两条：先找自己的座位；若已被占，才在剩余座位中随机选择。</p>
+                    <div class="rule-flow" id="rule-flow" aria-label="横向选座决策图：高亮框表示动画当前所在规则">
+                        <div class="flow-node flow-start" data-rule-flow="first"><span class="flow-tag">乘客 1</span><strong>没有固定座位</strong><small>随机选一个</small></div>
+                        <div class="flow-arrow" aria-hidden="true">→</div>
+                        <div class="flow-node flow-check" data-rule-flow="check"><span class="flow-tag">其他乘客</span><strong>先看自己的座位</strong><small>空着还是被占？</small></div>
+                        <div class="flow-arrow" aria-hidden="true">→</div>
+                        <div class="flow-branches" aria-label="座位检查后的两个分支">
+                            <div class="flow-branch" data-rule-flow="direct"><span class="branch-label">座位空着</span><strong>直接坐下</strong></div>
+                            <div class="flow-branch" data-rule-flow="random"><span class="branch-label">座位被占</span><strong>随机选一个空座位</strong></div>
+                        </div>
+                        <div class="flow-arrow" aria-hidden="true">→</div>
+                        <div class="flow-node flow-seat" data-rule-flow="seated"><strong>完成入座</strong><small>下一位</small></div>
+                    </div>
+                    <p class="rule-flow-hint">动画开始后，当前正在执行的规则和分支会高亮。</p>
+                    <div class="rules-seat-row" aria-label="五个按编号排列的座位">
+                        <div class="seat mini rule-seat" data-rule-seat="1">1</div>
+                        <div class="seat mini rule-seat" data-rule-seat="2">2</div>
+                        <div class="seat mini rule-seat" data-rule-seat="3">3</div>
+                        <div class="seat mini rule-seat" data-rule-seat="4">4</div>
+                        <div class="seat mini last rule-seat" data-rule-seat="5">5</div>
+                    </div>
+                    <div class="rules-animation-area" id="rules-animation" aria-live="polite" aria-atomic="true">
+                        <div class="animation-status is-idle"><div class="status-line"><span class="status-orb" aria-hidden="true"></span><strong>等待演示</strong></div><p class="animation-text">点击开始后，依次观察 1 至 5 号乘客如何选座。</p></div>
+                    </div>
+                    <div class="btn-group rules-controls">
+                        <button class="btn btn-secondary" id="play-rules" type="button" onclick="playRulesDemo()">▶ 开始规则演示</button>
+                        <button class="btn btn-quiet" id="reset-rules" type="button" onclick="resetRulesDemo()" disabled>↺ 重看</button>
+                    </div>
+                    <p class="rules-note">这是一条示例路径：随机选择可以不同，但“先坐自己的座位；被占才随机”的规则始终不变。</p>
+                </article>
+            </section>
+
+            <section class="lesson-page" data-page="2" aria-hidden="true" aria-labelledby="page-title-3">
+                <article class="lesson-card card-n2">
+                    <div class="section-kicker"><span aria-hidden="true">🔬</span> 最简单的情况</div>
+                    <h2 id="page-title-3" tabindex="-1">先从 N = 2 开始</h2>
+                    <p class="lead">第一位只有两种等可能选择；不需要模拟，直接列出全部结果即可。</p>
+                    <p class="n2-choice-guide" id="n2-choice-guide">请选择乘客 1 要坐的座位；系统将自动演示乘客 2 的入座结果。</p>
+                    <div class="seats-small n2-choice-seats" aria-describedby="n2-choice-guide">
+                        <button class="seat mini available n2-seat-choice" type="button" data-seat="1" onclick="playN2Scenario(1)" aria-label="让乘客 1 选择 1 号座位">1</button>
+                        <button class="seat mini last available n2-seat-choice" type="button" data-seat="2" onclick="playN2Scenario(2)" aria-label="让乘客 1 选择 2 号座位">2</button>
+                    </div>
+                    <div class="n2-animation-area" id="n2-animation" aria-live="polite" aria-atomic="true">
+                        <div class="animation-status is-idle"><div class="status-line"><span class="status-orb" aria-hidden="true"></span><strong>等待选择</strong></div><p class="animation-text">先让乘客 1 选择座位 1 或座位 2；随后会自动展示乘客 2 的入座。</p></div>
+                    </div>
+                    <div class="n2-scenarios">
+                        <div class="scenario"><span class="scenario-dot success-dot" aria-hidden="true"></span><span>乘客 1 选座位 1（概率 1/2）</span><strong class="success">乘客 2 坐座位 2，成功</strong></div>
+                        <div class="scenario"><span class="scenario-dot fail-dot" aria-hidden="true"></span><span>乘客 1 选座位 2（概率 1/2）</span><strong class="fail">乘客 2 坐座位 1，失败</strong></div>
+                    </div>
+                    <div class="result n2-result">两种情况各占一半，因此成功概率：<span class="highlight">1 / 2 = 50%</span></div>
+                    <p class="n2-explanation">这已经是完整证明：总共 2 种等可能结果，其中恰有 1 种会成功。</p>
+                </article>
+            </section>
+
+            <section class="lesson-page" data-page="3" aria-hidden="true" aria-labelledby="page-title-4">
+                <article class="lesson-card card-n3">
+                    <div class="section-kicker"><span aria-hidden="true">🎬</span> 观察连锁反应</div>
+                    <h2 id="page-title-4" tabindex="-1">再试试 N = 3</h2>
+                    <p class="lead">当有人发现自己的座位被占，他只能在剩余座位里随机选择。</p>
+                    <div class="seats-small" aria-label="1号、2号与3号座位">
+                        <div class="seat mini" data-seat="1">1</div>
+                        <div class="seat mini" data-seat="2">2</div>
+                        <div class="seat mini last" data-seat="3">3</div>
+                    </div>
+                    <div class="animation-area" id="n3-animation" aria-live="polite" aria-atomic="true">
+                        <div class="animation-status is-idle">
+                            <div class="status-line"><span class="status-orb" aria-hidden="true"></span><strong>准备开始</strong></div>
+                            <p class="animation-text">观察每位乘客如何判断座位是否被占，以及连锁反应如何终结。</p>
+                            <ol class="animation-steps" aria-label="三位乘客的入座步骤">
+                                <li><b>1</b><span>乘客 1 随机选座</span></li>
+                                <li><b>2</b><span>乘客 2 判断并入座</span></li>
+                                <li><b>3</b><span>乘客 3 获得最后座位</span></li>
+                            </ol>
+                        </div>
+                    </div>
+                    <div class="btn-group n3-controls" aria-label="N 等于 3 演示控制">
+                        <button class="btn btn-secondary" id="start-n3" type="button" onclick="startN3Stepper()">🧭 开始步进</button>
+                        <button class="btn btn-primary" id="next-n3" type="button" onclick="nextN3Step()" disabled>下一步</button>
+                        <button class="btn btn-quiet" id="result-n3" type="button" onclick="showN3Result()" disabled>⏭ 查看结果</button>
+                        <button class="btn btn-outline" type="button" onclick="simulateN3()">📈 模拟 50 次</button>
+                    </div>
+                    <p class="result" id="n3-result"></p>
+                </article>
+            </section>
+
+            <section class="lesson-page" data-page="4" aria-hidden="true" aria-labelledby="page-title-5">
+                <article class="lesson-card card-pattern">
+                    <div class="section-kicker"><span aria-hidden="true">💡</span> 先看数据，再问原因</div>
+                    <h2 id="page-title-5" tabindex="-1">人数变了，规律没变</h2>
+                    <p class="lead">多次随机模拟会有波动，但都会围绕 50% 聚集。</p>
+                    <div class="pattern-results" aria-label="不同乘客数量的模拟结果">
+                        <div class="result-item"><span>N = 2</span><span>51.2%</span><i style="--bar:51.2%"></i></div>
+                        <div class="result-item"><span>N = 3</span><span>49.8%</span><i style="--bar:49.8%"></i></div>
+                        <div class="result-item"><span>N = 5</span><span>50.3%</span><i style="--bar:50.3%"></i></div>
+                        <div class="result-item"><span>N = 10</span><span>49.5%</span><i style="--bar:49.5%"></i></div>
+                        <div class="result-item"><span>N = 20</span><span>50.1%</span><i style="--bar:50.1%"></i></div>
+                    </div>
+                    <aside class="insight"><span aria-hidden="true">✨</span> 无论 N 是多少，最后一位成功的概率始终趋近 <strong>50%</strong>。</aside>
+                </article>
+            </section>
+
+            <section class="lesson-page" data-page="5" aria-hidden="true" aria-labelledby="page-title-6">
+                <article class="lesson-card card-bulk">
+                    <div class="section-kicker"><span aria-hidden="true">🧮</span> 用更多样本验证</div>
+                    <h2 id="page-title-6" tabindex="-1">大规模验证：N = 100</h2>
+                    <p class="lead">每一次实验都独立；曲线会逐渐稳定在 50% 附近。</p>
+                    <div class="chart-container" role="img" aria-label="最后一位乘客成功概率的模拟曲线；虚线表示理论值百分之五十。"><svg id="probability-chart" viewBox="0 0 720 250" preserveAspectRatio="none" aria-hidden="true"></svg></div>
+                    <div class="simulation-process" aria-live="polite" aria-atomic="true">
+                        <div class="process-heading"><span class="process-orb" id="bulk-process-orb" aria-hidden="true"></span><strong id="bulk-process-status">等待开始</strong><span id="bulk-trial-outcome" class="trial-outcome">尚未进行试验</span></div>
+                        <div class="process-track" role="progressbar" aria-label="模拟进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="bulk-progress-fill"></span></div>
+                        <p id="bulk-process-detail">选择样本数量后，逐次观察成功、失败与曲线如何形成。</p>
+                    </div>
+                    <div class="bulk-controls">
+                        <div class="stats" aria-live="polite">
+                            <span>已模拟 <b id="total-simulations">0</b> 次</span>
+                            <span>成功 <b id="success-count">0</b> 次</span>
+                            <span>当前 <b id="current-probability">0%</b></span>
+                        </div>
+                        <div class="btn-group bulk-buttons">
+                            <button class="btn btn-secondary" id="start-bulk-100" type="button" onclick="runBulkSimulation(100)">▶ 播放 100 次</button>
+                            <button class="btn btn-outline" id="start-bulk-1000" type="button" onclick="runBulkSimulation(1000)">▶ 播放 1000 次</button>
+                            <button class="btn btn-primary" id="toggle-bulk" type="button" onclick="toggleBulkSimulation()" disabled>⏸ 暂停</button>
+                            <button class="btn btn-quiet" id="reset-bulk" type="button" onclick="resetBulkSimulation()">重置</button>
+                        </div>
+                    </div>
+                </article>
+            </section>
+
+            <section class="lesson-page" data-page="6" aria-hidden="true" aria-labelledby="page-title-7">
+                <article class="lesson-card card-theory">
+                    <div class="section-kicker"><span aria-hidden="true">🧠</span> 核心解释</div>
+                    <h2 id="page-title-7" tabindex="-1">为什么答案恒为 1 / 2？</h2>
+                    <p class="lead">连锁过程最终只会在 <strong>1 号座位</strong> 与 <strong>N 号座位</strong>之间结束。</p>
+                    <div class="cases">
+                        <div class="case"><div class="case-number">1</div><div><strong>第一位选中 1 号座位</strong><span>后面每个人都能坐回自己的座位，最后一位成功。</span></div><b class="success">成功</b></div>
+                        <div class="case"><div class="case-number">2</div><div><strong>第一位选中 N 号座位</strong><span>最后一位只剩 1 号座位，最后一位失败。</span></div><b class="fail">失败</b></div>
+                        <div class="case"><div class="case-number">…</div><div><strong>第一位选中其他座位</strong><span>座位被占的乘客继续随机选择；直到 1 与 N 两个终点之一被选中。</span></div><b class="neutral">继续</b></div>
+                    </div>
+                    <div class="symmetry"><span class="seat-badge">1 号座位</span><span class="arrow" aria-hidden="true">↔</span><span class="seat-badge">N 号座位</span></div>
+                    <div class="formula">两个终点完全对称，因此总概率 = <strong>1 / 2 = 50%</strong></div>
+                </article>
+            </section>
+
+            <section class="lesson-page" data-page="7" aria-hidden="true" aria-labelledby="page-title-8">
+                <article class="lesson-card card-interactive">
+                    <div class="section-kicker"><span aria-hidden="true">🕹️</span> 动手试一试</div>
+                    <h2 id="page-title-8" tabindex="-1">你来当第一位乘客</h2>
+                    <div class="game-controls">
+                        <label for="user-n-select">乘客人数</label>
+                        <select id="user-n-select" onchange="generateUserGameSeats()">
+                            <option value="3">3 人</option>
+                            <option value="5">5 人</option>
+                            <option value="10" selected>10 人</option>
+                            <option value="20">20 人</option>
+                            <option value="50">50 人</option>
+                        </select>
+                    </div>
+                    <p class="game-instructions">先点击一个座位，让乘客 1 坐下；之后由你点击“下一位乘客”逐个推进。</p>
+                    <div class="game-seats" id="game-seats" aria-label="可供第一位乘客选择的座位"></div>
+                    <div id="user-game-step" class="game-step-status" aria-live="polite">请选择乘客 1 的座位。</div>
+                    <div id="game-result" class="game-result hidden" aria-live="polite">
+                        <div class="result-indicator" id="result-indicator"></div>
+                        <p id="result-text"></p>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" id="next-user-passenger" type="button" onclick="nextUserGameStep()" disabled>下一位乘客</button>
+                        <button class="btn btn-secondary" type="button" onclick="resetGame()">🔁 再试一次</button>
+                        <button class="btn btn-outline" type="button" onclick="showUserStats()">📊 查看统计</button>
+                    </div>
+                    <div id="user-stats" class="user-stats hidden" aria-live="polite">你的统计：<span id="user-wins">0</span>/<span id="user-total">0</span> = <span id="user-rate">0%</span></div>
+                </article>
+            </section>
+
+            <section class="lesson-page" data-page="8" aria-hidden="true" aria-labelledby="page-title-9">
+                <article class="lesson-card card-summary">
+                    <span class="eyebrow">课程完成</span>
+                    <div class="summary-icon" aria-hidden="true">🎓</div>
+                    <h2 id="page-title-9" tabindex="-1">记住这个结论</h2>
+                    <p class="summary-answer">无论 N 是 2、100 还是 1000，<br>最后一位乘客成功的概率恒为 <strong>1 / 2</strong>。</p>
+                    <div class="summary-points">
+                        <div class="point"><span aria-hidden="true">💡</span><span>过程会很复杂，但终点只有 1 号座位与 N 号座位。</span></div>
+                        <div class="point"><span aria-hidden="true">⚖️</span><span>这两个终点的对称性，正是 50% 的来源。</span></div>
+                        <div class="point"><span aria-hidden="true">🔗</span><span>这类“追踪最终状态”的思路，可用于更多概率问题。</span></div>
+                    </div>
+                    <button class="btn btn-primary" type="button" onclick="goToPage(0)">↺ 从头学习</button>
+                </article>
+            </section>
+        </main>
+
+        <nav class="lesson-navigation" aria-label="课程翻页导航">
+            <button class="nav-button nav-prev" id="prev-page" type="button" onclick="previousPage()" aria-label="上一页">← <span>上一页</span></button>
+            <div class="page-dots" aria-label="课程进度">
+                <button class="page-dot active" type="button" data-page-index="0" onclick="goToPage(0)" aria-label="第 1 页：封面" aria-current="step"></button>
+                <button class="page-dot" type="button" data-page-index="1" onclick="goToPage(1)" aria-label="第 2 页：规则介绍"></button>
+                <button class="page-dot" type="button" data-page-index="2" onclick="goToPage(2)" aria-label="第 3 页：N 等于 2"></button>
+                <button class="page-dot" type="button" data-page-index="3" onclick="goToPage(3)" aria-label="第 4 页：N 等于 3"></button>
+                <button class="page-dot" type="button" data-page-index="4" onclick="goToPage(4)" aria-label="第 5 页：发现规律"></button>
+                <button class="page-dot" type="button" data-page-index="5" onclick="goToPage(5)" aria-label="第 6 页：大规模验证"></button>
+                <button class="page-dot" type="button" data-page-index="6" onclick="goToPage(6)" aria-label="第 7 页：理论解释"></button>
+                <button class="page-dot" type="button" data-page-index="7" onclick="goToPage(7)" aria-label="第 8 页：互动体验"></button>
+                <button class="page-dot" type="button" data-page-index="8" onclick="goToPage(8)" aria-label="第 9 页：总结"></button>
+            </div>
+            <button class="nav-button nav-next" id="next-page" type="button" onclick="nextPage()"><span>下一页</span> →</button>
+        </nav>
+    </div>
+
+    <script>
+/* Inlined from script.js */
+// ===== 全局状态 =====
+let probabilityChart = null;
+let bulkSimulationRunning = false;
+let bulkRun = null;
+let bulkRunId = 0;
+let bulkTimer = null;
+let userGameStats = { wins: 0, total: 0 };
+let userGameRun = null;
+let rulesDemoRunId = 0;
+let rulesDemoRunning = false;
+let n2AnimationRunId = 0;
+let n2AnimationRunning = false;
+let n3AnimationRunning = false;
+let n3AnimationRunId = 0;
+let n3ActiveRun = null;
+let currentPageIndex = 0;
+let pageTransitionTimer = null;
+
+// ===== 页面初始化 =====
+document.addEventListener('DOMContentLoaded', () => {
+    initializePager();
+    initializeChart();
+    initializeUserGame();
+    lockWheelNavigation();
+});
+
+// ===== 固定页翻页控制 =====
+function initializePager() {
+    const pages = getPages();
+    document.getElementById('page-count').textContent = String(pages.length);
+    updatePageUI(false);
+
+    document.addEventListener('keydown', (event) => {
+        const target = event.target;
+        const isFormControl = target instanceof HTMLInputElement || target instanceof HTMLSelectElement || target instanceof HTMLTextAreaElement;
+        if (isFormControl) return;
+
+        if (event.key === 'ArrowRight') {
+            event.preventDefault();
+            nextPage();
+        }
+        if (event.key === 'ArrowLeft') {
+            event.preventDefault();
+            previousPage();
+        }
+        if (event.key === 'Home') {
+            event.preventDefault();
+            goToPage(0);
+        }
+        if (event.key === 'End') {
+            event.preventDefault();
+            goToPage(getPages().length - 1);
+        }
+    });
+}
+
+function lockWheelNavigation() {
+    // 页面不接收滚轮翻页，也不会因滚轮发生垂直滚动。
+    document.addEventListener('wheel', (event) => event.preventDefault(), { passive: false });
+}
+
+function getPages() {
+    return Array.from(document.querySelectorAll('.lesson-page'));
+}
+
+function goToPage(index, shouldFocus = true) {
+    const pages = getPages();
+    if (!pages.length) return;
+
+    const nextIndex = Math.min(Math.max(index, 0), pages.length - 1);
+    if (nextIndex === currentPageIndex && pages[currentPageIndex].classList.contains('active')) return;
+
+    const previousIndex = currentPageIndex;
+    const direction = nextIndex > previousIndex ? 1 : -1;
+    const oldPage = pages[previousIndex];
+    const newPage = pages[nextIndex];
+
+    document.querySelectorAll('.passenger').forEach((passenger) => passenger.remove());
+    if (previousIndex === 1 && nextIndex !== 1) resetRulesDemo();
+    if (previousIndex === 2 && nextIndex !== 2) resetN2Demo();
+    if (previousIndex === 5 && nextIndex !== 5) pauseBulkSimulation('已暂停：返回本页后可继续观看。');
+    n3AnimationRunId += 1;
+    n3AnimationRunning = false;
+    n3ActiveRun = null;
+    setN3Controls(false);
+
+    if (pageTransitionTimer) window.clearTimeout(pageTransitionTimer);
+
+    oldPage.classList.remove('active');
+    oldPage.classList.toggle('exit-left', direction > 0);
+    oldPage.setAttribute('aria-hidden', 'true');
+
+    newPage.classList.remove('exit-left');
+    newPage.classList.add('active');
+    newPage.setAttribute('aria-hidden', 'false');
+
+    currentPageIndex = nextIndex;
+    updatePageUI(shouldFocus);
+
+    pageTransitionTimer = window.setTimeout(() => {
+        pages.forEach((page, pageIndex) => {
+            if (pageIndex !== currentPageIndex) page.classList.remove('exit-left');
+        });
+    }, 300);
+}
+
+function nextPage() {
+    goToPage(currentPageIndex + 1);
+}
+
+function previousPage() {
+    goToPage(currentPageIndex - 1);
+}
+
+function updatePageUI(shouldFocus) {
+    const pages = getPages();
+    const current = currentPageIndex + 1;
+    const previousButton = document.getElementById('prev-page');
+    const nextButton = document.getElementById('next-page');
+
+    document.getElementById('current-page').textContent = String(current);
+    previousButton.disabled = currentPageIndex === 0;
+    nextButton.disabled = currentPageIndex === pages.length - 1;
+    nextButton.setAttribute('aria-label', currentPageIndex === pages.length - 1 ? '已到最后一页' : '下一页');
+
+    document.querySelectorAll('.page-dot').forEach((dot, index) => {
+        const active = index === currentPageIndex;
+        dot.classList.toggle('active', active);
+        if (active) {
+            dot.setAttribute('aria-current', 'step');
+        } else {
+            dot.removeAttribute('aria-current');
+        }
+    });
+
+    if (shouldFocus) {
+        window.setTimeout(() => {
+            const title = pages[currentPageIndex].querySelector('h1, h2');
+            if (title instanceof HTMLElement) title.focus({ preventScroll: true });
+        }, 40);
+    }
+}
+
+// ===== 工具函数 =====
+function sleep(ms) {
+    return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+function randomAvailableSeat(seatsState) {
+    const available = seatsState
+        .map((seat, index) => seat === null ? index : null)
+        .filter((seat) => seat !== null);
+    return available[Math.floor(Math.random() * available.length)];
+}
+
+// ===== 五座位规则介绍演示 =====
+function setRulesControls({ running = false, complete = false } = {}) {
+    const play = document.getElementById('play-rules');
+    const reset = document.getElementById('reset-rules');
+    if (play) {
+        play.disabled = running;
+        play.textContent = running ? '▶ 正在演示…' : complete ? '▶ 再演示一次' : '▶ 开始规则演示';
+    }
+    if (reset) reset.disabled = running || !complete;
+}
+
+function renderRulesStatus({ state = 'idle', title, detail }) {
+    const area = document.getElementById('rules-animation');
+    if (!area) return;
+    area.innerHTML = `
+        <div class="animation-status is-${state}">
+            <div class="status-line"><span class="status-orb" aria-hidden="true"></span><strong>${title}</strong></div>
+            <p class="animation-text">${detail}</p>
+        </div>
+    `;
+}
+
+function updateRulesFlow(activeStates = []) {
+    const active = new Set(activeStates);
+    document.querySelectorAll('[data-rule-flow]').forEach((node) => {
+        node.classList.toggle('is-active', active.has(node.dataset.ruleFlow));
+    });
+}
+
+function resetRulesDemo() {
+    rulesDemoRunId += 1;
+    rulesDemoRunning = false;
+    document.querySelectorAll('.rules-passenger').forEach((passenger) => passenger.remove());
+    updateRulesFlow();
+    document.querySelectorAll('.rule-seat').forEach((seat) => {
+        seat.classList.remove('occupied', 'wrong', 'current', 'checking', 'target', 'rolling');
+        delete seat.dataset.passenger;
+    });
+    renderRulesStatus({
+        state: 'idle',
+        title: '等待演示',
+        detail: '点击开始后，依次观察 1 至 5 号乘客如何选座。'
+    });
+    setRulesControls();
+}
+
+async function moveRulesPassenger(passenger, position, runId) {
+    passenger.style.display = 'flex';
+    passenger.classList.add('is-flying');
+    passenger.style.left = `${window.innerWidth / 2 - 16}px`;
+    passenger.style.top = '4.6rem';
+    await sleep(160);
+    if (runId !== rulesDemoRunId || currentPageIndex !== 1) return false;
+    passenger.style.left = `${position.x}px`;
+    passenger.style.top = `${position.y}px`;
+    await sleep(560);
+    if (runId !== rulesDemoRunId || currentPageIndex !== 1) return false;
+    passenger.classList.remove('is-flying');
+    passenger.classList.add('is-arrived');
+    return true;
+}
+
+async function showRuleRoll(seats, options, finalSeat, runId) {
+    for (const seatIndex of options) {
+        seats.forEach((seat) => seat.classList.remove('rolling'));
+        seats[seatIndex].classList.add('rolling');
+        await sleep(150);
+        if (runId !== rulesDemoRunId || currentPageIndex !== 1) return false;
+    }
+    seats.forEach((seat) => seat.classList.remove('rolling'));
+    seats[finalSeat].classList.add('target');
+    return true;
+}
+
+async function playRulesDemo() {
+    if (rulesDemoRunning || currentPageIndex !== 1) return;
+    resetRulesDemo();
+    const seats = Array.from(document.querySelectorAll('.rule-seat'));
+    if (seats.length !== 5) return;
+
+    const runId = ++rulesDemoRunId;
+    rulesDemoRunning = true;
+    setRulesControls({ running: true });
+    const steps = [
+        { passenger: 1, seat: 2, kind: 'first-random', roll: [0, 4, 3, 1], detail: '乘客 1 没有自己的指定座位，因此在 5 个空座位中随机滚动选择。' },
+        { passenger: 2, seat: 3, kind: 'blocked-random', roll: [4, 0, 2], detail: '乘客 2 发现自己的 2 号座位已被乘客 1 占用，只能在剩下的空座位中随机滚动选择。' },
+        { passenger: 3, seat: 1, kind: 'blocked-random', roll: [3, 4, 0], detail: '乘客 3 发现自己的 3 号座位已被乘客 2 占用，只能在剩下的空座位中随机滚动选择。' },
+        { passenger: 4, seat: 4, kind: 'own', detail: '乘客 4 的 4 号座位空着，直接坐下。' },
+        { passenger: 5, seat: 5, kind: 'own', detail: '乘客 5 的 5 号座位空着，直接坐下。' }
+    ];
+
+    for (const step of steps) {
+        const targetIndex = step.seat - 1;
+        if (step.kind === 'blocked-random') {
+            updateRulesFlow(['check']);
+            seats[step.passenger - 1].classList.add('checking');
+            renderRulesStatus({ state: 'checking', title: `乘客 ${step.passenger} 检查自己的座位`, detail: `他发现 ${step.passenger} 号座位已经被占。${step.detail}` });
+            await sleep(520);
+            if (runId !== rulesDemoRunId || currentPageIndex !== 1) return;
+            seats[step.passenger - 1].classList.remove('checking');
+        }
+
+        if (step.kind === 'first-random' || step.kind === 'blocked-random') {
+            updateRulesFlow(step.kind === 'first-random' ? ['first'] : ['check', 'random']);
+            renderRulesStatus({ state: 'running', title: `乘客 ${step.passenger} 正在随机选择`, detail: step.detail });
+            const rolled = await showRuleRoll(seats, step.roll, targetIndex, runId);
+            if (!rolled) return;
+        } else {
+            updateRulesFlow(['check', 'direct']);
+            seats[targetIndex].classList.add('target');
+            renderRulesStatus({ state: 'running', title: `乘客 ${step.passenger} 直接坐自己的座位`, detail: step.detail });
+            await sleep(260);
+            if (runId !== rulesDemoRunId || currentPageIndex !== 1) return;
+        }
+
+        const passenger = document.createElement('div');
+        passenger.className = 'passenger rules-passenger';
+        passenger.dataset.passenger = String(step.passenger);
+        passenger.textContent = String(step.passenger);
+        passenger.style.display = 'none';
+        document.body.appendChild(passenger);
+        const rect = seats[targetIndex].getBoundingClientRect();
+        const moved = await moveRulesPassenger(passenger, { x: rect.left + rect.width / 2 - 16, y: rect.top + rect.height / 2 - 16 }, runId);
+        if (!moved) {
+            passenger.remove();
+            return;
+        }
+        passenger.remove();
+        seats[targetIndex].classList.remove('target');
+        seats[targetIndex].classList.add('occupied');
+        seats[targetIndex].dataset.passenger = String(step.passenger);
+        if (targetIndex !== step.passenger - 1) seats[targetIndex].classList.add('wrong');
+        if (step.passenger === 5) seats[targetIndex].classList.add('current');
+        updateRulesFlow(step.kind === 'first-random' ? ['first', 'seated'] : step.kind === 'blocked-random' ? ['check', 'random', 'seated'] : ['check', 'direct', 'seated']);
+        renderRulesStatus({
+            state: 'seated',
+            title: `乘客 ${step.passenger} 已入座`,
+            detail: step.passenger === 5 ? '五位乘客都已坐下。重点是：只有“没有指定座位”或“自己的座位被占”的乘客才需要随机选择。' : `现在 ${step.seat} 号座位由乘客 ${step.passenger} 占用，继续观察下一位。`
+        });
+        await sleep(step.passenger === 5 ? 280 : 360);
+        if (runId !== rulesDemoRunId || currentPageIndex !== 1) return;
+    }
+
+    rulesDemoRunning = false;
+    updateRulesFlow(['seated']);
+    setRulesControls({ complete: true });
+}
+
+// ===== N = 2 情形演示 =====
+function setN2ChoiceControls(disabled) {
+    document.querySelectorAll('.n2-seat-choice').forEach((seat) => {
+        seat.disabled = disabled;
+    });
+}
+
+function renderN2Status({ state = 'idle', title, detail }) {
+    const area = document.getElementById('n2-animation');
+    if (!area) return;
+    area.innerHTML = `
+        <div class="animation-status is-${state}">
+            <div class="status-line"><span class="status-orb" aria-hidden="true"></span><strong>${title}</strong></div>
+            <p class="animation-text">${detail}</p>
+        </div>
+    `;
+}
+
+function resetN2Demo() {
+    n2AnimationRunId += 1;
+    n2AnimationRunning = false;
+    document.querySelectorAll('.card-n2 .seat.mini').forEach((seat) => {
+        seat.classList.remove('occupied', 'wrong', 'current', 'checking', 'target');
+        delete seat.dataset.passenger;
+    });
+    document.querySelectorAll('.card-n2 .scenario').forEach((scenario) => scenario.classList.remove('is-active'));
+    setN2ChoiceControls(false);
+    renderN2Status({
+        state: 'idle',
+        title: '等待选择',
+        detail: '先让乘客 1 选择座位 1 或座位 2；随后会自动展示乘客 2 的入座。'
+    });
+}
+
+async function moveN2Passenger(passenger, position, runId) {
+    passenger.style.display = 'flex';
+    passenger.classList.add('is-flying');
+    passenger.style.left = `${window.innerWidth / 2 - 16}px`;
+    passenger.style.top = '4.6rem';
+    await sleep(180);
+    if (runId !== n2AnimationRunId || currentPageIndex !== 2) return false;
+
+    passenger.style.left = `${position.x}px`;
+    passenger.style.top = `${position.y}px`;
+    await sleep(620);
+    if (runId !== n2AnimationRunId || currentPageIndex !== 2) return false;
+
+    passenger.classList.remove('is-flying');
+    passenger.classList.add('is-arrived');
+    return true;
+}
+
+async function playN2Scenario(selectedSeatNumber) {
+    if (n2AnimationRunning || currentPageIndex !== 2) return;
+    const seats = Array.from(document.querySelectorAll('.card-n2 .seat.mini'));
+    const scenarios = Array.from(document.querySelectorAll('.card-n2 .scenario'));
+    if (seats.length !== 2 || selectedSeatNumber < 1 || selectedSeatNumber > 2) return;
+
+    resetN2Demo();
+    const runId = ++n2AnimationRunId;
+    const selectedSeat = selectedSeatNumber - 1;
+    const remainingSeat = selectedSeat === 0 ? 1 : 0;
+    const isSuccess = selectedSeat === 0;
+    n2AnimationRunning = true;
+    setN2ChoiceControls(true);
+
+    seats[selectedSeat].classList.add('target');
+    renderN2Status({
+        state: 'running',
+        title: `乘客 1 选择 ${selectedSeatNumber} 号座位`,
+        detail: `第一位乘客的随机选择落在 ${selectedSeatNumber} 号座位。先看乘客 1 移动并坐下。`
+    });
+
+    const passengerOne = document.createElement('div');
+    passengerOne.className = 'passenger';
+    passengerOne.dataset.passenger = '1';
+    passengerOne.textContent = '1';
+    passengerOne.style.display = 'none';
+    document.body.appendChild(passengerOne);
+    const firstRect = seats[selectedSeat].getBoundingClientRect();
+    const firstMoved = await moveN2Passenger(passengerOne, { x: firstRect.left + firstRect.width / 2 - 16, y: firstRect.top + firstRect.height / 2 - 16 }, runId);
+    if (!firstMoved) {
+        passengerOne.remove();
+        return;
+    }
+
+    seats[selectedSeat].classList.remove('target');
+    seats[selectedSeat].classList.add('occupied');
+    seats[selectedSeat].dataset.passenger = '1';
+    if (!isSuccess) seats[selectedSeat].classList.add('wrong');
+    passengerOne.remove();
+    renderN2Status({
+        state: 'seated',
+        title: `乘客 1 已坐到 ${selectedSeatNumber} 号座位`,
+        detail: '第一位乘客的入座动画已完成。接下来自动演示乘客 2 的入座。'
+    });
+    await sleep(360);
+    if (runId !== n2AnimationRunId || currentPageIndex !== 2) return;
+
+    seats[remainingSeat].classList.add('target');
+    renderN2Status({
+        state: 'running',
+        title: '乘客 2 自动入座',
+        detail: `乘客 2 的座位只剩 ${remainingSeat + 1} 号；动画现在将其带到该座位。`
+    });
+
+    const passengerTwo = document.createElement('div');
+    passengerTwo.className = 'passenger';
+    passengerTwo.dataset.passenger = '2';
+    passengerTwo.textContent = '2';
+    passengerTwo.style.display = 'none';
+    document.body.appendChild(passengerTwo);
+    const secondRect = seats[remainingSeat].getBoundingClientRect();
+    const secondMoved = await moveN2Passenger(passengerTwo, { x: secondRect.left + secondRect.width / 2 - 16, y: secondRect.top + secondRect.height / 2 - 16 }, runId);
+    if (!secondMoved) {
+        passengerTwo.remove();
+        return;
+    }
+
+    seats[remainingSeat].classList.remove('target');
+    seats[remainingSeat].classList.add('occupied', 'current');
+    seats[remainingSeat].dataset.passenger = '2';
+    scenarios[selectedSeat].classList.add('is-active');
+    renderN2Status({
+        state: isSuccess ? 'success' : 'fail',
+        title: isSuccess ? '这是成功情形' : '这是失败情形',
+        detail: isSuccess
+            ? '乘客 1 选中 1 号座位，乘客 2 自动坐到自己的 2 号座位；最后一位成功。'
+            : '乘客 1 选中 2 号座位，乘客 2 只能坐到 1 号座位；最后一位失败。'
+    });
+
+    await sleep(540);
+    passengerTwo.remove();
+    if (runId === n2AnimationRunId) {
+        n2AnimationRunning = false;
+        setN2ChoiceControls(false);
+    }
+}
+
+// ===== N = 3 动画演示 =====
+function createN3Plan() {
+    const seatsState = Array(3).fill(null);
+    const choices = [];
+
+    for (let passenger = 0; passenger < 3; passenger += 1) {
+        const choice = passenger === 0
+            ? Math.floor(Math.random() * 3)
+            : (seatsState[passenger] === null ? passenger : randomAvailableSeat(seatsState));
+        seatsState[choice] = passenger;
+        choices.push(choice);
+    }
+
+    return { choices, isSuccess: choices[2] === 2 };
+}
+
+function setN3Controls(state = {}) {
+    const normalized = typeof state === 'boolean' ? { hasRun: state, busy: state } : state;
+    const { hasRun = false, busy = false, complete = false, actionIndex = 0, totalActions = 0 } = normalized;
+    const startButton = document.getElementById('start-n3');
+    const nextButton = document.getElementById('next-n3');
+    const resultButton = document.getElementById('result-n3');
+
+    if (startButton) startButton.disabled = hasRun && !complete;
+    if (nextButton) {
+        nextButton.disabled = !hasRun || busy || complete;
+        nextButton.textContent = hasRun && !complete ? `下一步（${actionIndex + 1}/${totalActions}）` : '下一步';
+    }
+    if (resultButton) resultButton.disabled = !hasRun || busy || complete;
+}
+
+function renderN3Status({ stage = 'idle', activeStep = -1, title, detail, choices = [] }) {
+    const animationArea = document.getElementById('n3-animation');
+    if (!animationArea) return;
+
+    const stepNames = ['乘客 1 随机选座', '乘客 2 判断并入座', '乘客 3 获得最后座位'];
+    const steps = stepNames.map((name, index) => {
+        const isDone = index < activeStep;
+        const isActive = index === activeStep;
+        const choiceText = isDone && Number.isInteger(choices[index]) ? ` → ${choices[index] + 1} 号座位` : '';
+        return `<li class="${isDone ? 'is-done' : ''} ${isActive ? 'is-active' : ''}"><b>${index + 1}</b><span>${name}${choiceText}</span></li>`;
+    }).join('');
+
+    animationArea.innerHTML = `
+        <div class="animation-status is-${stage}">
+            <div class="status-line"><span class="status-orb" aria-hidden="true"></span><strong>${title}</strong></div>
+            <p class="animation-text">${detail}</p>
+            <ol class="animation-steps" aria-label="三位乘客的入座步骤">${steps}</ol>
+        </div>
+    `;
+}
+
+function describeN3Choice(passenger, choice, ownSeat) {
+    if (passenger === 0) return `第一位没有座位偏好，随机选中了 ${choice + 1} 号座位。`;
+    if (choice === ownSeat) return `自己的 ${ownSeat + 1} 号座位空着，可以直接坐下。`;
+    return `自己的 ${ownSeat + 1} 号座位已被占，只能在剩余座位中随机选中 ${choice + 1} 号座位。`;
+}
+
+function createN3Actions(plan) {
+    const actions = [];
+    plan.choices.forEach((choice, passenger) => {
+        if (passenger > 0 && choice !== passenger) actions.push({ type: 'inspect', passenger, choice });
+        actions.push({ type: 'seat', passenger, choice });
+    });
+    actions.push({ type: 'result' });
+    return actions;
+}
+
+async function movePassenger(passenger, position, runId) {
+    passenger.style.display = 'flex';
+    passenger.classList.add('is-flying');
+    passenger.style.left = `${window.innerWidth / 2 - 16}px`;
+    passenger.style.top = '4.6rem';
+    await sleep(180);
+    if (runId !== n3AnimationRunId || currentPageIndex !== 3) return false;
+
+    passenger.style.left = `${position.x}px`;
+    passenger.style.top = `${position.y}px`;
+    await sleep(620);
+    if (runId !== n3AnimationRunId || currentPageIndex !== 3) return false;
+
+    passenger.classList.remove('is-flying');
+    passenger.classList.add('is-arrived');
+    return true;
+}
+
+function completeN3Animation(plan, revealed = false) {
+    const seats = Array.from(document.querySelectorAll('.card-n3 .seat.mini'));
+    const resultEl = document.getElementById('n3-result');
+    if (!seats.length || !resultEl) return;
+
+    seats.forEach((seat) => seat.classList.remove('occupied', 'wrong', 'current', 'checking', 'target'));
+    plan.choices.forEach((choice, passenger) => {
+        seats[choice].classList.add('occupied');
+        if (choice !== passenger) seats[choice].classList.add('wrong');
+    });
+    seats[plan.choices[2]].classList.add('current');
+
+    renderN3Status({
+        stage: plan.isSuccess ? 'success' : 'fail',
+        activeStep: 3,
+        title: plan.isSuccess ? '终点：最后一位成功' : '终点：最后一位失败',
+        detail: revealed
+            ? `已查看结果：最后一位乘客坐到了 ${plan.choices[2] + 1} 号座位。`
+            : `三位乘客均已由你逐步安排入座，最后一位乘客坐到了 ${plan.choices[2] + 1} 号座位。`,
+        choices: plan.choices
+    });
+    resultEl.innerHTML = plan.isSuccess
+        ? '<span class="success">✅ 最后一位坐到了自己的座位。</span>'
+        : '<span class="fail">❌ 最后一位没有坐到自己的座位。</span>';
+}
+
+function startN3Stepper() {
+    if (currentPageIndex !== 3 || n3ActiveRun) return;
+
+    const seats = Array.from(document.querySelectorAll('.card-n3 .seat.mini'));
+    const resultEl = document.getElementById('n3-result');
+    if (!seats.length || !resultEl) return;
+
+    const runId = ++n3AnimationRunId;
+    const plan = createN3Plan();
+    const passengers = Array.from({ length: 3 }, (_, index) => {
+        const passenger = document.createElement('div');
+        passenger.className = 'passenger';
+        passenger.dataset.passenger = String(index + 1);
+        passenger.textContent = String(index + 1);
+        passenger.style.display = 'none';
+        document.body.appendChild(passenger);
+        return passenger;
+    });
+    const seatPositions = seats.map((seat) => {
+        const rect = seat.getBoundingClientRect();
+        return { x: rect.left + rect.width / 2 - 16, y: rect.top + rect.height / 2 - 16 };
+    });
+
+    n3ActiveRun = { runId, plan, passengers, seatPositions, actions: createN3Actions(plan), actionIndex: 0, busy: false, complete: false };
+    resultEl.textContent = '';
+    seats.forEach((seat) => seat.classList.remove('occupied', 'wrong', 'current', 'checking', 'target'));
+    renderN3Status({
+        stage: 'idle',
+        activeStep: -1,
+        title: '本轮路径已生成',
+        detail: '每次点击“下一步”只会触发一个动画元素：检查座位、移动一位乘客，或揭晓结论。',
+        choices: plan.choices
+    });
+    setN3Controls({ hasRun: true, actionIndex: 0, totalActions: n3ActiveRun.actions.length });
+}
+
+async function nextN3Step() {
+    const run = n3ActiveRun;
+    if (!run || run.busy || run.complete || currentPageIndex !== 3) return;
+
+    const action = run.actions[run.actionIndex];
+    if (!action) return;
+    run.busy = true;
+    n3AnimationRunning = true;
+    setN3Controls({ hasRun: true, busy: true, actionIndex: run.actionIndex, totalActions: run.actions.length });
+
+    const seats = Array.from(document.querySelectorAll('.card-n3 .seat.mini'));
+    try {
+        if (action.type === 'inspect') {
+            seats[action.passenger].classList.add('checking');
+            renderN3Status({
+                stage: 'checking',
+                activeStep: action.passenger,
+                title: `乘客 ${action.passenger + 1} 发现座位被占`,
+                detail: `自己的 ${action.passenger + 1} 号座位已被占。本次点击只展示“检查座位”这一步；再次点击才会移动该乘客。`,
+                choices: run.plan.choices
+            });
+        }
+
+        if (action.type === 'seat') {
+            const { passenger: passengerIndex, choice } = action;
+            seats[passengerIndex].classList.remove('checking');
+            seats[choice].classList.add('target');
+            renderN3Status({
+                stage: 'running',
+                activeStep: passengerIndex,
+                title: `轮到乘客 ${passengerIndex + 1}`,
+                detail: describeN3Choice(passengerIndex, choice, passengerIndex),
+                choices: run.plan.choices
+            });
+            const moved = await movePassenger(run.passengers[passengerIndex], run.seatPositions[choice], run.runId);
+            if (!moved) return;
+            seats[choice].classList.remove('target');
+            seats[choice].classList.add('occupied');
+            if (choice !== passengerIndex) seats[choice].classList.add('wrong');
+            if (passengerIndex === 2) seats[choice].classList.add('current');
+            renderN3Status({
+                stage: 'seated',
+                activeStep: passengerIndex + 1,
+                title: `乘客 ${passengerIndex + 1} 已入座`,
+                detail: `座位 ${choice + 1} 已被占用。下一步由你决定是否继续展示。`,
+                choices: run.plan.choices
+            });
+        }
+
+        if (action.type === 'result') {
+            completeN3Animation(run.plan);
+            run.complete = true;
+        }
+
+        run.actionIndex += 1;
+    } finally {
+        n3AnimationRunning = false;
+        if (n3ActiveRun !== run) return;
+        run.busy = false;
+        if (run.complete) {
+            run.passengers.forEach((passenger) => passenger.remove());
+            n3ActiveRun = null;
+            setN3Controls({ complete: true });
+        } else {
+            setN3Controls({ hasRun: true, actionIndex: run.actionIndex, totalActions: run.actions.length });
+        }
+    }
+}
+
+function showN3Result() {
+    const run = n3ActiveRun;
+    if (!run || run.busy || currentPageIndex !== 3) return;
+    n3AnimationRunId += 1;
+    run.passengers.forEach((passenger) => passenger.remove());
+    completeN3Animation(run.plan, true);
+    n3ActiveRun = null;
+    n3AnimationRunning = false;
+    setN3Controls({ complete: true });
+}
+
+function simulateN3() {
+    const simulations = 50;
+    let successCount = 0;
+    for (let i = 0; i < simulations; i += 1) {
+        if (simulateOnce(3)) successCount += 1;
+    }
+    const percentage = ((successCount / simulations) * 100).toFixed(1);
+    const resultEl = document.getElementById('n3-result');
+    if (resultEl) {
+        resultEl.innerHTML = `本次模拟：${successCount}/${simulations} = <span class="highlight">${percentage}%</span>`;
+    }
+}
+
+// ===== 大规模验证 =====
+function initializeChart() {
+    const svg = document.getElementById('probability-chart');
+    if (!(svg instanceof SVGElement)) return;
+    probabilityChart = { svg, samples: Array(100).fill(null) };
+    renderProbabilityChart();
+    resetBulkProcessUI();
+}
+
+function renderProbabilityChart() {
+    if (!probabilityChart) return;
+
+    const { svg, samples } = probabilityChart;
+    const width = 720;
+    const height = 250;
+    const plot = { left: 47, right: 14, top: 18, bottom: 32 };
+    const plotWidth = width - plot.left - plot.right;
+    const plotHeight = height - plot.top - plot.bottom;
+    const x = (index) => plot.left + (index / (samples.length - 1)) * plotWidth;
+    const y = (value) => plot.top + ((100 - value) / 100) * plotHeight;
+    const esc = (value) => String(value).replace(/[&<>\"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[character]);
+
+    const grid = [0, 25, 50, 75, 100].map((value) => {
+        const position = y(value).toFixed(1);
+        return `<line x1="${plot.left}" y1="${position}" x2="${width - plot.right}" y2="${position}" class="chart-grid"/><text x="${plot.left - 8}" y="${Number(position) + 4}" class="chart-label" text-anchor="end">${esc(value)}%</text>`;
+    }).join('');
+    const xLabels = [1, 25, 50, 75, 100].map((value) => {
+        const position = x(value - 1).toFixed(1);
+        return `<text x="${position}" y="${height - 9}" class="chart-label" text-anchor="middle">${esc(value)}</text>`;
+    }).join('');
+
+    let path = '';
+    samples.forEach((value, index) => {
+        if (!Number.isFinite(value)) return;
+        const point = `${x(index).toFixed(1)} ${y(value).toFixed(1)}`;
+        path += path ? ` L ${point}` : `M ${point}`;
+    });
+
+    const theoryY = y(50).toFixed(1);
+    svg.innerHTML = `
+        <title>最后一位乘客成功概率的模拟曲线</title>
+        <desc>蓝色实线为模拟概率，橙色虚线表示理论值百分之五十。</desc>
+        ${grid}
+        <line x1="${plot.left}" y1="${theoryY}" x2="${width - plot.right}" y2="${theoryY}" class="chart-theory"/>
+        ${path ? `<path d="${path}" class="chart-line"/>` : ''}
+        <text x="${width - plot.right}" y="${Number(theoryY) - 7}" class="chart-theory-label" text-anchor="end">理论值 50%</text>
+        ${xLabels}
+    `;
+}
+
+function getBulkElements() {
+    return {
+        process: document.querySelector('.simulation-process'),
+        status: document.getElementById('bulk-process-status'),
+        outcome: document.getElementById('bulk-trial-outcome'),
+        detail: document.getElementById('bulk-process-detail'),
+        fill: document.getElementById('bulk-progress-fill'),
+        track: document.querySelector('.process-track'),
+        total: document.getElementById('total-simulations'),
+        success: document.getElementById('success-count'),
+        probability: document.getElementById('current-probability'),
+        start100: document.getElementById('start-bulk-100'),
+        start1000: document.getElementById('start-bulk-1000'),
+        toggle: document.getElementById('toggle-bulk')
+    };
+}
+
+function updateBulkControls() {
+    const { start100, start1000, toggle } = getBulkElements();
+    const paused = Boolean(bulkRun && bulkRun.paused && !bulkRun.complete);
+    if (start100) start100.disabled = Boolean(bulkRun);
+    if (start1000) start1000.disabled = Boolean(bulkRun);
+    if (toggle) {
+        toggle.disabled = !bulkRun || bulkRun.complete;
+        toggle.textContent = paused ? '▶ 继续' : '⏸ 暂停';
+        toggle.setAttribute('aria-label', paused ? '继续模拟动画' : '暂停模拟动画');
+    }
+}
+
+function updateBulkProcessUI(run, state, detailOverride = '') {
+    const elements = getBulkElements();
+    const progress = run ? Math.round((run.total / run.target) * 100) : 0;
+    const probability = run && run.total ? ((run.successes / run.total) * 100).toFixed(1) : '0.0';
+    if (elements.process) elements.process.className = `simulation-process is-${state}`;
+    if (elements.status) elements.status.textContent = state === 'running' ? `模拟进行中 · ${run.target} 次` : state === 'paused' ? '模拟已暂停' : state === 'complete' ? '模拟完成' : '等待开始';
+    if (elements.outcome) {
+        elements.outcome.className = `trial-outcome ${run?.lastOutcome === true ? 'is-success' : run?.lastOutcome === false ? 'is-fail' : ''}`;
+        elements.outcome.textContent = run && run.total ? `第 ${run.total} 次：${run.lastOutcome ? '成功' : '失败'}` : '尚未进行试验';
+    }
+    if (elements.detail) {
+        elements.detail.textContent = detailOverride || (run && run.total
+            ? `已完成 ${run.total} / ${run.target} 次；累计成功 ${run.successes} 次，当前概率 ${probability}%。`
+            : '选择样本数量后，逐次观察成功、失败与曲线如何形成。');
+    }
+    if (elements.fill) elements.fill.style.width = `${progress}%`;
+    if (elements.track) elements.track.setAttribute('aria-valuenow', String(progress));
+    if (elements.total) elements.total.textContent = String(run?.total ?? 0);
+    if (elements.success) elements.success.textContent = String(run?.successes ?? 0);
+    if (elements.probability) elements.probability.textContent = `${probability}%`;
+}
+
+function resetBulkProcessUI() {
+    updateBulkProcessUI(null, 'idle');
+    updateBulkControls();
+}
+
+function scheduleBulkTick(run, delay) {
+    if (bulkTimer) window.clearTimeout(bulkTimer);
+    bulkTimer = window.setTimeout(() => processBulkTick(run.id), delay);
+}
+
+function processBulkTick(runId) {
+    const run = bulkRun;
+    if (!run || run.id !== runId || run.paused || run.complete) return;
+
+    const trialsPerFrame = run.target === 100 ? 1 : 10;
+    let chartChanged = false;
+    for (let step = 0; step < trialsPerFrame && run.total < run.target; step += 1) {
+        run.lastOutcome = simulateOnce(100);
+        run.total += 1;
+        if (run.lastOutcome) run.successes += 1;
+        const sampleIndex = Math.min(99, Math.ceil((run.total / run.target) * 100) - 1);
+        run.samples[sampleIndex] = Number(((run.successes / run.total) * 100).toFixed(1));
+        chartChanged = true;
+    }
+
+    if (chartChanged && probabilityChart) {
+        probabilityChart.samples = run.samples;
+        renderProbabilityChart();
+    }
+    updateBulkProcessUI(run, 'running');
+
+    if (run.total >= run.target) {
+        run.complete = true;
+        bulkSimulationRunning = false;
+        updateBulkProcessUI(run, 'complete', `已完成 ${run.target} 次模拟；最终成功 ${run.successes} 次，概率 ${((run.successes / run.target) * 100).toFixed(1)}%。`);
+        bulkRun = null;
+        updateBulkControls();
+        return;
+    }
+    scheduleBulkTick(run, run.target === 100 ? 58 : 42);
+}
+
+function runBulkSimulation(times) {
+    if (bulkRun || currentPageIndex !== 5) return;
+    const run = {
+        id: ++bulkRunId,
+        target: times,
+        total: 0,
+        successes: 0,
+        samples: Array(100).fill(null),
+        lastOutcome: null,
+        paused: false,
+        complete: false
+    };
+    bulkRun = run;
+    bulkSimulationRunning = true;
+    if (probabilityChart) {
+        probabilityChart.samples = run.samples;
+        renderProbabilityChart();
+    }
+    updateBulkControls();
+    updateBulkProcessUI(run, 'running', `即将逐次运行 ${times} 次模拟；观察每一次成功或失败如何改变曲线。`);
+    scheduleBulkTick(run, 260);
+}
+
+function pauseBulkSimulation(detail = '') {
+    if (!bulkRun || bulkRun.paused || bulkRun.complete) return;
+    bulkRun.paused = true;
+    bulkSimulationRunning = false;
+    if (bulkTimer) window.clearTimeout(bulkTimer);
+    bulkTimer = null;
+    updateBulkProcessUI(bulkRun, 'paused', detail || `停在第 ${bulkRun.total} 次；点击“继续”后从这里接着播放。`);
+    updateBulkControls();
+}
+
+function toggleBulkSimulation() {
+    if (!bulkRun || bulkRun.complete) return;
+    if (!bulkRun.paused) {
+        pauseBulkSimulation();
+        return;
+    }
+    bulkRun.paused = false;
+    bulkSimulationRunning = true;
+    updateBulkProcessUI(bulkRun, 'running', `从第 ${bulkRun.total + 1} 次继续逐次模拟。`);
+    updateBulkControls();
+    scheduleBulkTick(bulkRun, 80);
+}
+
+function simulateOnce(n) {
+    const seatsState = Array(n).fill(null);
+    seatsState[Math.floor(Math.random() * n)] = 0;
+
+    for (let passenger = 1; passenger < n - 1; passenger += 1) {
+        const chosenSeat = seatsState[passenger] === null ? passenger : randomAvailableSeat(seatsState);
+        seatsState[chosenSeat] = passenger;
+    }
+    return seatsState.indexOf(null) === n - 1;
+}
+
+function resetBulkSimulation() {
+    bulkRunId += 1;
+    if (bulkTimer) window.clearTimeout(bulkTimer);
+    bulkTimer = null;
+    bulkRun = null;
+    bulkSimulationRunning = false;
+    if (probabilityChart) {
+        probabilityChart.samples = Array(100).fill(null);
+        renderProbabilityChart();
+    }
+    resetBulkProcessUI();
+}
+
+// ===== 互动游戏 =====
+function initializeUserGame() {
+    generateUserGameSeats();
+}
+
+function setUserGameStepControl({ enabled = false, label = '下一位乘客' } = {}) {
+    const button = document.getElementById('next-user-passenger');
+    if (!button) return;
+    button.disabled = !enabled;
+    button.textContent = label;
+}
+
+function updateUserGameStepStatus(text) {
+    const status = document.getElementById('user-game-step');
+    if (status) status.textContent = text;
+}
+
+function generateUserGameSeats() {
+    const select = document.getElementById('user-n-select');
+    const container = document.getElementById('game-seats');
+    if (!select || !container) return;
+
+    userGameRun = null;
+    const n = Number.parseInt(select.value, 10);
+    container.innerHTML = '';
+    for (let number = 1; number <= n; number += 1) {
+        const seat = document.createElement('button');
+        seat.type = 'button';
+        seat.className = 'seat mini available';
+        seat.dataset.seat = String(number);
+        seat.setAttribute('aria-label', `选择 ${number} 号座位`);
+        seat.textContent = String(number);
+        if (number === n) seat.classList.add('last');
+        seat.addEventListener('click', () => userSelectSeat(number, n));
+        container.appendChild(seat);
+    }
+    document.getElementById('game-result').classList.add('hidden');
+    setUserGameStepControl();
+    updateUserGameStepStatus('请选择乘客 1 的座位。');
+}
+
+function createUserGamePlan(selectedSeat, n) {
+    const seatsState = Array(n).fill(null);
+    const choices = Array(n).fill(null);
+    choices[0] = selectedSeat - 1;
+    seatsState[choices[0]] = 0;
+
+    for (let passenger = 1; passenger < n; passenger += 1) {
+        const choice = seatsState[passenger] === null ? passenger : randomAvailableSeat(seatsState);
+        choices[passenger] = choice;
+        seatsState[choice] = passenger;
+    }
+    return { n, choices, isSuccess: choices[n - 1] === n - 1 };
+}
+
+function markUserSeat(seat, passenger, choice, isLast) {
+    seat.classList.remove('available', 'target', 'checking');
+    seat.classList.add('occupied');
+    seat.dataset.passenger = String(passenger + 1);
+    seat.setAttribute('aria-label', `座位 ${choice + 1}，由乘客 ${passenger + 1} 入座`);
+    if (choice !== passenger) seat.classList.add('wrong');
+    if (isLast) seat.classList.add('current');
+}
+
+function userSelectSeat(selectedSeat, n) {
+    if (currentPageIndex !== 7 || userGameRun) return;
+    const seats = Array.from(document.querySelectorAll('#game-seats .seat.mini'));
+    if (!seats.some((seat) => seat.classList.contains('available'))) return;
+
+    const plan = createUserGamePlan(selectedSeat, n);
+    userGameRun = { plan, nextPassenger: 1 };
+    seats.forEach((seat) => seat.classList.remove('available'));
+    markUserSeat(seats[plan.choices[0]], 0, plan.choices[0], false);
+
+    if (n === 1) {
+        finishUserGame();
+        return;
+    }
+    updateUserGameStepStatus(`乘客 1 已坐到 ${selectedSeat} 号座位。请点击“下一位乘客”推进乘客 2。`);
+    setUserGameStepControl({ enabled: true, label: '乘客 2 入座' });
+}
+
+function nextUserGameStep() {
+    const run = userGameRun;
+    if (!run || currentPageIndex !== 7) return;
+
+    const seats = Array.from(document.querySelectorAll('#game-seats .seat.mini'));
+    const passenger = run.nextPassenger;
+    const choice = run.plan.choices[passenger];
+    const isLast = passenger === run.plan.n - 1;
+    markUserSeat(seats[choice], passenger, choice, isLast);
+
+    if (isLast) {
+        finishUserGame();
+        return;
+    }
+
+    run.nextPassenger += 1;
+    const ownSeatTaken = choice !== passenger;
+    updateUserGameStepStatus(
+        ownSeatTaken
+            ? `乘客 ${passenger + 1} 的座位被占，只能坐到 ${choice + 1} 号座位。请继续推进下一位乘客。`
+            : `乘客 ${passenger + 1} 坐回自己的 ${choice + 1} 号座位。请继续推进下一位乘客。`
+    );
+    setUserGameStepControl({ enabled: true, label: `乘客 ${run.nextPassenger + 1} 入座` });
+}
+
+function finishUserGame() {
+    const run = userGameRun;
+    if (!run) return;
+
+    const lastSeat = run.plan.choices[run.plan.n - 1];
+    const isSuccess = run.plan.isSuccess;
+    const indicator = document.getElementById('result-indicator');
+    const text = document.getElementById('result-text');
+    indicator.textContent = isSuccess ? '✅' : '❌';
+    indicator.className = `result-indicator ${isSuccess ? 'success' : 'fail'}`;
+    text.textContent = isSuccess ? '最后一位坐到了自己的座位。' : '最后一位没有坐到自己的座位。';
+    document.getElementById('game-result').classList.remove('hidden');
+    updateUserGameStepStatus(`已由你逐位推进完成：最后一位乘客坐到 ${lastSeat + 1} 号座位。`);
+    setUserGameStepControl({ enabled: false });
+
+    userGameStats.total += 1;
+    if (isSuccess) userGameStats.wins += 1;
+    userGameRun = null;
+}
+
+function resetGame() {
+    generateUserGameSeats();
+}
+
+function showUserStats() {
+    const rate = userGameStats.total > 0 ? ((userGameStats.wins / userGameStats.total) * 100).toFixed(1) : '0';
+    document.getElementById('user-wins').textContent = String(userGameStats.wins);
+    document.getElementById('user-total').textContent = String(userGameStats.total);
+    document.getElementById('user-rate').textContent = `${rate}%`;
+    document.getElementById('user-stats').classList.remove('hidden');
+}
+
+</script>
+</body>
+</html>
