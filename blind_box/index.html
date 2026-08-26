@@ -168,11 +168,11 @@
                 <article class="lesson-card">
                     <div class="section-kicker"><span aria-hidden="true">📐</span> 逐级累加动画</div>
                     <h2>把各阶段加起来：真相大白</h2>
-                    <p class="lead">不需要复杂公式，观察每一只平均需要买的次数像台阶一样依次拔高：</p>
+                    <p class="lead">每一步抽到新样式的概率等于未收集的款式数除以总款式数，而平均需要的尝试次数正是概率的倒数：</p>
 
                     <div class="plain-math-banner">
                         <div class="harmonic-preset-row">
-                            <span>切换款式看难度爆发：</span>
+                            <span>切换款式：</span>
                             <button class="preset-pill" id="h-btn-6" type="button" onclick="animateHarmonicPage(6)">6 款一套 (14.7次)</button>
                             <button class="preset-pill" id="h-btn-8" type="button" onclick="animateHarmonicPage(8)">8 款一套 (21.7次)</button>
                             <button class="preset-pill" id="h-btn-12" type="button" onclick="animateHarmonicPage(12)">12 款大套 (37.2次)</button>
@@ -189,13 +189,9 @@
                     <div class="harmonic-visual" id="harmonic-bars-wrap">
                         <!-- 动态柱状图 -->
                     </div>
-                    <p style="text-align: center; font-size: 0.76rem; color: var(--muted-ink); margin-top: 0.2rem;" id="harmonic-tip-text">
+                    <p style="text-align: center; font-size: 0.78rem; color: var(--muted-ink); margin-top: 0.35rem;" id="harmonic-tip-text">
                         柱子高度直观展示：越到后面越难抽，最后一只的难度等于前面所有阶段的总和！
                     </p>
-
-                    <div class="story-callout" id="harmonic-callout" style="border-left-color: var(--sky-deep); background: rgba(90,171,217,0.1); margin-top: 0.35rem;">
-                        📌 <strong>更惊人的事实</strong>：如果是 <strong>12 款</strong>的盲盒大套，平均需要抽 <strong>37.2 次</strong>（花费 ¥1,079）才能集齐！
-                    </div>
                 </article>
             </section>
 

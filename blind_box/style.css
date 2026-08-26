@@ -992,20 +992,21 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     align-items: flex-end;
     justify-content: center;
     gap: 0.55rem;
-    height: 120px;
-    margin: 0.35rem 0 0.15rem;
-    padding-bottom: 22px;
+    height: 125px;
+    margin: 0.35rem 0 0.2rem;
+    padding-bottom: 26px;
     position: relative;
 }
 
 .harmonic-visual::after {
     content: "";
     position: absolute;
-    bottom: 20px;
+    bottom: 24px;
     left: 0;
     right: 0;
     height: 2px;
     background: var(--line);
+    z-index: 1;
 }
 
 .h-bar-container {
@@ -1017,16 +1018,19 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     position: relative;
     flex: 1;
     max-width: 58px;
+    z-index: 5;
 }
 
 .h-bar-val {
     font-size: 0.72rem;
     font-weight: 800;
     color: var(--ink);
-    margin-bottom: 2px;
+    margin-bottom: 3px;
     opacity: 0;
     transform: translateY(6px);
     transition: opacity 0.25s ease, transform 0.35s var(--ease-bounce);
+    z-index: 10;
+    white-space: nowrap;
 }
 
 .h-bar-val.show {
@@ -1041,25 +1045,30 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     border-radius: 6px 6px 0 0;
     height: 0;
     transition: height 0.65s var(--ease-bounce), background 0.3s ease;
+    position: relative;
+    z-index: 3;
 }
 
 .h-bar.last-bar {
     background: linear-gradient(180deg, #ff7675, #e96e56);
     box-shadow: 0 0 10px rgba(233, 110, 86, 0.35);
+    z-index: 4;
 }
 
 .h-bar-label {
     position: absolute;
-    bottom: 2px;
+    bottom: -22px;
     font-size: 0.68rem;
     font-weight: 700;
     color: var(--muted-ink);
     white-space: nowrap;
+    z-index: 10;
 }
 
 .h-bar-container.highlight-last .h-bar-label {
     color: var(--coral);
     font-weight: 800;
+    z-index: 12;
 }
 
 /* ========== Page 5 欧皇 vs 非酋与段位测算器 ========== */
