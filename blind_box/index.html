@@ -337,85 +337,63 @@
                 </article>
             </section>
 
-            <!-- 第 6 页：第三方全套定价与理性决策 -->
+            <!-- 第 6 页：二手市场与理性混合策略 EV 计算器 -->
             <section class="lesson-page" data-page="7" aria-hidden="true">
                 <article class="lesson-card">
-                    <div class="section-kicker"><span aria-hidden="true">💡</span> 二手市场与理性决策</div>
-                    <h2>第三方全套溢价卖，买家看似亏实则血赚？</h2>
-                    <p class="lead">很多人看到二手全套卖 ¥280（原价才 ¥174）觉得被宰，但用概率数学一算，直接买全套反而净省百余元：</p>
+                    <div class="section-kicker"><span aria-hidden="true">💡</span> 理性决策</div>
+                    <h2>终极策略：盲抽与二手的混合博弈</h2>
+                    <p class="lead">理性分析基于数学期望（大众 50% 期望视角，既不赌欧皇也不预设非酋），对比所有收集策略的真实平均开销：</p>
 
-                    <!-- 期望收益 EV 计算器 -->
-                    <div class="ev-calc-box">
-                        <div class="ev-presets-row">
-                            <span>真实市场行情案例：</span>
-                            <button class="preset-pill" type="button" onclick="setEVPreset(6, 29, 280)">案例一：¥29立牌盲袋 (6款二手全套¥280·立省34%)</button>
-                            <button class="preset-pill" type="button" onclick="setEVPreset(12, 29, 650)">案例二：12款大套 (二手全套¥650·立省40%)</button>
-                            <button class="preset-pill" type="button" onclick="setEVPreset(6, 29, 490)">案例三：黑心高溢价 (标价¥490·不如自己抽)</button>
+                    <!-- 4 个参数控制滑块 -->
+                    <div class="ev-sliders-grid">
+                        <div class="slider-control-group">
+                            <div class="slider-label-row">
+                                <span>全套款式 (N)：</span>
+                                <span class="slider-val-badge" id="ev-n-badge">6 款一套</span>
+                            </div>
+                            <input type="range" class="custom-range-slider" id="ev-n-slider" min="4" max="12" value="6" oninput="updateEVFromSliders()">
                         </div>
 
-                        <!-- 3 个实时滑动条 -->
-                        <div class="ev-sliders-grid">
-                            <div class="slider-control-group">
-                                <div class="slider-label-row">
-                                    <span>盲盒总款式数：</span>
-                                    <span class="slider-val-badge" id="ev-n-badge">6 款一套</span>
-                                </div>
-                                <input type="range" class="custom-range-slider" id="ev-n-slider" min="4" max="16" value="6" oninput="updateEVFromSliders()">
+                        <div class="slider-control-group">
+                            <div class="slider-label-row">
+                                <span>盲盒单抽原价：</span>
+                                <span class="slider-val-badge" id="ev-price-badge">¥ 29 / 抽</span>
                             </div>
-
-                            <div class="slider-control-group">
-                                <div class="slider-label-row">
-                                    <span>官方单抽原价：</span>
-                                    <span class="slider-val-badge" id="ev-price-badge">¥ 29</span>
-                                </div>
-                                <input type="range" class="custom-range-slider" id="ev-price-slider" min="2" max="150" step="1" value="29" oninput="updateEVFromSliders()">
-                            </div>
-
-                            <div class="slider-control-group">
-                                <div class="slider-label-row">
-                                    <span>第三方全套售价：</span>
-                                    <span class="slider-val-badge" id="ev-reward-badge" style="color: #9a6bc7; background: rgba(154,107,199,0.15); border-color: #9a6bc7;">¥ 280</span>
-                                </div>
-                                <input type="range" class="custom-range-slider" id="ev-reward-slider" min="20" max="2500" step="10" value="280" oninput="updateEVFromSliders()">
-                            </div>
+                            <input type="range" class="custom-range-slider" id="ev-price-slider" min="10" max="89" value="29" oninput="updateEVFromSliders()">
                         </div>
 
-                        <!-- 成本与大奖对比面板 (最低成本 vs 预计总花费 vs 第三方全套售价) -->
-                        <div class="cost-breakdown-panel">
-                            <div class="cost-stat-item">
-                                <div class="cost-stat-title">
-                                    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--leaf);"></span>
-                                    官方 0 重复底价 (原价)
-                                </div>
-                                <div class="cost-stat-num min-cost" id="ev-min-cost-display">¥ 174</div>
-                                <small style="font-size:0.68rem;color:var(--muted-ink);" id="ev-min-draws-sub">买齐 6 个无重复</small>
+                        <div class="slider-control-group">
+                            <div class="slider-label-row">
+                                <span>二手单买均价：</span>
+                                <span class="slider-val-badge" id="ev-single-badge" style="color: #f39c12; background: rgba(243,156,18,0.12); border-color: rgba(243,156,18,0.3);">¥ 35 / 只</span>
                             </div>
-
-                            <div class="cost-stat-item" style="border-left: 1px dashed var(--soft-line); border-right: 1px dashed var(--soft-line);">
-                                <div class="cost-stat-title">
-                                    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--sky-deep);"></span>
-                                    自己盲抽期望总花费
-                                </div>
-                                <div class="cost-stat-num exp-cost" id="ev-exp-cost-display">¥ 426.30</div>
-                                <small style="font-size:0.68rem;color:var(--muted-ink);" id="ev-exp-draws-sub">平均需抽 14.7 次</small>
-                            </div>
-
-                            <div class="cost-stat-item">
-                                <div class="cost-stat-title">
-                                    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#9a6bc7;"></span>
-                                    第三方全套售价
-                                </div>
-                                <div class="cost-stat-num prize-cost" id="ev-prize-display" style="color: var(--purple);">¥ 280.00</div>
-                                <small style="font-size:0.68rem;color:var(--muted-ink);">拆盒确认款直接打包</small>
-                            </div>
+                            <input type="range" class="custom-range-slider" id="ev-single-slider" min="15" max="80" value="35" oninput="updateEVFromSliders()">
                         </div>
 
-                        <!-- 最终理性省钱大徽章 -->
-                        <div class="ev-result-badge positive" id="ev-badge">
-                            <div style="font-size: 0.82rem; font-weight: 700;">买全套相比自己盲抽：</div>
-                            <div class="ev-result-val" id="ev-val" style="color: var(--leaf);">净省 ¥ 146.30</div>
-                            <small id="ev-tip" style="color: var(--muted-ink); font-size: 0.75rem;">看似比官方原价 (¥174) 贵了 ¥106（溢价 61%），但相比自己盲抽的期望总花费 (¥426.3)，直接买全套反而净省下 ¥146.3！省钱又省心。</small>
+                        <div class="slider-control-group">
+                            <div class="slider-label-row">
+                                <span>二手全套打包：</span>
+                                <span class="slider-val-badge" id="ev-full-badge" style="color: #9b59b6; background: rgba(155,89,182,0.12); border-color: rgba(155,89,182,0.3);">¥ 280 / 套</span>
+                            </div>
+                            <input type="range" class="custom-range-slider" id="ev-full-slider" min="100" max="600" step="10" value="280" oninput="updateEVFromSliders()">
                         </div>
+                    </div>
+
+                    <!-- 柱状图图例 -->
+                    <div class="ev-chart-legend">
+                        <span class="legend-chip"><span class="legend-box blue"></span> 盲抽期望花费</span>
+                        <span class="legend-chip"><span class="legend-box orange"></span> 二手单买补齐花费</span>
+                        <span class="legend-chip"><span class="legend-box purple"></span> 二手全套一口价</span>
+                    </div>
+
+                    <!-- 横向双色堆叠柱状图容器 -->
+                    <div class="ev-stacked-chart" id="ev-stacked-chart">
+                        <!-- 动态渲染 N+2 行横向堆叠柱状条 -->
+                    </div>
+
+                    <!-- 底部理性结论卡片 -->
+                    <div class="ev-summary-callout" id="ev-summary-callout">
+                        <!-- 动态生成最优解点评 -->
                     </div>
                 </article>
             </section>

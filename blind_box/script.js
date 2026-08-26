@@ -1523,69 +1523,144 @@ function renderSSRSwarm(neededDraws, nVal) {
 }
 
 // ========================
-// 10. 第 6 页：商业定价期望收益 EV 计算器
+// 10. 第 6 页：商业定价期望收益 EV 计算器与混合策略柱状图
 // ========================
-function setEVPreset(n, price, reward) {
-    const nSlider = document.getElementById("ev-n-slider");
-    const priceSlider = document.getElementById("ev-price-slider");
-    const rewardSlider = document.getElementById("ev-reward-slider");
-    if (nSlider) nSlider.value = n;
-    if (priceSlider) priceSlider.value = price;
-    if (rewardSlider) rewardSlider.value = reward;
-    updateEVFromSliders();
-}
-
 function updateEVFromSliders() {
     const nSlider = document.getElementById("ev-n-slider");
     const priceSlider = document.getElementById("ev-price-slider");
-    const rewardSlider = document.getElementById("ev-reward-slider");
-    if (!nSlider || !priceSlider || !rewardSlider) return;
+    const singleSlider = document.getElementById("ev-single-slider");
+    const fullSlider = document.getElementById("ev-full-slider");
+    const chartContainer = document.getElementById("ev-stacked-chart");
+    const summaryElem = document.getElementById("ev-summary-callout");
+
+    if (!nSlider || !priceSlider || !singleSlider || !fullSlider || !chartContainer) return;
 
     const N = parseInt(nSlider.value, 10);
-    const price = parseFloat(priceSlider.value) || 0;
-    const reward = parseFloat(rewardSlider.value) || 0;
+    const pBox = parseFloat(priceSlider.value) || 29;
+    const pSingle = parseFloat(singleSlider.value) || 35;
+    const pFull = parseFloat(fullSlider.value) || 280;
 
     document.getElementById("ev-n-badge").textContent = `${N} 款一套`;
-    document.getElementById("ev-price-badge").textContent = `¥ ${price}`;
-    document.getElementById("ev-reward-badge").textContent = `¥ ${reward}`;
+    document.getElementById("ev-price-badge").textContent = `¥ ${pBox} / 抽`;
+    document.getElementById("ev-single-badge").textContent = `¥ ${pSingle} / 只`;
+    document.getElementById("ev-full-badge").textContent = `¥ ${pFull} / 套`;
 
-    const minCost = N * price;
-    document.getElementById("ev-min-cost-display").textContent = `¥ ${minCost.toLocaleString()}`;
-    document.getElementById("ev-min-draws-sub").textContent = `买齐 ${N} 个无重复`;
+    // 1. 构建所有策略列表
+    const strategies = [];
 
-    let harmonicN = 0;
-    for (let i = 1; i <= N; i++) harmonicN += 1 / i;
-    const expectedDraws = N * harmonicN;
-    const expectedCost = expectedDraws * price;
-    document.getElementById("ev-exp-cost-display").textContent = `¥ ${expectedCost.toFixed(2)}`;
-    document.getElementById("ev-exp-draws-sub").textContent = `平均需抽 ${expectedDraws.toFixed(1)} 次`;
+    // 策略 0：纯二手全套打包
+    strategies.push({
+        type: "used_full",
+        name: "【纯二手】全套打包",
+        blindDraws: 0,
+        blindCost: 0,
+        usedCost: pFull,
+        totalCost: pFull,
+        isPurple: true
+    });
 
-    const thirdPartyPrice = reward;
-    document.getElementById("ev-prize-display").textContent = `¥ ${thirdPartyPrice.toFixed(2)}`;
+    // 计算盲抽前 k 款不同款式的期望抽数
+    const harmonicPrefix = [0];
+    for (let j = 0; j < N; j++) {
+        harmonicPrefix.push(harmonicPrefix[j] + N / (N - j));
+    }
 
-    const savedAmount = expectedCost - thirdPartyPrice;
-    const badge = document.getElementById("ev-badge");
-    const valElem = document.getElementById("ev-val");
-    const tipElem = document.getElementById("ev-tip");
+    // 策略 1 ~ N-1：抽 k 款 + 补 N-k 只
+    for (let k = 1; k < N; k++) {
+        const expDraws = harmonicPrefix[k];
+        const blindCost = expDraws * pBox;
+        const usedCount = N - k;
+        const usedCost = usedCount * pSingle;
+        const totalCost = blindCost + usedCost;
 
-    if (savedAmount >= 0) {
-        badge.className = "ev-result-badge positive";
-        valElem.style.color = "var(--leaf)";
-        const savedPct = ((savedAmount / expectedCost) * 100).toFixed(0);
-        valElem.textContent = `净省 ¥ ${savedAmount.toFixed(2)} (立省 ${savedPct}%)`;
+        strategies.push({
+            type: "hybrid",
+            k: k,
+            usedCount: usedCount,
+            name: `抽 ${k} 款 + 补 ${usedCount} 只`,
+            blindDraws: expDraws,
+            blindCost: blindCost,
+            usedCost: usedCost,
+            totalCost: totalCost
+        });
+    }
 
-        const premium = thirdPartyPrice - minCost;
-        if (premium > 0) {
-            const premiumPct = ((premium / minCost) * 100).toFixed(0);
-            tipElem.textContent = `看似比官方原价 (¥${minCost.toFixed(0)}) 溢价了 ¥${premium.toFixed(0)} (+${premiumPct}%)，但相比自己盲抽的期望花费 (¥${expectedCost.toFixed(1)})，直接买全套净省下 ¥${savedAmount.toFixed(1)}！省钱又省心。`;
-        } else {
-            tipElem.textContent = `售价甚至低于或等于官方原价 (¥${minCost.toFixed(0)})，这属于捡漏神仙价格！`;
+    // 策略 N：纯盲抽到底
+    const pureExpDraws = harmonicPrefix[N];
+    const pureBlindCost = pureExpDraws * pBox;
+    strategies.push({
+        type: "pure_blind",
+        name: "【纯盲抽】头铁到底",
+        blindDraws: pureExpDraws,
+        blindCost: pureBlindCost,
+        usedCost: 0,
+        totalCost: pureBlindCost
+    });
+
+    // 2. 寻找最优策略 (总花费最低) 与 最大花费 (用于确定 100% 柱长比例)
+    let minCost = Infinity;
+    let maxCost = -Infinity;
+    let bestStrategy = null;
+
+    strategies.forEach(s => {
+        if (s.totalCost < minCost) {
+            minCost = s.totalCost;
+            bestStrategy = s;
         }
-    } else {
-        const extra = Math.abs(savedAmount);
-        badge.className = "ev-result-badge negative";
-        valElem.style.color = "var(--coral)";
-        valElem.textContent = `多花 ¥ ${extra.toFixed(2)} (溢价过高)`;
-        tipElem.textContent = `第三方标价已超过盲抽期望总花费 (¥${expectedCost.toFixed(1)})，溢价过高被宰，不如直接去买官方未拆整盒。`;
+        if (s.totalCost > maxCost) {
+            maxCost = s.totalCost;
+        }
+    });
+
+    // 3. 渲染横向堆叠柱状图
+    chartContainer.innerHTML = "";
+    strategies.forEach(s => {
+        const isBest = (s === bestStrategy);
+        const row = document.createElement("div");
+        row.className = `ev-row ${isBest ? "is-best" : ""}`;
+
+        const widthPct = Math.max(12, Math.min(100, (s.totalCost / maxCost) * 100)).toFixed(1);
+        const blindSegPct = s.totalCost > 0 ? ((s.blindCost / s.totalCost) * 100).toFixed(1) : 0;
+        const usedSegPct = s.totalCost > 0 ? ((s.usedCost / s.totalCost) * 100).toFixed(1) : 0;
+
+        let barSegmentsHtml = "";
+        if (s.isPurple) {
+            barSegmentsHtml = `<div class="ev-bar-seg purple" style="width: 100%;">一口价 ¥${s.totalCost.toFixed(0)}</div>`;
+        } else {
+            if (s.blindCost > 0) {
+                barSegmentsHtml += `<div class="ev-bar-seg blue" style="width: ${blindSegPct}%;">抽${s.blindDraws.toFixed(1)}次 ¥${s.blindCost.toFixed(0)}</div>`;
+            }
+            if (s.usedCost > 0) {
+                barSegmentsHtml += `<div class="ev-bar-seg orange" style="width: ${usedSegPct}%;">补${s.usedCount}只 ¥${s.usedCost.toFixed(0)}</div>`;
+            }
+        }
+
+        row.innerHTML = `
+            <div class="ev-row-label">
+                <span class="ev-strategy-name">${s.name}</span>
+                ${isBest ? '<span class="ev-best-badge">🏆 最优解</span>' : ''}
+            </div>
+            <div class="ev-bar-track">
+                <div class="ev-stacked-bar" style="width: ${widthPct}%;">
+                    ${barSegmentsHtml}
+                </div>
+            </div>
+            <span class="ev-total-val">¥ ${s.totalCost.toFixed(1)}</span>
+        `;
+        chartContainer.appendChild(row);
+    });
+
+    // 4. 渲染底部理性决策点评
+    if (summaryElem && bestStrategy) {
+        const saved = pureBlindCost - bestStrategy.totalCost;
+        const savedPct = ((saved / pureBlindCost) * 100).toFixed(0);
+
+        if (bestStrategy.type === "used_full") {
+            summaryElem.innerHTML = `💡 <strong>数学家决策：</strong>当前二手全套打包价 (¥${pFull}) 极具性价比！相比自己纯盲抽期望花费 (¥${pureBlindCost.toFixed(1)}) <strong>净省 ¥ ${saved.toFixed(1)} (立省 ${savedPct}%)</strong>，直接全套打包不仅省钱，还彻底免去开盒重复与非酋翻车风险！`;
+        } else if (bestStrategy.type === "pure_blind") {
+            summaryElem.innerHTML = `💡 <strong>数学家决策：</strong>二手平台单买与打包溢价过高，自己纯盲抽期望总花费 (¥${pureBlindCost.toFixed(1)}) 反而是最优选择！`;
+        } else {
+            summaryElem.innerHTML = `💡 <strong>数学家决策：</strong>【抽 ${bestStrategy.k} 款 + 补 ${bestStrategy.usedCount} 只】是当前行情的<strong>黄金平衡解</strong>！平均只需花费 <strong>¥ ${bestStrategy.totalCost.toFixed(1)}</strong>，相比头铁纯盲抽 (¥${pureBlindCost.toFixed(1)}) <strong>净省 ¥ ${saved.toFixed(1)} (立省 ${savedPct}%)</strong>。既享受了前 ${bestStrategy.k} 次开箱的爽快感，又在难度最高的后 ${bestStrategy.usedCount} 只上果断二手单买精准止损！`;
+        }
     }
 }
