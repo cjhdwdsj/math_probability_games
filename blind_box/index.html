@@ -86,30 +86,36 @@
                     <div class="tabletop-layout">
                         <!-- 左侧：收银台账与控制 -->
                         <div class="ledger-card">
-                            <div>
+                            <div class="ledger-top">
                                 <div class="ledger-title">
                                     <span>🧾 桌面记账单</span>
                                 </div>
-                                <div class="ledger-stat-row">
-                                    <span>已购总数：</span>
-                                    <strong id="ledger-bought-count">14 袋</strong>
+                                <div class="ledger-stat-list">
+                                    <div class="ledger-stat-row">
+                                        <span>已购总数：</span>
+                                        <strong id="ledger-bought-count">14 袋</strong>
+                                    </div>
+                                    <div class="ledger-stat-row">
+                                        <span>已拆开：</span>
+                                        <strong id="ledger-opened-count" style="color: var(--coral);">0 袋</strong>
+                                    </div>
+                                    <div class="ledger-stat-row">
+                                        <span>桌上剩余：</span>
+                                        <strong id="ledger-remain-count">14 袋未拆</strong>
+                                    </div>
                                 </div>
-                                <div class="ledger-stat-row">
-                                    <span>已拆开：</span>
-                                    <strong id="ledger-opened-count" style="color: var(--coral);">0 袋</strong>
+                                <div class="ledger-cost-card">
+                                    <span class="ledger-cost-label">累计开销</span>
+                                    <span class="ledger-total-cost" id="ledger-cost-display">¥ 406</span>
                                 </div>
-                                <div class="ledger-stat-row">
-                                    <span>桌上剩余：</span>
-                                    <strong id="ledger-remain-count">14 袋未拆</strong>
-                                </div>
-                                <div class="ledger-total-cost" id="ledger-cost-display">¥ 406</div>
                             </div>
 
                             <div class="ledger-actions">
                                 <button class="btn btn-primary btn-sm" type="button" onclick="buyOneMoreBag()">➕ 再买一袋 (+¥29)</button>
-                                <button class="btn btn-quiet btn-sm" type="button" onclick="refundUnopenedBags()">↩️ 全退了 (退未拆)</button>
-                                <button class="btn btn-quiet btn-sm" type="button" onclick="resetLife()">🔄 重启人生</button>
-                                <button class="btn btn-gold btn-sm" id="btn-victory-settle" disabled type="button" onclick="goToBattleReport()">🏆 胜利结算 (需集齐6款)</button>
+                                <div class="ledger-actions-row">
+                                    <button class="btn btn-quiet btn-sm" type="button" onclick="refundUnopenedBags()">↩️ 退未拆</button>
+                                    <button class="btn btn-quiet btn-sm" type="button" onclick="resetLife()">🔄 重置</button>
+                                </div>
                             </div>
                         </div>
 
@@ -129,8 +135,8 @@
                                     <!-- 6 个亚克力立牌槽位 -->
                                 </div>
                             </div>
-                            <div style="font-size: 0.72rem; color: var(--muted-ink); text-align: center; border-top: 1px dashed var(--soft-line); padding-top: 0.3rem;">
-                                💡 点亮全部 6 款解锁【胜利结算】
+                            <div class="shelf-tip-text">
+                                💡 点亮全部 6 款解锁胜利结算
                             </div>
                         </div>
                     </div>

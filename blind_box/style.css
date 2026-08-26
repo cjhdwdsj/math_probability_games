@@ -393,18 +393,18 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     display: grid;
     grid-template-columns: 200px 1fr 200px;
     gap: 0.85rem;
-    height: 340px;
+    height: 335px;
     margin-top: 0.35rem;
     position: relative;
 }
 
 /* 左侧收银小账单 */
 .ledger-card {
-    background: #2b2723;
+    background: #23201d;
     color: #fffef9;
-    border: 2.5px solid #1a1715;
+    border: 2px solid #1a1715;
     border-radius: 12px;
-    padding: 0.8rem 0.85rem;
+    padding: 0.75rem 0.8rem;
     box-shadow: var(--shadow-sm);
     display: flex;
     flex-direction: column;
@@ -413,7 +413,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 }
 
 .ledger-title {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     font-weight: 800;
     color: #f7c84b;
     letter-spacing: 0.05em;
@@ -425,22 +425,43 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     gap: 0.3rem;
 }
 
+.ledger-stat-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.22rem;
+    margin-bottom: 0.35rem;
+}
+
 .ledger-stat-row {
     display: flex;
     justify-content: space-between;
-    font-size: 0.76rem;
-    margin: 0.22rem 0;
-    color: rgba(255,255,255,0.88);
+    font-size: 0.74rem;
+    color: rgba(255,255,255,0.85);
+}
+
+.ledger-cost-card {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    padding: 0.35rem 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.25rem;
+}
+
+.ledger-cost-label {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 700;
 }
 
 .ledger-total-cost {
-    font-size: 1.55rem;
+    font-size: 1.35rem;
     font-weight: 900;
     color: #f7c84b;
     font-family: "Noto Serif SC", serif;
-    text-align: right;
-    margin: 0.3rem 0 0.15rem;
-    line-height: 1.1;
+    line-height: 1;
 }
 
 .ledger-actions {
@@ -448,12 +469,17 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     flex-direction: column;
     gap: 0.35rem;
     margin-top: auto;
-    padding-top: 0.4rem;
+}
+
+.ledger-actions-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.35rem;
 }
 
 .ledger-actions .btn {
-    padding: 0.38rem 0.6rem;
-    font-size: 0.76rem;
+    padding: 0.36rem 0.5rem;
+    font-size: 0.74rem;
     font-weight: 700;
     width: 100%;
 }
@@ -577,12 +603,11 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     color: #6e665e;
 }
 
-/* 右侧亚克力展架 */
 .shelf-display {
     background: #fffef9;
     border: 2px solid var(--line);
     border-radius: 12px;
-    padding: 0.75rem;
+    padding: 0.65rem 0.75rem;
     box-shadow: var(--shadow-sm);
     display: flex;
     flex-direction: column;
@@ -591,10 +616,10 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 }
 
 .shelf-title {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     font-weight: 800;
     color: var(--muted-ink);
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.3rem;
     display: flex;
     justify-content: space-between;
 }
@@ -602,8 +627,19 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 .shelf-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0.4rem;
-    margin: 0.2rem 0;
+    gap: 0.35rem;
+    margin: 0.15rem 0;
+}
+
+.shelf-tip-text {
+    font-size: 0.68rem;
+    color: var(--muted-ink);
+    text-align: center;
+    border-top: 1px dashed var(--soft-line);
+    padding-top: 0.35rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .standee-slot {
