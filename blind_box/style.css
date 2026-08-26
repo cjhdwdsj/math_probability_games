@@ -2130,7 +2130,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 
 /* SSR 微缩 */
 .ssr-thumb {
-    background: linear-gradient(135deg, #2b2723, #1a1715);
+    background: linear-gradient(135deg, #fffcf5, #fffae6);
     flex-direction: column;
 }
 
@@ -2146,34 +2146,35 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 
 .mini-ssr-orbit {
     position: relative;
-    width: 65px;
-    height: 65px;
+    width: 66px;
+    height: 66px;
     border-radius: 50%;
-    border: 1px dashed rgba(247, 200, 75, 0.4);
+    border: 1.5px dashed rgba(212, 136, 6, 0.4);
+    background: radial-gradient(circle, rgba(255, 230, 150, 0.35) 0%, transparent 70%);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .mini-ssr-crown {
-    font-size: 1.4rem;
-    filter: drop-shadow(0 0 8px #ffd369);
+    font-size: 1.5rem;
+    filter: drop-shadow(0 0 10px rgba(243, 156, 18, 0.85));
     animation: corePulse 2s infinite ease-in-out;
 }
 
 .orbit-dot {
     position: absolute;
-    font-size: 0.75rem;
+    font-size: 0.78rem;
 }
 
 .orbit-dot.d1 { top: -6px; left: 22px; }
-.orbit-dot.d2 { bottom: 6px; left: 0px; }
-.orbit-dot.d3 { bottom: 6px; right: 0px; }
+.orbit-dot.d2 { bottom: 4px; left: 2px; }
+.orbit-dot.d3 { bottom: 4px; right: 2px; }
 
 .mini-ssr-tag {
     font-size: 0.58rem;
-    font-weight: 800;
-    color: #ffd369;
+    font-weight: 900;
+    color: #b7791f;
     margin-top: 3px;
 }
 
