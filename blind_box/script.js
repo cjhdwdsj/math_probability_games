@@ -333,7 +333,7 @@ function tearFoilStrip() {
             standee.style.display = "flex";
             standee.style.transform = "translateY(0)";
         }
-    }, 220);
+    }, 150);
 }
 
 function initStandeeDragListeners() {
