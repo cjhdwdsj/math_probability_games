@@ -779,7 +779,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     border-radius: 14px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.25), inset 0 0 14px rgba(255,255,255,0.9);
     position: absolute;
-    bottom: 45px;
+    bottom: 28px;
     z-index: 15;
     display: flex;
     flex-direction: column;
@@ -796,9 +796,10 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 }
 
 .standee-icon {
-    font-size: 4rem;
+    font-size: 3.75rem;
     filter: drop-shadow(0 4px 6px rgba(0,0,0,0.12));
     pointer-events: none;
+    margin-top: 6px;
 }
 
 .standee-name {
@@ -861,12 +862,12 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 /* 4. 顶部折叠密封铝箔罩 (未撕开时100%遮挡密封) */
 .foil-bag-top-sealed {
     width: 175px;
-    height: 115px;
+    height: 125px;
     background: linear-gradient(135deg, #e4e4e4 0%, #ffffff 25%, #cfd8dc 50%, #90a4ae 100%);
     border: 3px solid #2f2a25;
     border-radius: 16px 16px 0 0;
     position: absolute;
-    bottom: 145px;
+    bottom: 135px;
     z-index: 30;
     cursor: pointer;
     display: flex;
