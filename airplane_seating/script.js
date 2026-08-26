@@ -175,10 +175,18 @@ function renderRulesStatus({ state = 'idle', title, detail }) {
     `;
 }
 
+function updateRulesFlow(activeStates = []) {
+    const active = new Set(activeStates);
+    document.querySelectorAll('[data-rule-flow]').forEach((node) => {
+        node.classList.toggle('is-active', active.has(node.dataset.ruleFlow));
+    });
+}
+
 function resetRulesDemo() {
     rulesDemoRunId += 1;
     rulesDemoRunning = false;
     document.querySelectorAll('.rules-passenger').forEach((passenger) => passenger.remove());
+    updateRulesFlow();
     document.querySelectorAll('.rule-seat').forEach((seat) => {
         seat.classList.remove('occupied', 'wrong', 'current', 'checking', 'target', 'rolling');
         delete seat.dataset.passenger;
@@ -239,6 +247,7 @@ async function playRulesDemo() {
     for (const step of steps) {
         const targetIndex = step.seat - 1;
         if (step.kind === 'blocked-random') {
+            updateRulesFlow(['check']);
             seats[step.passenger - 1].classList.add('checking');
             renderRulesStatus({ state: 'checking', title: `乘客 ${step.passenger} 检查自己的座位`, detail: `他发现 ${step.passenger} 号座位已经被占。${step.detail}` });
             await sleep(520);
@@ -247,10 +256,12 @@ async function playRulesDemo() {
         }
 
         if (step.kind === 'first-random' || step.kind === 'blocked-random') {
+            updateRulesFlow(step.kind === 'first-random' ? ['first'] : ['check', 'random']);
             renderRulesStatus({ state: 'running', title: `乘客 ${step.passenger} 正在随机选择`, detail: step.detail });
             const rolled = await showRuleRoll(seats, step.roll, targetIndex, runId);
             if (!rolled) return;
         } else {
+            updateRulesFlow(['check', 'direct']);
             seats[targetIndex].classList.add('target');
             renderRulesStatus({ state: 'running', title: `乘客 ${step.passenger} 直接坐自己的座位`, detail: step.detail });
             await sleep(260);
@@ -275,6 +286,7 @@ async function playRulesDemo() {
         seats[targetIndex].dataset.passenger = String(step.passenger);
         if (targetIndex !== step.passenger - 1) seats[targetIndex].classList.add('wrong');
         if (step.passenger === 5) seats[targetIndex].classList.add('current');
+        updateRulesFlow(step.kind === 'first-random' ? ['first', 'seated'] : step.kind === 'blocked-random' ? ['check', 'random', 'seated'] : ['check', 'direct', 'seated']);
         renderRulesStatus({
             state: 'seated',
             title: `乘客 ${step.passenger} 已入座`,
@@ -285,6 +297,7 @@ async function playRulesDemo() {
     }
 
     rulesDemoRunning = false;
+    updateRulesFlow(['seated']);
     setRulesControls({ complete: true });
 }
 

@@ -43,11 +43,19 @@
                     <div class="section-kicker"><span aria-hidden="true">🧭</span> 先看懂规则</div>
                     <h2 id="page-title-2" tabindex="-1">五个座位，大家怎么坐？</h2>
                     <p class="lead">每位乘客都有自己的编号座位。关键规则只有两条：先找自己的座位；若已被占，才在剩余座位中随机选择。</p>
-                    <div class="rules-key" aria-label="规则摘要">
-                        <span><b>1</b> 乘客 1 没有固定座位，随机选一个。</span>
-                        <span><b>2</b> 其他乘客先看自己的座位是否空着。</span>
-                        <span><b>3</b> 自己的座位被占时，才在剩余座位中随机选。</span>
+                    <div class="rule-flow" id="rule-flow" aria-label="选座决策图：高亮框表示动画当前所在规则">
+                        <div class="flow-node flow-start" data-rule-flow="first"><span class="flow-tag">乘客 1</span><strong>没有固定座位</strong><small>在所有空座位中随机选一个</small></div>
+                        <div class="flow-arrow" aria-hidden="true">↓</div>
+                        <div class="flow-node flow-check" data-rule-flow="check"><span class="flow-tag">乘客 2、3、4…</span><strong>先看自己的座位</strong><small>座位现在是空着，还是已被占？</small></div>
+                        <div class="flow-split" aria-hidden="true"><span>↙</span><span>↘</span></div>
+                        <div class="flow-branches">
+                            <div class="flow-branch" data-rule-flow="direct"><span class="branch-label">座位空着</span><strong>直接坐下</strong></div>
+                            <div class="flow-branch" data-rule-flow="random"><span class="branch-label">座位被占</span><strong>在剩余空座位中随机选一个</strong></div>
+                        </div>
+                        <div class="flow-arrow" aria-hidden="true">↓</div>
+                        <div class="flow-node flow-seat" data-rule-flow="seated"><strong>完成入座</strong><small>轮到下一位乘客</small></div>
                     </div>
+                    <p class="rule-flow-hint">动画开始后，当前正在执行的规则和分支会高亮。</p>
                     <div class="rules-seat-row" aria-label="五个按编号排列的座位">
                         <div class="seat mini rule-seat" data-rule-seat="1">1</div>
                         <div class="seat mini rule-seat" data-rule-seat="2">2</div>

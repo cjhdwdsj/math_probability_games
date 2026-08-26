@@ -269,10 +269,22 @@ h2 { font-size: clamp(1.55rem, 3vw, 2.3rem); line-height: 1.25; margin-top: 0.28
 
 /* Rules introduction */
 .card-rules { max-width: 53rem; text-align: center; }
-.rules-key { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.45rem; max-width: 48rem; margin: 0.75rem auto; text-align: left; }
-.rules-key span { display: flex; align-items: flex-start; gap: 0.4rem; padding: 0.46rem 0.55rem; border-radius: 0.62rem; background: #f7f1e6; color: var(--muted-ink); font-size: 0.76rem; line-height: 1.45; }
-.rules-key b { display: grid; place-items: center; width: 1.15rem; height: 1.15rem; flex: 0 0 auto; border: 1.5px solid var(--ink); border-radius: 50%; background: var(--sun); color: var(--ink); font-size: 0.68rem; }
-.rules-seat-row { display: flex; justify-content: center; gap: 0.55rem; margin: 0.6rem 0; }
+.rule-flow { display: grid; justify-items: center; max-width: 43rem; margin: 0.55rem auto 0.35rem; }
+.flow-node, .flow-branch { width: min(100%, 30rem); padding: 0.38rem 0.65rem; border: 1.5px solid rgba(47, 42, 37, 0.32); border-radius: 0.68rem; background: #f7f1e6; color: var(--muted-ink); text-align: center; transition: background-color 180ms var(--ease-out), border-color 180ms var(--ease-out), box-shadow 180ms var(--ease-out), transform 180ms var(--ease-out); }
+.flow-node strong, .flow-branch strong { display: block; color: var(--ink); font-size: 0.82rem; }
+.flow-node small { display: block; margin-top: 0.1rem; font-size: 0.71rem; line-height: 1.35; }
+.flow-tag, .branch-label { display: inline-block; margin-bottom: 0.12rem; padding: 0.08rem 0.38rem; border-radius: 1rem; background: rgba(47, 42, 37, 0.1); color: var(--muted-ink); font-size: 0.64rem; font-weight: 700; }
+.flow-arrow { height: 0.72rem; color: rgba(47, 42, 37, 0.55); font-size: 1rem; line-height: 0.72rem; }
+.flow-split { display: grid; grid-template-columns: 1fr 1fr; width: min(100%, 34rem); margin: -0.08rem 0 -0.18rem; color: rgba(47, 42, 37, 0.58); font-size: 1.08rem; line-height: 1; }
+.flow-split span:first-child { justify-self: end; margin-right: 4.4rem; }
+.flow-split span:last-child { justify-self: start; margin-left: 4.4rem; }
+.flow-branches { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; width: min(100%, 42rem); }
+.flow-branch { width: auto; min-height: 3.2rem; display: grid; align-content: center; padding: 0.35rem 0.45rem; }
+.flow-branch strong { font-size: 0.75rem; line-height: 1.35; }
+.flow-node.is-active, .flow-branch.is-active { border-color: var(--ink); background: #fff4bd; box-shadow: 0 0 0 4px rgba(247, 200, 75, 0.48); color: var(--ink); transform: translateY(-0.08rem); }
+.flow-node.is-active .flow-tag, .flow-branch.is-active .branch-label { background: var(--sun); color: var(--ink); }
+.rule-flow-hint { margin: 0 auto 0.35rem; color: var(--sky-deep); font-size: 0.72rem; font-weight: 700; }
+.rules-seat-row { display: flex; justify-content: center; gap: 0.55rem; margin: 0.45rem 0; }
 .rules-animation-area { min-height: 4.85rem; max-width: 43rem; margin: 0 auto; padding: 0.58rem 0.75rem; overflow: hidden; border: 1.5px dashed rgba(47, 42, 37, 0.32); border-radius: 0.75rem; background: linear-gradient(90deg, rgba(90, 171, 217, 0.06) 1px, transparent 1px) 0 0 / 1.2rem 1.2rem, #f7f1e6; text-align: left; }
 .rules-animation-area .animation-text { min-height: 0; margin-bottom: 0; }
 .rules-note { max-width: 45rem; margin: 0.55rem auto 0; color: var(--muted-ink); font-size: 0.72rem; line-height: 1.45; }
@@ -475,8 +487,12 @@ h2 { font-size: clamp(1.55rem, 3vw, 2.3rem); line-height: 1.25; margin-top: 0.28
     .rule-list p { min-height: auto; display: block; padding: 0.45rem 0.6rem; }
     .scenario { grid-template-columns: auto minmax(0, 1fr); }
     .scenario strong { grid-column: 2; }
-    .rules-key { grid-template-columns: 1fr; gap: 0.28rem; margin: 0.55rem auto; }
-    .rules-key span { padding: 0.36rem 0.48rem; }
+    .rule-flow { margin-top: 0.4rem; }
+    .flow-node { padding: 0.32rem 0.5rem; }
+    .flow-split span:first-child { margin-right: 2.4rem; }
+    .flow-split span:last-child { margin-left: 2.4rem; }
+    .flow-branches { gap: 0.32rem; }
+    .flow-branch { min-height: 3.5rem; padding: 0.32rem; }
     .rules-seat-row { gap: 0.32rem; }
     .rules-seat-row .seat.mini { width: 2.55rem; height: 2.55rem; }
     .bulk-controls { flex-direction: column; }
