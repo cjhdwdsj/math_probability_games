@@ -35,6 +35,10 @@ let gachaState = {
     isAnimating: false
 };
 
+// 第 4 页动画状态
+let currentHarmonicN = 6;
+let harmonicTimers = [];
+
 // 模拟器缓存数据
 let simCache = null;
 let animProgress = 1;
@@ -51,6 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateLuckRank(14);
     updateSsrFromSliders();
     updateEVFromSliders();
+    animateHarmonicPage(6);
 
     window.addEventListener("resize", () => {
         if (currentPage === 6 && simCache) {
@@ -77,6 +82,11 @@ function goToPage(pageIndex) {
     });
 
     updateNavigation();
+
+    // 页面专属进入动画触发
+    if (currentPage === 3) {
+        setTimeout(() => animateHarmonicPage(currentHarmonicN), 80);
+    }
 
     if (currentPage === 6) {
         setTimeout(runMonteCarloSim, 80);
@@ -355,7 +365,141 @@ function resetGacha() {
 }
 
 // ========================
-// 5. 第 5 页：欧气段位测算器
+// 5. 第 4 页：大白话求和与柱状图逐级累加动画
+// ========================
+function replayHarmonicAnimation() {
+    animateHarmonicPage(currentHarmonicN);
+}
+
+function animateHarmonicPage(N = 6) {
+    currentHarmonicN = N;
+
+    // 清除旧定时器
+    harmonicTimers.forEach(t => clearTimeout(t));
+    harmonicTimers = [];
+
+    // 更新预设按钮状态
+    [6, 8, 12].forEach(num => {
+        const btn = document.getElementById(`h-btn-${num}`);
+        if (btn) {
+            if (num === N) btn.classList.add("active");
+            else btn.classList.remove("active");
+        }
+    });
+
+    const titleElem = document.getElementById("harmonic-calc-title");
+    if (titleElem) titleElem.textContent = `集齐一套 ${N} 款盲盒的真实买法：`;
+
+    const stepsWrap = document.getElementById("harmonic-steps-wrap");
+    const barsWrap = document.getElementById("harmonic-bars-wrap");
+    const tipText = document.getElementById("harmonic-tip-text");
+    if (!stepsWrap || !barsWrap) return;
+
+    // 计算各阶段理论期望 E_k = N / (N - k + 1)
+    const stepValues = [];
+    let totalExpectation = 0;
+    for (let k = 1; k <= N; k++) {
+        const val = N / (N - k + 1);
+        stepValues.push({ k, val });
+        totalExpectation += val;
+    }
+
+    const maxVal = stepValues[stepValues.length - 1].val; // N.0 次
+
+    // 1. 构建 HTML 骨架（初始隐藏状态）
+    stepsWrap.innerHTML = "";
+    stepValues.forEach((step, idx) => {
+        const isLast = (idx === stepValues.length - 1);
+        const pill = document.createElement("span");
+        pill.className = `plain-pill ${isLast ? 'last-pill' : ''}`;
+        pill.id = `hpill-${step.k}`;
+        pill.textContent = isLast ? `最后1只: ${step.val.toFixed(1)}次` : `第${step.k}只: ${step.val.toFixed(1)}次`;
+        stepsWrap.appendChild(pill);
+
+        if (!isLast) {
+            const plus = document.createElement("span");
+            plus.textContent = "+";
+            plus.style.opacity = "0.5";
+            stepsWrap.appendChild(plus);
+        }
+    });
+
+    const sumPill = document.createElement("span");
+    sumPill.id = "harmonic-sum-display";
+    sumPill.className = "harmonic-sum-pill";
+    sumPill.textContent = `= ${totalExpectation.toFixed(1)} 次！`;
+    stepsWrap.appendChild(sumPill);
+
+    barsWrap.innerHTML = "";
+    stepValues.forEach((step, idx) => {
+        const isLast = (idx === stepValues.length - 1);
+        const cont = document.createElement("div");
+        cont.className = "h-bar-container";
+        cont.id = `hbar-cont-${step.k}`;
+
+        const valTag = document.createElement("div");
+        valTag.className = "h-bar-val";
+        valTag.id = `hbar-val-${step.k}`;
+        valTag.textContent = `${step.val.toFixed(1)}` + (isLast ? " 🔥" : "");
+
+        const bar = document.createElement("div");
+        bar.className = `h-bar ${isLast ? 'last-bar' : ''}`;
+        bar.id = `hbar-${step.k}`;
+
+        const label = document.createElement("div");
+        label.className = "h-bar-label";
+        label.textContent = isLast ? "最后1只" : `第${step.k}只`;
+
+        cont.appendChild(valTag);
+        cont.appendChild(bar);
+        cont.appendChild(label);
+        barsWrap.appendChild(cont);
+    });
+
+    // 动态提示文案
+    if (tipText) {
+        if (N === 6) {
+            tipText.innerHTML = `柱子高度直观展示：越到后面越难抽，最后一只（需买 <strong>6 次</strong>）的难度等于前面所有阶段的总和！`;
+        } else if (N === 8) {
+            tipText.innerHTML = `8 款一套时，最后一只平均需要抽 <strong>8 次</strong>，总共需要买 <strong>21.7 次</strong>！`;
+        } else {
+            tipText.innerHTML = `12 款大套时，最后一只平均需要买整整 <strong>12 次</strong>，总共需要抽 <strong>37.2 次</strong>（花费 ¥2,567）！`;
+        }
+    }
+
+    // 2. 依次逐级执行动画（Staggered Animation）
+    const stepDelay = Math.max(90, Math.min(160, 900 / N));
+
+    stepValues.forEach((step, idx) => {
+        const timer = setTimeout(() => {
+            const pill = document.getElementById(`hpill-${step.k}`);
+            const bar = document.getElementById(`hbar-${step.k}`);
+            const valTag = document.getElementById(`hbar-val-${step.k}`);
+            const cont = document.getElementById(`hbar-cont-${step.k}`);
+
+            if (pill) pill.classList.add("show");
+            if (valTag) valTag.classList.add("show");
+            if (bar) {
+                const targetH = Math.max(14, (step.val / maxVal) * 90);
+                bar.style.height = `${targetH}px`;
+            }
+            if (idx === stepValues.length - 1 && cont) {
+                cont.classList.add("highlight-last");
+            }
+        }, idx * stepDelay + 60);
+        harmonicTimers.push(timer);
+    });
+
+    // 最后一棒：显示总和与爆发徽章
+    const finalTimer = setTimeout(() => {
+        const sumDisplay = document.getElementById("harmonic-sum-display");
+        if (sumDisplay) sumDisplay.classList.add("show");
+    }, stepValues.length * stepDelay + 140);
+    harmonicTimers.push(finalTimer);
+}
+
+// ========================
+// 6. 第 5 页：欧气段位测算器
 // ========================
 function updateLuckRank(val) {
     const draws = parseInt(val, 10);
@@ -394,7 +538,7 @@ function updateLuckRank(val) {
 }
 
 // ========================
-// 6. 第 6 页：隐藏款 SSR 机制（滑块实时测算）
+// 7. 第 6 页：隐藏款 SSR 机制（滑块实时测算）
 // ========================
 function updateSsrFromSliders() {
     const nSlider = document.getElementById("ssr-n-slider");
@@ -445,7 +589,7 @@ function updateSsrFromSliders() {
 }
 
 // ========================
-// 7. 第 7 页：高清动态直方图模拟引擎
+// 8. 第 7 页：高清动态直方图模拟引擎
 // ========================
 let hoveredBinIndex = -1;
 
@@ -761,7 +905,7 @@ function drawRoundedRect(ctx, x, y, width, height, radius) {
 }
 
 // ========================
-// 8. 第 8 页：商业定价期望收益 EV 计算器（滑块实时联动）
+// 9. 第 8 页：商业定价期望收益 EV 计算器（滑块实时联动）
 // ========================
 function setEVPreset(n, price, reward) {
     const nSlider = document.getElementById("ev-n-slider");

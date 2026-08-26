@@ -728,11 +728,33 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     margin-bottom: 0.5rem;
 }
 
-.plain-calc-title {
-    font-size: 0.92rem;
+/* ========== Page 4 柱状图与逐级累加动画 ========== */
+.plain-math-banner {
+    background: #fff;
+    border: 2px solid var(--line);
+    border-radius: 10px;
+    padding: 0.6rem 0.9rem;
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+    margin-bottom: 0.4rem;
+}
+
+.harmonic-preset-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+    font-size: 0.76rem;
     font-weight: 700;
     color: var(--muted-ink);
-    margin-bottom: 0.4rem;
+}
+
+.plain-calc-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--muted-ink);
+    margin-bottom: 0.35rem;
 }
 
 .plain-calc-steps {
@@ -740,46 +762,132 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    gap: 0.4rem;
-    font-size: 0.92rem;
+    gap: 0.35rem;
+    font-size: 0.88rem;
+    min-height: 28px;
 }
 
 .plain-pill {
     background: rgba(247, 200, 75, 0.25);
-    padding: 0.15rem 0.5rem;
+    padding: 0.12rem 0.45rem;
     border-radius: 6px;
-    border: 1px solid var(--line);
+    border: 1.2px solid var(--line);
     font-weight: 700;
+    font-size: 0.8rem;
     color: var(--ink);
+    opacity: 0;
+    transform: scale(0.6);
+    transition: opacity 0.25s ease, transform 0.35s var(--ease-bounce);
+}
+
+.plain-pill.show {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.plain-pill.last-pill {
+    background: rgba(233, 110, 86, 0.22);
+    border-color: var(--coral);
+    color: var(--coral-dark);
+}
+
+.harmonic-sum-pill {
+    font-weight: 800;
+    color: var(--coral);
+    font-size: 1.15rem;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.4s var(--ease-bounce);
+    display: inline-block;
+    margin-left: 0.2rem;
+}
+
+.harmonic-sum-pill.show {
+    opacity: 1;
+    transform: scale(1);
+    animation: sumPulse 0.5s ease;
+}
+
+@keyframes sumPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.22); }
+    100% { transform: scale(1); }
 }
 
 .harmonic-visual {
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    gap: 0.6rem;
-    height: 110px;
-    margin: 0.4rem 0 0.2rem;
-    padding-bottom: 6px;
-    border-bottom: 2px solid var(--line);
+    gap: 0.55rem;
+    height: 120px;
+    margin: 0.35rem 0 0.15rem;
+    padding-bottom: 22px;
+    position: relative;
 }
 
-.h-bar {
-    width: 55px;
-    background: var(--sky);
-    border: 1.5px solid var(--line);
-    border-radius: 6px 6px 0 0;
+.harmonic-visual::after {
+    content: "";
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--line);
+}
+
+.h-bar-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
-    padding-top: 2px;
-    font-size: 0.75rem;
-    font-weight: 800;
-    color: #fff;
-    transition: height 0.5s var(--ease-out);
+    justify-content: flex-end;
+    height: 100%;
+    position: relative;
+    flex: 1;
+    max-width: 58px;
 }
-.h-bar.last-bar { background: var(--coral); }
+
+.h-bar-val {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: var(--ink);
+    margin-bottom: 2px;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.25s ease, transform 0.35s var(--ease-bounce);
+}
+
+.h-bar-val.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.h-bar {
+    width: 100%;
+    background: linear-gradient(180deg, #5aabd9, #3498db);
+    border: 1.5px solid var(--line);
+    border-radius: 6px 6px 0 0;
+    height: 0;
+    transition: height 0.65s var(--ease-bounce), background 0.3s ease;
+}
+
+.h-bar.last-bar {
+    background: linear-gradient(180deg, #ff7675, #e96e56);
+    box-shadow: 0 0 10px rgba(233, 110, 86, 0.35);
+}
+
+.h-bar-label {
+    position: absolute;
+    bottom: 2px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--muted-ink);
+    white-space: nowrap;
+}
+
+.h-bar-container.highlight-last .h-bar-label {
+    color: var(--coral);
+    font-weight: 800;
+}
 
 /* ========== Page 5 欧皇 vs 非酋与段位测算器 ========== */
 .luck-comparison {
