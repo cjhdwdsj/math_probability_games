@@ -851,8 +851,27 @@ function initSimCanvasListeners() {
     const tooltip = document.getElementById("chart-tooltip");
     if (!canvas || !tooltip) return;
 
+    canvas.style.cursor = "pointer";
+
+    canvas.addEventListener("click", (e) => {
+        if (!simCache || !simCache.layout) return;
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+
+        const { N, bucketMax, plotWidth, paddingLeft, totalBins } = simCache.layout;
+        const binStep = plotWidth / totalBins;
+        const relX = mouseX - paddingLeft;
+
+        if (relX >= 0 && relX <= plotWidth) {
+            const binIdx = Math.floor(relX / binStep) + N;
+            if (binIdx >= N && binIdx <= bucketMax) {
+                updateCrowdVisual(binIdx);
+            }
+        }
+    });
+
     canvas.addEventListener("mousemove", (e) => {
-        if (!simCache) return;
+        if (!simCache || !simCache.layout) return;
         const rect = canvas.getBoundingClientRect();
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
@@ -870,7 +889,7 @@ function initSimCanvasListeners() {
                 tooltip.style.display = "block";
                 tooltip.style.left = `${mouseX}px`;
                 tooltip.style.top = `${mouseY}px`;
-                tooltip.innerHTML = `🎯 抽 <strong>${binIdx}</strong> 次集齐: <strong>${count}</strong> 人 (占比 <strong>${pct}%</strong>)`;
+                tooltip.innerHTML = `🎯 抽 <strong>${binIdx}</strong> 次集齐: <strong>${count}</strong> 人 (占比 <strong>${pct}%</strong>)<br><small style="color:#6e665e;">点击可定位下方进度条</small>`;
                 renderHistogram(1);
                 return;
             }
