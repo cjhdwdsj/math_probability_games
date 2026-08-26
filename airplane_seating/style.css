@@ -266,6 +266,12 @@ h2 { font-size: clamp(1.55rem, 3vw, 2.3rem); line-height: 1.25; margin-top: 0.28
 .seat.mini.target { background: #d7eef9; box-shadow: 0 0 0 5px rgba(90, 171, 217, 0.28); animation: seat-target-pulse 760ms var(--ease-out) infinite; }
 
 .card-n2, .card-n3, .card-pattern { max-width: 48rem; text-align: center; }
+.n2-choice-guide { margin: 0.3rem 0 0; color: var(--muted-ink); font-size: 0.81rem; }
+.n2-choice-seats { margin: 0.55rem 0 0.65rem; }
+.n2-seat-choice { font: inherit; cursor: pointer; }
+.n2-seat-choice:focus-visible { outline: 3px solid var(--sky); outline-offset: 3px; }
+.n2-animation-area { min-height: 4.5rem; max-width: 38rem; margin: 0 auto 0.65rem; padding: 0.58rem 0.75rem; overflow: hidden; border: 1.5px dashed rgba(47, 42, 37, 0.32); border-radius: 0.75rem; background: linear-gradient(90deg, rgba(90, 171, 217, 0.06) 1px, transparent 1px) 0 0 / 1.2rem 1.2rem, #f7f1e6; text-align: left; }
+.n2-animation-area .animation-text { min-height: 0; margin-bottom: 0; }
 .n2-scenarios { display: grid; gap: 0.55rem; max-width: 39rem; margin: 0 auto; text-align: left; }
 .scenario {
     display: grid;
@@ -278,6 +284,7 @@ h2 { font-size: clamp(1.55rem, 3vw, 2.3rem); line-height: 1.25; margin-top: 0.28
     font-size: 0.86rem;
 }
 .scenario-dot { width: 0.56rem; height: 0.56rem; border-radius: 50%; }
+.scenario.is-active { background: #fff4bd; box-shadow: inset 0 0 0 2px var(--sun); transform: translateY(-0.05rem); }
 .success-dot { background: var(--leaf); } .fail-dot { background: var(--coral); }
 .success { color: #4e8639; } .fail { color: #c95441; }
 .result { margin-top: 0.8rem; font-size: 0.94rem; font-weight: 700; }

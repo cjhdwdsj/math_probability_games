@@ -48,9 +48,13 @@
                     <div class="section-kicker"><span aria-hidden="true">🔬</span> 最简单的情况</div>
                     <h2 id="page-title-2" tabindex="-1">先从 N = 2 开始</h2>
                     <p class="lead">第一位只有两种等可能选择；不需要模拟，直接列出全部结果即可。</p>
-                    <div class="seats-small" aria-label="1号与2号座位">
-                        <div class="seat mini" data-seat="1">1</div>
-                        <div class="seat mini last" data-seat="2">2</div>
+                    <p class="n2-choice-guide" id="n2-choice-guide">请选择乘客 1 要坐的座位；系统将自动演示乘客 2 的入座结果。</p>
+                    <div class="seats-small n2-choice-seats" aria-describedby="n2-choice-guide">
+                        <button class="seat mini available n2-seat-choice" type="button" data-seat="1" onclick="playN2Scenario(1)" aria-label="让乘客 1 选择 1 号座位">1</button>
+                        <button class="seat mini last available n2-seat-choice" type="button" data-seat="2" onclick="playN2Scenario(2)" aria-label="让乘客 1 选择 2 号座位">2</button>
+                    </div>
+                    <div class="n2-animation-area" id="n2-animation" aria-live="polite" aria-atomic="true">
+                        <div class="animation-status is-idle"><div class="status-line"><span class="status-orb" aria-hidden="true"></span><strong>等待选择</strong></div><p class="animation-text">先让乘客 1 选择座位 1 或座位 2；随后会自动展示乘客 2 的入座。</p></div>
                     </div>
                     <div class="n2-scenarios">
                         <div class="scenario"><span class="scenario-dot success-dot" aria-hidden="true"></span><span>乘客 1 选座位 1（概率 1/2）</span><strong class="success">乘客 2 坐座位 2，成功</strong></div>

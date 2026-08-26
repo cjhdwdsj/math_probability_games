@@ -6,6 +6,8 @@ let bulkRunId = 0;
 let bulkTimer = null;
 let userGameStats = { wins: 0, total: 0 };
 let userGameRun = null;
+let n2AnimationRunId = 0;
+let n2AnimationRunning = false;
 let n3AnimationRunning = false;
 let n3AnimationRunId = 0;
 let n3ActiveRun = null;
@@ -72,6 +74,7 @@ function goToPage(index, shouldFocus = true) {
     const newPage = pages[nextIndex];
 
     document.querySelectorAll('.passenger').forEach((passenger) => passenger.remove());
+    if (previousIndex === 1 && nextIndex !== 1) resetN2Demo();
     if (previousIndex === 4 && nextIndex !== 4) pauseBulkSimulation('已暂停：返回本页后可继续观看。');
     n3AnimationRunId += 1;
     n3AnimationRunning = false;
@@ -145,6 +148,120 @@ function randomAvailableSeat(seatsState) {
         .map((seat, index) => seat === null ? index : null)
         .filter((seat) => seat !== null);
     return available[Math.floor(Math.random() * available.length)];
+}
+
+// ===== N = 2 情形演示 =====
+function setN2ChoiceControls(disabled) {
+    document.querySelectorAll('.n2-seat-choice').forEach((seat) => {
+        seat.disabled = disabled;
+    });
+}
+
+function renderN2Status({ state = 'idle', title, detail }) {
+    const area = document.getElementById('n2-animation');
+    if (!area) return;
+    area.innerHTML = `
+        <div class="animation-status is-${state}">
+            <div class="status-line"><span class="status-orb" aria-hidden="true"></span><strong>${title}</strong></div>
+            <p class="animation-text">${detail}</p>
+        </div>
+    `;
+}
+
+function resetN2Demo() {
+    n2AnimationRunId += 1;
+    n2AnimationRunning = false;
+    document.querySelectorAll('.card-n2 .seat.mini').forEach((seat) => seat.classList.remove('occupied', 'wrong', 'current', 'checking', 'target'));
+    document.querySelectorAll('.card-n2 .scenario').forEach((scenario) => scenario.classList.remove('is-active'));
+    setN2ChoiceControls(false);
+    renderN2Status({
+        state: 'idle',
+        title: '等待选择',
+        detail: '先让乘客 1 选择座位 1 或座位 2；随后会自动展示乘客 2 的入座。'
+    });
+}
+
+async function moveN2Passenger(passenger, position, runId) {
+    passenger.style.display = 'flex';
+    passenger.classList.add('is-flying');
+    passenger.style.left = `${window.innerWidth / 2 - 16}px`;
+    passenger.style.top = '4.6rem';
+    await sleep(180);
+    if (runId !== n2AnimationRunId || currentPageIndex !== 1) return false;
+
+    passenger.style.left = `${position.x}px`;
+    passenger.style.top = `${position.y}px`;
+    await sleep(620);
+    if (runId !== n2AnimationRunId || currentPageIndex !== 1) return false;
+
+    passenger.classList.remove('is-flying');
+    passenger.classList.add('is-arrived');
+    return true;
+}
+
+async function playN2Scenario(selectedSeatNumber) {
+    if (n2AnimationRunning || currentPageIndex !== 1) return;
+    const seats = Array.from(document.querySelectorAll('.card-n2 .seat.mini'));
+    const scenarios = Array.from(document.querySelectorAll('.card-n2 .scenario'));
+    if (seats.length !== 2 || selectedSeatNumber < 1 || selectedSeatNumber > 2) return;
+
+    resetN2Demo();
+    const runId = ++n2AnimationRunId;
+    const selectedSeat = selectedSeatNumber - 1;
+    const remainingSeat = selectedSeat === 0 ? 1 : 0;
+    const isSuccess = selectedSeat === 0;
+    n2AnimationRunning = true;
+    setN2ChoiceControls(true);
+
+    seats[selectedSeat].classList.add('target');
+    renderN2Status({
+        state: 'running',
+        title: `乘客 1 选择 ${selectedSeatNumber} 号座位`,
+        detail: `第一位乘客的随机选择落在 ${selectedSeatNumber} 号座位。现在自动观察乘客 2 的结果。`
+    });
+    await sleep(420);
+    if (runId !== n2AnimationRunId || currentPageIndex !== 1) return;
+
+    seats[selectedSeat].classList.remove('target');
+    seats[selectedSeat].classList.add('occupied');
+    if (!isSuccess) seats[selectedSeat].classList.add('wrong');
+    seats[remainingSeat].classList.add('target');
+    renderN2Status({
+        state: 'running',
+        title: '乘客 2 自动入座',
+        detail: `乘客 2 的座位只剩 ${remainingSeat + 1} 号；动画现在将其带到该座位。`
+    });
+
+    const passenger = document.createElement('div');
+    passenger.className = 'passenger';
+    passenger.dataset.passenger = '2';
+    passenger.textContent = '2';
+    passenger.style.display = 'none';
+    document.body.appendChild(passenger);
+    const rect = seats[remainingSeat].getBoundingClientRect();
+    const moved = await moveN2Passenger(passenger, { x: rect.left + rect.width / 2 - 16, y: rect.top + rect.height / 2 - 16 }, runId);
+    if (!moved) {
+        passenger.remove();
+        return;
+    }
+
+    seats[remainingSeat].classList.remove('target');
+    seats[remainingSeat].classList.add('occupied', 'current');
+    scenarios[selectedSeat].classList.add('is-active');
+    renderN2Status({
+        state: isSuccess ? 'success' : 'fail',
+        title: isSuccess ? '这是成功情形' : '这是失败情形',
+        detail: isSuccess
+            ? '乘客 1 选中 1 号座位，乘客 2 自动坐到自己的 2 号座位；最后一位成功。'
+            : '乘客 1 选中 2 号座位，乘客 2 只能坐到 1 号座位；最后一位失败。'
+    });
+
+    await sleep(540);
+    passenger.remove();
+    if (runId === n2AnimationRunId) {
+        n2AnimationRunning = false;
+        setN2ChoiceControls(false);
+    }
 }
 
 // ===== N = 3 动画演示 =====
