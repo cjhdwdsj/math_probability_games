@@ -800,28 +800,34 @@ function updateEVFromSliders() {
     document.getElementById("ev-exp-cost-display").textContent = `¥ ${expectedCost.toFixed(2)}`;
     document.getElementById("ev-exp-draws-sub").textContent = `平均需抽 ${expectedDraws.toFixed(1)} 次`;
 
-    // 3. 商家大奖
-    document.getElementById("ev-prize-display").textContent = `¥ ${reward.toFixed(2)}`;
+    // 3. 第三方全套售价
+    const thirdPartyPrice = reward;
+    document.getElementById("ev-prize-display").textContent = `¥ ${thirdPartyPrice.toFixed(2)}`;
 
-    // 4. 最终净盈亏
-    const expectedValue = reward - expectedCost;
+    // 4. 理性省钱对比：盲抽期望花费 - 第三方售价
+    const savedAmount = expectedCost - thirdPartyPrice;
     const badge = document.getElementById("ev-badge");
     const valElem = document.getElementById("ev-val");
     const tipElem = document.getElementById("ev-tip");
 
-    if (expectedValue < 0) {
-        badge.className = "ev-result-badge negative";
-        valElem.style.color = "var(--coral)";
-        valElem.textContent = `- ¥ ${Math.abs(expectedValue).toFixed(2)}`;
-        if (reward > minCost) {
-            tipElem.textContent = `看似奖金高于全套原价 (¥${minCost.toFixed(0)})，但因重复抽盒平均需花 ¥${expectedCost.toFixed(1)}，最终净亏 ¥${Math.abs(expectedValue).toFixed(1)}！商家稳赚。`;
-        } else {
-            tipElem.textContent = `奖金连全套最低原价 (¥${minCost.toFixed(0)}) 都不到，属于纯亏损活动。`;
-        }
-    } else {
+    if (savedAmount >= 0) {
         badge.className = "ev-result-badge positive";
         valElem.style.color = "var(--leaf)";
-        valElem.textContent = `+ ¥ ${expectedValue.toFixed(2)}`;
-        tipElem.textContent = `商家大放血！只要坚持抽齐，玩家平均期望净赚 +¥${expectedValue.toFixed(1)}！`;
+        const savedPct = ((savedAmount / expectedCost) * 100).toFixed(0);
+        valElem.textContent = `净省 ¥ ${savedAmount.toFixed(2)} (立省 ${savedPct}%)`;
+
+        const premium = thirdPartyPrice - minCost;
+        if (premium > 0) {
+            const premiumPct = ((premium / minCost) * 100).toFixed(0);
+            tipElem.textContent = `看似比官方原价 (¥${minCost.toFixed(0)}) 溢价了 ¥${premium.toFixed(0)} (+${premiumPct}%)，但相比自己盲抽的期望花费 (¥${expectedCost.toFixed(1)})，直接买全套净省下 ¥${savedAmount.toFixed(1)}！省钱又省心。`;
+        } else {
+            tipElem.textContent = `售价甚至低于或等于官方原价 (¥${minCost.toFixed(0)})，这属于捡漏神仙价格！`;
+        }
+    } else {
+        const extra = Math.abs(savedAmount);
+        badge.className = "ev-result-badge negative";
+        valElem.style.color = "var(--coral)";
+        valElem.textContent = `多花 ¥ ${extra.toFixed(2)} (溢价过高)`;
+        tipElem.textContent = `第三方标价已超过盲抽期望总花费 (¥${expectedCost.toFixed(1)})，溢价过高被宰，不如直接去买官方未拆整盒。`;
     }
 }
