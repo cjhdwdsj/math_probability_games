@@ -249,53 +249,78 @@
                 </article>
             </section>
 
-            <!-- 第 5 页：隐藏款 SSR 的暴击陷阱 -->
+            <!-- 第 5 页：隐藏款 SSR 机制与众星拱月环形图 -->
             <section class="lesson-page" data-page="6" aria-hidden="true">
                 <article class="lesson-card">
                     <div class="section-kicker"><span aria-hidden="true">💎</span> 终极陷阱</div>
-                    <h2>隐藏款 SSR：成本的指数级爆炸</h2>
-                    <p class="lead">商家加入 1/72 甚至 1/144 概率的超稀有隐藏款，抽齐难度会暴增多少倍？</p>
+                    <h2>隐藏款 SSR：大海捞针与成本爆炸</h2>
+                    <p class="lead">上下拖动旋钮调节参数，直观感受为了正中心这 1 只稀有隐藏款，周围需要堆积多少普通款：</p>
 
-                    <!-- 滑块控制区 -->
-                    <div class="ssr-sliders-wrap">
-                        <div class="slider-control-group">
-                            <div class="slider-label-row">
-                                <span>基础款数 (N)：</span>
-                                <span class="slider-val-badge" id="ssr-n-badge">6 款一套</span>
+                    <!-- 顶部 3 个 FL Studio 风格拟真旋钮 -->
+                    <div class="ssr-knobs-console">
+                        <!-- 旋钮 1：基础款式数 -->
+                        <div class="fl-knob-unit" id="knob-unit-n">
+                            <div class="fl-knob-label">基础款式数</div>
+                            <div class="fl-knob-dial" id="fl-dial-n" title="上下拖动或滚动调节">
+                                <div class="fl-knob-notch"></div>
                             </div>
-                            <input type="range" class="custom-range-slider" id="ssr-n-slider" min="4" max="16" value="6" oninput="updateSsrFromSliders()">
+                            <div class="fl-knob-val-pill" id="knob-val-n">6 款一套</div>
                         </div>
 
-                        <div class="slider-control-group">
-                            <div class="slider-label-row">
-                                <span>隐藏款稀有度：</span>
-                                <span class="slider-val-badge" id="ssr-rate-badge">1/72 (普通隐藏)</span>
+                        <!-- 旋钮 2：隐藏款真实概率 -->
+                        <div class="fl-knob-unit" id="knob-unit-rate">
+                            <div class="fl-knob-label">隐藏款概率</div>
+                            <div class="fl-knob-dial" id="fl-dial-rate" title="上下拖动或滚动调节">
+                                <div class="fl-knob-notch"></div>
                             </div>
-                            <input type="range" class="custom-range-slider" id="ssr-rate-slider" min="1" max="6" value="3" oninput="updateSsrFromSliders()">
+                            <div class="fl-knob-val-pill" id="knob-val-rate">1/72 (普通隐藏)</div>
                         </div>
-                    </div>
 
-                    <div class="ssr-impact-banner">
-                        <div style="border-right: 1px dashed var(--soft-line); padding-right: 0.5rem;">
-                            <div style="font-size: 0.76rem; color: var(--muted-ink); margin-bottom: 2px;">
-                                🔵 普通款总概率: <strong id="ssr-regular-prob" style="color: var(--sky-deep);">98.61%</strong>
-                                <span style="font-size: 0.68rem; color: var(--muted-ink);">(每款 <span id="ssr-single-regular-prob">16.4%</span>)</span>
+                        <!-- 旋钮 3：你的欧气目标把握度 -->
+                        <div class="fl-knob-unit" id="knob-unit-prob">
+                            <div class="fl-knob-label">目标必中把握</div>
+                            <div class="fl-knob-dial" id="fl-dial-prob" title="上下拖动或滚动调节">
+                                <div class="fl-knob-notch"></div>
                             </div>
-                            <div class="impact-num regular" id="ssr-regular-cost">¥ 426</div>
-                            <small id="ssr-regular-draws" style="font-size: 0.72rem; color: var(--muted-ink);">普通全套平均抽 14.7 次</small>
-                        </div>
-                        <div style="padding-left: 0.5rem;">
-                            <div style="font-size: 0.76rem; color: var(--muted-ink); margin-bottom: 2px;">
-                                🔴 隐藏款单抽概率: <strong id="ssr-prob" style="color: var(--coral);">1.39%</strong>
-                                <span style="font-size: 0.68rem; color: var(--muted-ink);">(<span id="ssr-fraction-display">1/72</span>)</span>
-                            </div>
-                            <div class="impact-num ssr" id="ssr-cost-display">¥ 2,088</div>
-                            <small id="ssr-draws-display" style="font-size: 0.72rem; color: var(--coral);">平均需要买 72 个！</small>
+                            <div class="fl-knob-val-pill" id="knob-val-prob">90% 把握</div>
                         </div>
                     </div>
 
-                    <div class="story-callout" style="border-left-color: var(--coral); background: #fff5f3;">
-                        ⚠️ <strong>极其残酷的现实</strong>：单抽隐藏款的平均花费是普通全套的 <strong id="ssr-ratio-display" style="color: var(--coral);">4.9 倍</strong>！隐藏款是绝对的“吞金黑洞”。
+                    <!-- 下半部分：左侧环形图 + 右侧结论面板 -->
+                    <div class="ssr-stage-grid">
+                        <!-- 左侧：众星拱月环形轨道 -->
+                        <div class="ssr-ring-stage" id="ssr-ring-stage">
+                            <!-- 外围虚线轨道 -->
+                            <div class="ssr-orbit-track"></div>
+                            <!-- 环绕的普通款立牌蜂群 -->
+                            <div class="ssr-orbit-swarm" id="ssr-orbit-swarm">
+                                <!-- 动态生成小立牌围绕圆周排布 -->
+                            </div>
+                            <!-- 中心中置的巨大黄金 SSR 隐藏款立牌 -->
+                            <div class="ssr-center-core">
+                                <div class="ssr-core-aura"></div>
+                                <div class="ssr-core-icon">👑</div>
+                                <div class="ssr-core-title">至尊金狐 (SSR)</div>
+                            </div>
+                        </div>
+
+                        <!-- 右侧：结论与花费卡片 -->
+                        <div class="ssr-verdict-panel">
+                            <div class="verdict-header">
+                                <span>🎯 抽中隐藏款测算结果</span>
+                            </div>
+                            <div class="verdict-stat-group">
+                                <div class="verdict-sub-label">达成目标需要购买：</div>
+                                <div class="verdict-big-num" id="verdict-draws-num">165 袋</div>
+                            </div>
+                            <div class="verdict-stat-group">
+                                <div class="verdict-sub-label">预计总开销：</div>
+                                <div class="verdict-cost-num" id="verdict-cost-num">¥ 4,785</div>
+                            </div>
+                            <div class="verdict-note-box" id="verdict-note-box">
+                                💡 此时普通 6 款早已全部集齐，桌上已产生 <strong>164 个</strong> 普通款重复立牌！
+                            </div>
+                        </div>
                     </div>
                 </article>
             </section>

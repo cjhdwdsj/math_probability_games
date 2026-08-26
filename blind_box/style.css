@@ -1202,69 +1202,224 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     box-shadow: 0 2px 4px rgba(0,0,0,0.18);
 }
 
-/* ========== Page 6 隐藏款 SSR 机制 ========== */
-.ssr-sliders-wrap {
+/* ========== Page 5 隐藏款 SSR 机制与拟真旋钮环形图 ========== */
+.ssr-knobs-console {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.7rem;
-    margin-bottom: 0.6rem;
-}
-
-.ssr-impact-banner {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 0.8rem;
-    text-align: center;
-    background: rgba(47, 42, 37, 0.04);
-    padding: 0.5rem 0.8rem;
-    border-radius: 8px;
-    border: 1.5px solid var(--soft-line);
-    margin-bottom: 0.4rem;
+    background: #fff;
+    border: 2px solid var(--line);
+    border-radius: 14px;
+    padding: 0.55rem 0.8rem;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 0.5rem;
 }
 
-.impact-num { font-size: 1.35rem; font-weight: 800; }
-.impact-num.regular { color: var(--sky-deep); }
-.impact-num.ssr { color: var(--coral); }
-
-/* 通用滑块控制组 */
-.slider-control-group {
+.fl-knob-unit {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
-    background: var(--paper);
-    border: 1.5px solid var(--soft-line);
-    border-radius: 8px;
-    padding: 0.35rem 0.65rem;
-}
-
-.slider-label-row {
-    display: flex;
-    justify-content: space-between;
     align-items: center;
-    font-size: 0.76rem;
-    font-weight: 700;
+    justify-content: center;
+    gap: 0.25rem;
 }
 
-.slider-label-row span:first-child {
+.fl-knob-label {
+    font-size: 0.74rem;
+    font-weight: 800;
     color: var(--muted-ink);
 }
 
-.slider-val-badge {
-    font-size: 0.8rem;
-    font-weight: 800;
-    color: var(--coral);
-    background: rgba(233, 110, 86, 0.1);
-    padding: 1px 5px;
-    border-radius: 4px;
-    border: 1px solid rgba(233, 110, 86, 0.25);
+.fl-knob-dial {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #fffdf8, #dfd7cb);
+    border: 2.5px solid var(--line);
+    box-shadow: 0 4px 8px rgba(47, 42, 37, 0.15), inset 0 2px 3px #fff;
+    position: relative;
+    cursor: ns-resize;
+    user-select: none;
+    touch-action: none;
+    transition: transform 0.08s ease, box-shadow 0.15s ease;
 }
 
-.custom-range-slider {
+.fl-knob-dial:hover {
+    box-shadow: 0 6px 12px rgba(47, 42, 37, 0.22), inset 0 2px 3px #fff;
+    transform: scale(1.05);
+}
+
+.fl-knob-dial:active {
+    box-shadow: 0 2px 4px rgba(47, 42, 37, 0.2), inset 0 1px 2px #d4cab9;
+    transform: scale(0.98);
+}
+
+.fl-knob-notch {
+    position: absolute;
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 3.5px;
+    height: 10px;
+    background: var(--coral);
+    border-radius: 2px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+}
+
+.fl-knob-val-pill {
+    background: var(--paper);
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    padding: 1px 7px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: var(--ink);
+    white-space: nowrap;
+}
+
+/* 下半部分：左侧环形轨道 + 右侧结论面板 */
+.ssr-stage-grid {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 0.9rem;
+    height: 220px;
+    align-items: center;
+}
+
+.ssr-ring-stage {
+    background: radial-gradient(circle at 50% 50%, #fffef7, #f3ece0);
+    border: 2px solid var(--line);
+    border-radius: 14px;
+    height: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.ssr-orbit-track {
+    position: absolute;
+    width: 170px;
+    height: 170px;
+    border-radius: 50%;
+    border: 1.5px dashed rgba(47, 42, 37, 0.2);
+    pointer-events: none;
+}
+
+.ssr-orbit-swarm {
+    position: absolute;
     width: 100%;
-    accent-color: var(--coral);
-    height: 5px;
-    cursor: pointer;
-    margin: 0.15rem 0;
+    height: 100%;
+    pointer-events: none;
+}
+
+.ssr-orbit-item {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: -12px;
+    margin-left: -12px;
+    width: 24px;
+    height: 24px;
+    background: #fff;
+    border: 1.5px solid var(--line);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.12);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+}
+
+.ssr-center-core {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border: 2.5px solid #d48806;
+    border-radius: 16px;
+    padding: 0.45rem 0.75rem;
+    box-shadow: 0 0 20px rgba(247, 200, 75, 0.55), 0 4px 10px rgba(0,0,0,0.1);
+    animation: corePulse 2.5s infinite ease-in-out;
+}
+
+@keyframes corePulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 16px rgba(247, 200, 75, 0.45); }
+    50% { transform: scale(1.06); box-shadow: 0 0 28px rgba(247, 200, 75, 0.85); }
+}
+
+.ssr-core-icon {
+    font-size: 1.8rem;
+    line-height: 1;
+}
+
+.ssr-core-title {
+    font-size: 0.68rem;
+    font-weight: 900;
+    color: #d48806;
+    margin-top: 2px;
+    white-space: nowrap;
+}
+
+.ssr-verdict-panel {
+    background: #2b2723;
+    color: #fffef9;
+    border: 2.5px solid #1a1715;
+    border-radius: 14px;
+    padding: 0.75rem 1rem;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+}
+
+.verdict-header {
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #f7c84b;
+    border-bottom: 1px dashed rgba(255,255,255,0.2);
+    padding-bottom: 0.25rem;
+}
+
+.verdict-stat-group {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+}
+
+.verdict-sub-label {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.8);
+}
+
+.verdict-big-num {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: var(--coral);
+    font-family: "Noto Serif SC", serif;
+}
+
+.verdict-cost-num {
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: #f7c84b;
+    font-family: "Noto Serif SC", serif;
+}
+
+.verdict-note-box {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px dashed rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.73rem;
+    color: #fdf9ee;
+    line-height: 1.4;
 }
 
 /* ========== Page 7 蒙特卡洛大规模模拟 ========== */

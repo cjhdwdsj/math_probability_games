@@ -17,9 +17,25 @@ const CHARACTERS = [
     { id: 6, name: "幻彩独角", icon: "🦄", color: "#9b59b6" }
 ];
 
+const ALL_CHARACTERS = [
+    { id: 1, name: "闪电小狐", icon: "🦊" },
+    { id: 2, name: "功夫阿宝", icon: "🐼" },
+    { id: 3, name: "软萌泡泡", icon: "🐰" },
+    { id: 4, name: "傲娇橘喵", icon: "🐱" },
+    { id: 5, name: "阳光柴柴", icon: "🐶" },
+    { id: 6, name: "幻彩独角", icon: "🦄" },
+    { id: 7, name: "呆萌小黄", icon: "🐤" },
+    { id: 8, name: "抹茶跳跳", icon: "🐸" },
+    { id: 9, name: "霸气萌虎", icon: "🐯" },
+    { id: 10, name: "蜜糖小熊", icon: "🐻" },
+    { id: 11, name: "极地小企", icon: "🐧" },
+    { id: 12, name: "考拉乐乐", icon: "🐨" }
+];
+
 const PRICE_PER_BOX = 29;
 
-const SSR_RATES = [
+const SSR_N_OPTS = [6, 7, 8, 9, 10, 11, 12];
+const SSR_RATE_OPTS = [
     { denom: 24, label: "1/24 (微型隐藏)" },
     { denom: 36, label: "1/36 (小隐藏)" },
     { denom: 72, label: "1/72 (普通隐藏)" },
@@ -27,6 +43,20 @@ const SSR_RATES = [
     { denom: 144, label: "1/144 (超级大隐藏)" },
     { denom: 288, label: "1/288 (至尊典藏)" }
 ];
+const SSR_PROB_OPTS = [
+    { pct: 0.50, label: "50% 把握 (中位欧气)" },
+    { pct: 0.65, label: "65% 把握 (适度乐观)" },
+    { pct: 0.80, label: "80% 把握 (较稳当)" },
+    { pct: 0.90, label: "90% 把握 (大概率稳)" },
+    { pct: 0.95, label: "95% 把握 (防非酋)" },
+    { pct: 0.99, label: "99% 把握 (几乎必中)" }
+];
+
+let ssrKnobState = {
+    nIdx: 0,       // N = 6
+    rateIdx: 2,    // 1/72
+    probIdx: 3     // 90%
+};
 
 // 第 1 页：玩家猜想
 let userGuess = 14;
@@ -68,10 +98,11 @@ document.addEventListener("DOMContentLoaded", () => {
     initStandeeDragListeners();
     initSimCanvasListeners();
     initCrowdQueue();
+    initSSRKnobs();
 
     // 默认初始化各组件
     initTabletopScene(userGuess);
-    updateSsrFromSliders();
+    updateSSRVisual();
     updateEVFromSliders();
     animateHarmonicPage(6);
     runMonteCarloSim();
@@ -113,6 +144,8 @@ function goToPage(pageIndex) {
             runMonteCarloSim();
             updateCrowdVisual(initialDraws);
         }, 80);
+    } else if (currentPage === 6) {
+        setTimeout(updateSSRVisual, 80);
     } else if (currentPage === 7) {
         setTimeout(updateEVFromSliders, 80);
     }
@@ -1185,7 +1218,184 @@ function drawRoundedRect(ctx, x, y, width, height, radius) {
 }
 
 // ========================
-// 11. 第 7 页：商业定价期望收益 EV 计算器
+// 9. 第 5 页：隐藏款 SSR 机制与 FL 旋钮环形图
+// ========================
+function initSSRKnobs() {
+    setupKnobControl("fl-dial-n", 0, SSR_N_OPTS.length - 1, ssrKnobState.nIdx, (val) => {
+        ssrKnobState.nIdx = val;
+        updateSSRVisual();
+    });
+
+    setupKnobControl("fl-dial-rate", 0, SSR_RATE_OPTS.length - 1, ssrKnobState.rateIdx, (val) => {
+        ssrKnobState.rateIdx = val;
+        updateSSRVisual();
+    });
+
+    setupKnobControl("fl-dial-prob", 0, SSR_PROB_OPTS.length - 1, ssrKnobState.probIdx, (val) => {
+        ssrKnobState.probIdx = val;
+        updateSSRVisual();
+    });
+}
+
+function setupKnobControl(dialId, minIdx, maxIdx, initialIdx, onChange) {
+    const dial = document.getElementById(dialId);
+    if (!dial) return;
+
+    let currentIdx = initialIdx;
+    let startY = 0;
+    let isDragging = false;
+    let accumulatedDelta = 0;
+
+    dial.addEventListener("mousedown", (e) => {
+        isDragging = true;
+        startY = e.clientY;
+        accumulatedDelta = 0;
+        document.body.style.userSelect = "none";
+    });
+
+    window.addEventListener("mousemove", (e) => {
+        if (!isDragging) return;
+        const deltaY = startY - e.clientY;
+        startY = e.clientY;
+        accumulatedDelta += deltaY;
+
+        if (Math.abs(accumulatedDelta) >= 18) {
+            const step = accumulatedDelta > 0 ? 1 : -1;
+            const newIdx = Math.max(minIdx, Math.min(maxIdx, currentIdx + step));
+            if (newIdx !== currentIdx) {
+                currentIdx = newIdx;
+                onChange(currentIdx);
+            }
+            accumulatedDelta = 0;
+        }
+    });
+
+    window.addEventListener("mouseup", () => {
+        if (isDragging) {
+            isDragging = false;
+            document.body.style.userSelect = "";
+        }
+    });
+
+    // 触屏滑动
+    dial.addEventListener("touchstart", (e) => {
+        isDragging = true;
+        startY = e.touches[0].clientY;
+        accumulatedDelta = 0;
+    }, { passive: true });
+
+    window.addEventListener("touchmove", (e) => {
+        if (!isDragging) return;
+        const deltaY = startY - e.touches[0].clientY;
+        startY = e.touches[0].clientY;
+        accumulatedDelta += deltaY;
+
+        if (Math.abs(accumulatedDelta) >= 18) {
+            const step = accumulatedDelta > 0 ? 1 : -1;
+            const newIdx = Math.max(minIdx, Math.min(maxIdx, currentIdx + step));
+            if (newIdx !== currentIdx) {
+                currentIdx = newIdx;
+                onChange(currentIdx);
+            }
+            accumulatedDelta = 0;
+        }
+    }, { passive: true });
+
+    window.addEventListener("touchend", () => {
+        isDragging = false;
+    });
+
+    // 滚轮微调
+    dial.addEventListener("wheel", (e) => {
+        e.preventDefault();
+        const step = e.deltaY < 0 ? 1 : -1;
+        const newIdx = Math.max(minIdx, Math.min(maxIdx, currentIdx + step));
+        if (newIdx !== currentIdx) {
+            currentIdx = newIdx;
+            onChange(currentIdx);
+        }
+    }, { passive: false });
+
+    // 轻点切换下一档
+    dial.addEventListener("click", () => {
+        const nextIdx = (currentIdx + 1) > maxIdx ? minIdx : (currentIdx + 1);
+        currentIdx = nextIdx;
+        onChange(currentIdx);
+    });
+}
+
+function updateSSRVisual() {
+    const nVal = SSR_N_OPTS[ssrKnobState.nIdx];
+    const rateInfo = SSR_RATE_OPTS[ssrKnobState.rateIdx];
+    const probInfo = SSR_PROB_OPTS[ssrKnobState.probIdx];
+
+    const dialN = document.getElementById("fl-dial-n");
+    const dialRate = document.getElementById("fl-dial-rate");
+    const dialProb = document.getElementById("fl-dial-prob");
+
+    const pillN = document.getElementById("knob-val-n");
+    const pillRate = document.getElementById("knob-val-rate");
+    const pillProb = document.getElementById("knob-val-prob");
+
+    if (dialN) {
+        const deg = -135 + (ssrKnobState.nIdx / (SSR_N_OPTS.length - 1)) * 270;
+        dialN.style.transform = `rotate(${deg}deg)`;
+    }
+    if (dialRate) {
+        const deg = -135 + (ssrKnobState.rateIdx / (SSR_RATE_OPTS.length - 1)) * 270;
+        dialRate.style.transform = `rotate(${deg}deg)`;
+    }
+    if (dialProb) {
+        const deg = -135 + (ssrKnobState.probIdx / (SSR_PROB_OPTS.length - 1)) * 270;
+        dialProb.style.transform = `rotate(${deg}deg)`;
+    }
+
+    if (pillN) pillN.textContent = `${nVal} 款一套`;
+    if (pillRate) pillRate.textContent = `${rateInfo.label}`;
+    if (pillProb) pillProb.textContent = `${probInfo.label}`;
+
+    // 计算达成目标把握度所需的抽数 X
+    const K = rateInfo.denom;
+    const P = probInfo.pct;
+
+    const neededDraws = Math.ceil(Math.log(1 - P) / Math.log(1 - 1 / K));
+    const totalCost = neededDraws * PRICE_PER_BOX;
+
+    const drawsElem = document.getElementById("verdict-draws-num");
+    const costElem = document.getElementById("verdict-cost-num");
+    const noteElem = document.getElementById("verdict-note-box");
+
+    if (drawsElem) drawsElem.textContent = `${neededDraws} 袋`;
+    if (costElem) costElem.textContent = `¥ ${totalCost.toLocaleString()}`;
+    if (noteElem) {
+        noteElem.innerHTML = `💡 达成 <strong>${(P * 100).toFixed(0)}% 把握</strong>需要买整整 <strong>${neededDraws} 袋</strong>。此时普通 ${nVal} 款早已全部集齐，桌上已产生 <strong>${neededDraws - 1} 个</strong> 普通款重复立牌！`;
+    }
+
+    // 动态渲染环绕普通款立牌蜂群
+    const swarmContainer = document.getElementById("ssr-orbit-swarm");
+    if (swarmContainer) {
+        swarmContainer.innerHTML = "";
+        const swarmCount = Math.min(20, Math.max(8, Math.round(neededDraws / 10)));
+        const radius = 72;
+
+        for (let i = 0; i < swarmCount; i++) {
+            const theta = (i / swarmCount) * Math.PI * 2 - Math.PI / 2;
+            const x = Math.round(radius * Math.cos(theta));
+            const y = Math.round(radius * Math.sin(theta));
+
+            const char = ALL_CHARACTERS[i % nVal] || ALL_CHARACTERS[0];
+            const item = document.createElement("div");
+            item.className = "ssr-orbit-item";
+            item.style.transform = `translate(${x}px, ${y}px)`;
+            item.title = `普通款: ${char.name}`;
+            item.textContent = char.icon;
+            swarmContainer.appendChild(item);
+        }
+    }
+}
+
+// ========================
+// 10. 第 6 页：商业定价期望收益 EV 计算器
 // ========================
 function setEVPreset(n, price, reward) {
     const nSlider = document.getElementById("ev-n-slider");
