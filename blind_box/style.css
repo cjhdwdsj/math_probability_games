@@ -11,9 +11,9 @@
     --sun-hover: #e5b638;
     --purple: #9a6bc7;
     --gold: #f39c12;
-    --gold-glow: rgba(243, 156, 18, 0.4);
+    --gold-glow: rgba(243, 156, 18, 0.45);
     --paper: #fffef9;
-    --card-bg: #fffdf6;
+    --card-bg: rgba(255, 254, 249, 0.95);
     --line: rgba(47, 42, 37, 0.85);
     --soft-line: rgba(47, 42, 37, 0.14);
     --shadow: 5px 6px 0 rgba(47, 42, 37, 0.16);
@@ -39,12 +39,12 @@ html, body {
 body {
     color: var(--ink);
     background:
-        radial-gradient(circle at 10% 15%, rgba(247, 200, 75, 0.25), transparent 18rem),
-        radial-gradient(circle at 90% 85%, rgba(90, 171, 217, 0.2), transparent 22rem),
-        radial-gradient(circle at 85% 15%, rgba(233, 110, 86, 0.15), transparent 16rem),
+        radial-gradient(circle at 8% 12%, rgba(247, 200, 75, 0.24), transparent 18rem),
+        radial-gradient(circle at 92% 88%, rgba(90, 171, 217, 0.22), transparent 22rem),
+        radial-gradient(circle at 85% 12%, rgba(233, 110, 86, 0.16), transparent 16rem),
         var(--bg-color);
     font-family: "Noto Sans SC", system-ui, -apple-system, sans-serif;
-    line-height: 1.5;
+    line-height: 1.45;
     -webkit-font-smoothing: antialiased;
 }
 
@@ -70,26 +70,27 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 .doodle {
     position: fixed;
     z-index: -1;
-    width: 4.5rem;
-    height: 4.5rem;
-    opacity: 0.35;
+    width: 4rem;
+    height: 4rem;
+    opacity: 0.32;
     pointer-events: none;
     border: 2px dashed var(--ink);
 }
-.doodle-1 { top: 12%; right: 5%; border-radius: 48% 52% 42% 58%; transform: rotate(18deg); }
-.doodle-2 { bottom: 12%; left: 4%; width: 3.5rem; height: 3.5rem; border-radius: 50%; }
-.doodle-3 { top: 25%; left: 6%; width: 4rem; height: 1.8rem; border-width: 0 0 2px; transform: rotate(-12deg); }
-.doodle-4 { bottom: 20%; right: 6%; width: 3rem; height: 3rem; border-radius: 8px; transform: rotate(28deg); }
+.doodle-1 { top: 10%; right: 4%; border-radius: 48% 52% 42% 58%; transform: rotate(18deg); }
+.doodle-2 { bottom: 10%; left: 3%; width: 3rem; height: 3rem; border-radius: 50%; }
+.doodle-3 { top: 22%; left: 5%; width: 3.5rem; height: 1.5rem; border-width: 0 0 2px; transform: rotate(-12deg); }
+.doodle-4 { bottom: 18%; right: 5%; width: 2.5rem; height: 2.5rem; border-radius: 6px; transform: rotate(28deg); }
 
-/* 主框架 */
+/* 主框架：绝对定高三段式无滚动布局 */
 .lesson-app {
     height: 100dvh;
     min-height: 0;
     display: grid;
-    grid-template-rows: 4.2rem minmax(0, 1fr) 4.6rem;
-    max-width: 1080px;
+    grid-template-rows: 3.8rem minmax(0, 1fr) 4.2rem;
+    max-width: 1040px;
     margin: 0 auto;
     padding: 0 1.2rem;
+    overflow: hidden;
 }
 
 /* 顶部导航栏 */
@@ -97,37 +98,37 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.6rem 0;
-    border-bottom: 2px solid var(--line);
+    border-bottom: 1.5px solid var(--soft-line);
 }
 
 .brand {
     display: inline-flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.5rem;
     text-decoration: none;
     color: var(--ink);
     font-weight: 700;
-    font-size: 1.15rem;
+    font-size: 1.05rem;
+    font-family: "Noto Serif SC", serif;
 }
 
 .brand-badge {
     background: var(--sun);
-    padding: 0.15rem 0.5rem;
+    padding: 0.1rem 0.45rem;
     border-radius: 4px;
     border: 1.5px solid var(--ink);
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 700;
 }
 
 .progress-copy {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
-    font-size: 0.95rem;
-    font-weight: 600;
+    gap: 0.35rem;
+    font-size: 0.88rem;
+    font-weight: 700;
     background: var(--paper);
-    padding: 0.35rem 0.8rem;
+    padding: 0.25rem 0.7rem;
     border-radius: 999px;
     border: 1.5px solid var(--line);
     box-shadow: 2px 2px 0 var(--soft-line);
@@ -137,67 +138,82 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     color: var(--muted-ink);
 }
 
-/* 中间主舞台 */
+/* 中间主舞台：绝对定位单页滑动容器（无滚动条） */
 .lesson-stage {
     position: relative;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding: 1rem 0.2rem;
-    display: flex;
-    justify-content: center;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
 }
 
 .lesson-page {
-    display: none;
-    width: 100%;
-    animation: fadeIn 0.3s var(--ease-out);
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.6rem 0;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(2rem);
+    transition: opacity 220ms var(--ease-out), transform 260ms var(--ease-out);
 }
 
 .lesson-page.active {
-    display: block;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+.lesson-page.exit-left {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-2rem);
 }
 
 /* 课程卡片 */
 .lesson-card {
+    width: 100%;
+    max-width: 900px;
+    height: 100%;
+    max-height: 100%;
     background: var(--card-bg);
-    border: 2.5px solid var(--line);
-    border-radius: 16px;
+    border: 2px solid var(--line);
+    border-radius: 18px;
     box-shadow: var(--shadow);
-    padding: 1.8rem 2.2rem;
-    max-width: 960px;
-    margin: 0 auto;
+    padding: clamp(1rem, 2.5vh, 1.8rem) clamp(1.2rem, 3vw, 2.2rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+    position: relative;
 }
 
 .section-kicker {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    font-size: 0.85rem;
+    gap: 0.35rem;
+    font-size: 0.8rem;
     font-weight: 700;
-    text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--muted-ink);
     background: rgba(47, 42, 37, 0.06);
-    padding: 0.2rem 0.6rem;
+    padding: 0.15rem 0.5rem;
     border-radius: 4px;
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.25rem;
 }
 
 .lesson-card h2 {
-    font-size: 1.65rem;
-    margin-bottom: 0.5rem;
+    font-size: clamp(1.25rem, 2.8vh, 1.65rem);
+    margin-bottom: 0.2rem;
     color: var(--ink);
 }
 
 .lead {
-    font-size: 1.05rem;
+    font-size: clamp(0.9rem, 1.8vh, 1rem);
     color: var(--muted-ink);
-    margin-bottom: 1.2rem;
+    margin-bottom: 0.6rem;
 }
 
 /* 按钮规范 */
@@ -205,12 +221,12 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    padding: 0.65rem 1.4rem;
+    gap: 0.4rem;
+    padding: 0.5rem 1.1rem;
     border: 2px solid var(--line);
     border-radius: 10px;
     font-weight: 700;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     box-shadow: var(--shadow-sm);
     transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease;
     user-select: none;
@@ -221,7 +237,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 
 .btn:hover:not(:disabled) {
     transform: translate(-2px, -2px);
-    box-shadow: 5px 6px 0 var(--line);
+    box-shadow: 4px 5px 0 var(--line);
 }
 
 .btn:active:not(:disabled) {
@@ -274,7 +290,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 .btn-group {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.8rem;
+    gap: 0.6rem;
     align-items: center;
 }
 
@@ -283,76 +299,76 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.6rem 0;
-    border-top: 2px solid var(--line);
+    border-top: 1.5px solid var(--soft-line);
 }
 
 /* ========== Page 1 封面专属样式 ========== */
 .cover-card {
     text-align: center;
-    padding: 2.5rem 1.8rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
 }
 
 .eyebrow {
     font-weight: 700;
     color: var(--coral);
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     letter-spacing: 0.1em;
-    margin-bottom: 0.8rem;
-    display: block;
 }
 
 .cover-icon-box {
     position: relative;
     display: inline-block;
-    margin: 1rem auto;
+    margin: 0.3rem auto;
 }
 
 .cover-icon {
-    font-size: 4.8rem;
+    font-size: clamp(3.2rem, 8vh, 4.5rem);
     display: inline-block;
     filter: drop-shadow(4px 6px 0 rgba(47, 42, 37, 0.15));
-    animation: floating 3s ease-in-out infinite;
+    animation: boxFloat 3s ease-in-out infinite;
 }
 
-@keyframes floating {
+@keyframes boxFloat {
     0%, 100% { transform: translateY(0) rotate(0deg); }
     50% { transform: translateY(-8px) rotate(4deg); }
 }
 
 .cover-title {
-    font-size: 2.2rem;
-    margin-bottom: 0.6rem;
+    font-size: clamp(1.6rem, 3.8vh, 2.2rem);
+    margin-bottom: 0.2rem;
 }
 
 .cover-subtitle {
-    font-size: 1.15rem;
+    font-size: clamp(0.95rem, 2vh, 1.1rem);
     color: var(--muted-ink);
-    max-width: 620px;
-    margin: 0 auto 1.5rem;
+    max-width: 580px;
+    margin: 0 auto;
 }
 
 /* 猜想互动区 */
 .guess-box {
     background: var(--paper);
     border: 2px dashed var(--line);
-    border-radius: 14px;
-    padding: 1.4rem;
-    max-width: 520px;
-    margin: 1.5rem auto 2rem;
+    border-radius: 12px;
+    padding: 0.8rem 1.4rem;
+    max-width: 480px;
+    width: 100%;
+    margin: 0.4rem auto;
 }
 
 .guess-prompt {
     font-weight: 700;
-    font-size: 1.05rem;
-    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
 }
 
 .guess-slider-wrap {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    margin-bottom: 0.8rem;
+    gap: 0.8rem;
+    margin-bottom: 0.4rem;
 }
 
 .guess-slider {
@@ -363,79 +379,77 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 }
 
 .guess-val {
-    font-size: 1.6rem;
+    font-size: 1.4rem;
     font-weight: 800;
     color: var(--coral);
-    min-width: 3.5rem;
+    min-width: 3.2rem;
 }
 
 .guess-hint {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--muted-ink);
 }
 
 /* ========== Page 2 开箱试玩机 (Gacha Lab) ========== */
-.gacha-container {
+.gacha-layout {
     display: grid;
-    grid-template-columns: 1fr 1.1fr;
-    gap: 1.5rem;
-    align-items: start;
-}
-
-@media (max-width: 768px) {
-    .gacha-container {
-        grid-template-columns: 1fr;
-    }
+    grid-template-columns: 1fr 1.15fr;
+    gap: 1.2rem;
+    flex: 1;
+    min-height: 0;
+    align-items: stretch;
 }
 
 .gacha-stage-box {
     background: var(--paper);
     border: 2px solid var(--line);
-    border-radius: 14px;
-    padding: 1.4rem;
+    border-radius: 12px;
+    padding: 0.8rem;
     text-align: center;
     box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
-/* 3D 盲盒与开箱动效 */
+/* 3D 盲盒与连抽托盘展示区 */
 .box-scene {
-    height: 180px;
+    flex: 1;
+    min-height: 120px;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
-    margin-bottom: 1rem;
 }
 
 .mystery-box {
-    width: 120px;
-    height: 140px;
+    width: 100px;
+    height: 120px;
     background: linear-gradient(135deg, #ffd369, #fa983a);
-    border: 3px solid var(--ink);
+    border: 2.5px solid var(--ink);
     border-radius: 12px;
-    box-shadow: 4px 6px 0 var(--line);
+    box-shadow: 4px 5px 0 var(--line);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-size: 2.4rem;
+    font-size: 2.2rem;
     cursor: pointer;
     transition: transform 0.15s ease;
     user-select: none;
     position: relative;
-    overflow: hidden;
 }
 
 .mystery-box::before {
-    content: "MYSTERY";
+    content: "OPEN ME";
     position: absolute;
-    top: 10px;
-    font-size: 0.65rem;
+    top: 8px;
+    font-size: 0.6rem;
     font-weight: 800;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     color: var(--ink);
-    background: rgba(255,255,255,0.7);
-    padding: 1px 6px;
+    background: rgba(255,255,255,0.8);
+    padding: 1px 5px;
     border-radius: 4px;
     border: 1px solid var(--ink);
 }
@@ -445,7 +459,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 }
 
 .mystery-box.shaking {
-    animation: boxShake 0.6s ease-in-out;
+    animation: boxShake 0.45s ease-in-out;
 }
 
 @keyframes boxShake {
@@ -456,24 +470,24 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     80% { transform: scale(1.15) rotate(6deg); }
 }
 
-/* 抽奖弹窗揭晓卡 */
+/* 单抽揭晓大卡 */
 .reveal-card {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) scale(0);
-    width: 140px;
-    height: 160px;
+    width: 125px;
+    height: 140px;
     background: #fff;
-    border: 3px solid var(--ink);
+    border: 2.5px solid var(--ink);
     border-radius: 12px;
-    box-shadow: 0 10px 25px var(--gold-glow), 4px 6px 0 var(--line);
+    box-shadow: 0 8px 20px var(--gold-glow), 3px 4px 0 var(--line);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     z-index: 10;
-    transition: transform 0.4s var(--ease-bounce);
+    transition: transform 0.35s var(--ease-bounce);
 }
 
 .reveal-card.popping {
@@ -481,20 +495,26 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 }
 
 .reveal-icon {
-    font-size: 3.5rem;
-    margin-bottom: 0.3rem;
+    font-size: 3rem;
+    margin-bottom: 0.1rem;
+    animation: pulseIcon 1.5s infinite ease-in-out;
+}
+
+@keyframes pulseIcon {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
 }
 
 .reveal-name {
     font-weight: 700;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
 }
 
 .reveal-badge {
-    font-size: 0.75rem;
-    padding: 2px 6px;
+    font-size: 0.7rem;
+    padding: 1px 6px;
     border-radius: 4px;
-    margin-top: 4px;
+    margin-top: 3px;
     font-weight: 700;
 }
 .reveal-badge.new {
@@ -506,44 +526,89 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     color: var(--muted-ink);
 }
 
+/* 五连抽托盘 */
+.multi-reveal-tray {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 254, 249, 0.96);
+    border-radius: 10px;
+    z-index: 12;
+    padding: 0.5rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+}
+
+.multi-reveal-tray.show {
+    display: flex;
+}
+
+.mini-reveal-card {
+    flex: 1;
+    background: #fff;
+    border: 1.5px solid var(--ink);
+    border-radius: 8px;
+    padding: 0.4rem 0.2rem;
+    text-align: center;
+    box-shadow: 2px 2px 0 var(--soft-line);
+    opacity: 0;
+    transform: translateY(12px) scale(0.8);
+    transition: all 0.3s var(--ease-bounce);
+}
+
+.mini-reveal-card.popped {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.mini-icon { font-size: 1.6rem; }
+.mini-name { font-size: 0.7rem; font-weight: 700; }
+.mini-status { font-size: 0.6rem; font-weight: 700; }
+.mini-status.new { color: var(--leaf); }
+.mini-status.dup { color: var(--muted-ink); }
+
 /* 图鉴展示区 */
 .album-box {
     background: var(--paper);
     border: 2px solid var(--line);
-    border-radius: 14px;
-    padding: 1.2rem;
+    border-radius: 12px;
+    padding: 0.8rem;
     box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .album-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.8rem;
+    margin-bottom: 0.4rem;
 }
 
 .album-header h3 {
-    font-size: 1.1rem;
+    font-size: 0.95rem;
 }
 
 .album-counter {
     font-weight: 700;
-    font-size: 0.95rem;
+    font-size: 0.88rem;
     color: var(--coral);
 }
 
 .album-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 0.8rem;
-    margin-bottom: 1rem;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
 }
 
 .album-item {
     background: var(--card-bg);
-    border: 2px solid var(--soft-line);
-    border-radius: 10px;
-    padding: 0.6rem 0.4rem;
+    border: 1.5px solid var(--soft-line);
+    border-radius: 8px;
+    padding: 0.4rem 0.2rem;
     text-align: center;
     position: relative;
     transition: all 0.2s ease;
@@ -552,21 +617,21 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 .album-item.collected {
     border-color: var(--line);
     background: #fff;
-    box-shadow: 2px 3px 0 var(--soft-line);
+    box-shadow: 2px 2px 0 var(--soft-line);
 }
 
 .album-item.collected.just-found {
-    animation: stampGlow 0.8s var(--ease-bounce);
+    animation: stampGlow 0.6s var(--ease-bounce);
 }
 
 @keyframes stampGlow {
     0% { transform: scale(0.8); background: var(--sun); }
-    50% { transform: scale(1.12); background: var(--sun); }
+    50% { transform: scale(1.15); background: var(--sun); }
     100% { transform: scale(1); background: #fff; }
 }
 
 .item-avatar {
-    font-size: 2.2rem;
+    font-size: 1.8rem;
     filter: grayscale(1) opacity(0.25);
     transition: filter 0.3s ease;
 }
@@ -576,9 +641,9 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 }
 
 .item-name {
-    font-size: 0.8rem;
+    font-size: 0.72rem;
     font-weight: 700;
-    margin-top: 0.2rem;
+    margin-top: 0.1rem;
     color: var(--muted-ink);
 }
 
@@ -588,14 +653,14 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 
 .item-count-badge {
     position: absolute;
-    top: -6px;
-    right: -6px;
+    top: -5px;
+    right: -5px;
     background: var(--coral);
     color: #fff;
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     font-weight: 800;
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     border: 1.5px solid var(--ink);
     display: none;
@@ -611,21 +676,21 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 .gacha-stats-bar {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 0.6rem;
+    gap: 0.4rem;
     background: rgba(47, 42, 37, 0.04);
-    padding: 0.6rem 0.8rem;
+    padding: 0.4rem 0.6rem;
     border-radius: 8px;
     border: 1px dashed var(--line);
     text-align: center;
 }
 
 .stat-metric {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--muted-ink);
 }
 
 .stat-number {
-    font-size: 1.2rem;
+    font-size: 1.05rem;
     font-weight: 800;
     color: var(--ink);
 }
@@ -633,22 +698,44 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     color: var(--coral);
 }
 
+/* 欧气评价浮层 */
+.gacha-complete-banner {
+    display: none;
+    margin-top: 0.4rem;
+    background: #fff8e6;
+    border: 1.5px solid var(--sun);
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #b7791f;
+    text-align: center;
+    animation: fadeIn 0.3s ease;
+}
+
 /* ========== Page 3 难度递增阶梯图 ========== */
+.waterfall-card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex: 1;
+    gap: 0.5rem;
+}
+
 .difficulty-waterfall {
     display: flex;
     flex-direction: column;
-    gap: 0.7rem;
-    margin: 1.2rem 0;
+    gap: 0.4rem;
 }
 
 .stage-row {
     display: grid;
-    grid-template-columns: 80px 1fr 110px 100px;
+    grid-template-columns: 75px 1fr 110px 105px;
     align-items: center;
-    gap: 1rem;
+    gap: 0.8rem;
     background: var(--paper);
     border: 1.5px solid var(--soft-line);
-    padding: 0.6rem 1rem;
+    padding: 0.35rem 0.8rem;
     border-radius: 8px;
     transition: all 0.2s ease;
 }
@@ -656,17 +743,23 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 .stage-row.highlight-row {
     border-color: var(--coral);
     background: #fff6f4;
-    box-shadow: 2px 3px 0 rgba(233, 110, 86, 0.2);
+    box-shadow: 2px 2px 0 rgba(233, 110, 86, 0.2);
+    animation: highlightPulse 2s infinite ease-in-out;
+}
+
+@keyframes highlightPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.01); }
 }
 
 .stage-tag {
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
 }
 
 .stage-bar-wrap {
     background: rgba(47,42,37,0.08);
-    height: 14px;
+    height: 12px;
     border-radius: 999px;
     overflow: hidden;
     position: relative;
@@ -684,51 +777,68 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 
 .stage-prob {
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     text-align: right;
 }
 
 .stage-exp {
-    font-size: 0.9rem;
+    font-size: 0.82rem;
     font-weight: 700;
     color: var(--ink);
     text-align: right;
 }
 .stage-exp span {
     color: var(--coral);
-    font-size: 1.05rem;
+    font-size: 0.95rem;
 }
 
-/* ========== Page 4 公式与调和级数面积拼图 ========== */
-.math-banner {
+.story-callout {
+    background: rgba(233,110,86,0.09);
+    border-left: 4px solid var(--coral);
+    padding: 0.5rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+/* ========== Page 4 柱状面积拼图与白话计算 ========== */
+.math-card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex: 1;
+    gap: 0.6rem;
+}
+
+.plain-math-banner {
     background: #fff;
     border: 2px solid var(--line);
-    border-radius: 12px;
-    padding: 1.2rem;
-    margin: 1.2rem 0;
+    border-radius: 10px;
+    padding: 0.7rem 1rem;
     box-shadow: var(--shadow-sm);
     text-align: center;
 }
 
-.math-formula {
-    font-size: 1.35rem;
+.plain-calc-title {
+    font-size: 0.95rem;
     font-weight: 700;
-    margin-bottom: 0.6rem;
-    color: var(--ink);
+    color: var(--muted-ink);
+    margin-bottom: 0.4rem;
 }
 
-.math-calc-steps {
+.plain-calc-steps {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 0.5rem;
-    font-size: 1rem;
-    color: var(--muted-ink);
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.95rem;
 }
 
-.math-pill {
+.plain-pill {
     background: rgba(247, 200, 75, 0.25);
-    padding: 0.2rem 0.6rem;
+    padding: 0.15rem 0.5rem;
     border-radius: 6px;
     border: 1px solid var(--line);
     font-weight: 700;
@@ -740,23 +850,23 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     align-items: flex-end;
     justify-content: center;
     gap: 0.6rem;
-    height: 150px;
-    margin: 1.5rem 0 1rem;
-    padding-bottom: 10px;
+    height: 110px;
+    margin: 0.2rem 0;
+    padding-bottom: 6px;
     border-bottom: 2px solid var(--line);
 }
 
 .h-bar {
-    width: 60px;
+    width: 55px;
     background: var(--sky);
-    border: 2px solid var(--line);
+    border: 1.5px solid var(--line);
     border-radius: 6px 6px 0 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    padding-top: 4px;
-    font-size: 0.8rem;
+    padding-top: 2px;
+    font-size: 0.75rem;
     font-weight: 800;
     color: #fff;
     transition: height 0.5s var(--ease-out);
@@ -769,22 +879,20 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 .luck-comparison {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1.2rem;
-    margin: 1.2rem 0;
-}
-
-@media (max-width: 640px) {
-    .luck-comparison {
-        grid-template-columns: 1fr;
-    }
+    gap: 1rem;
+    flex: 1;
+    align-items: stretch;
 }
 
 .luck-card {
     background: #fff;
     border: 2px solid var(--line);
     border-radius: 12px;
-    padding: 1.2rem;
+    padding: 1rem;
     box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .luck-card.god {
@@ -800,26 +908,38 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 .luck-title {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 1.15rem;
-    margin-bottom: 0.5rem;
+    gap: 0.4rem;
+    font-size: 1.05rem;
 }
 
 .luck-prob {
-    font-size: 1.8rem;
+    font-size: clamp(1.6rem, 3.5vh, 2.2rem);
     font-weight: 800;
-    margin: 0.4rem 0;
+    margin: 0.2rem 0;
 }
 .luck-card.god .luck-prob { color: #d48806; }
 .luck-card.bad .luck-prob { color: var(--purple); }
 
-/* ========== Page 6 隐藏款 SSR 爆炸机制 ========== */
+.luck-desc {
+    font-size: 0.85rem;
+    color: var(--muted-ink);
+    line-height: 1.5;
+}
+
+/* ========== Page 6 隐藏款 SSR 机制 ========== */
+.ssr-card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex: 1;
+    gap: 0.8rem;
+}
+
 .ssr-box-wrap {
     background: #fff;
     border: 2px solid var(--line);
     border-radius: 12px;
-    padding: 1.4rem;
-    margin: 1.2rem 0;
+    padding: 0.9rem 1.2rem;
     box-shadow: var(--shadow-sm);
 }
 
@@ -827,68 +947,88 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1.5rem;
-    margin-bottom: 1.2rem;
+    gap: 1rem;
+    margin-bottom: 0.8rem;
+}
+
+.ssr-control-row select {
+    padding: 0.3rem 0.6rem;
+    border: 1.5px solid var(--line);
+    border-radius: 6px;
+    background: #fff;
+    font-weight: 700;
 }
 
 .ssr-impact-banner {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    gap: 0.8rem;
     text-align: center;
     background: rgba(47, 42, 37, 0.04);
-    padding: 1rem;
-    border-radius: 10px;
+    padding: 0.8rem;
+    border-radius: 8px;
 }
 
 .impact-num {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     font-weight: 800;
 }
 .impact-num.regular { color: var(--sky-deep); }
 .impact-num.ssr { color: var(--coral); }
 
 /* ========== Page 7 蒙特卡洛大规模模拟 ========== */
+.sim-card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex: 1;
+    gap: 0.6rem;
+}
+
 .sim-controls-panel {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
+    gap: 0.6rem;
     background: var(--paper);
-    border: 2px solid var(--line);
-    border-radius: 10px;
-    padding: 0.8rem 1.2rem;
-    margin-bottom: 1rem;
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    padding: 0.4rem 0.8rem;
 }
 
 .sim-input-group {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
-    font-size: 0.9rem;
+    gap: 0.4rem;
+    font-size: 0.85rem;
     font-weight: 700;
 }
 
 .sim-input-group select {
-    padding: 0.35rem 0.8rem;
+    padding: 0.25rem 0.5rem;
     border: 1.5px solid var(--line);
     border-radius: 6px;
     background: #fff;
+    font-size: 0.85rem;
 }
 
 .chart-container {
     background: #fff;
     border: 2px solid var(--line);
-    border-radius: 12px;
-    padding: 1rem;
+    border-radius: 10px;
+    padding: 0.6rem;
     box-shadow: var(--shadow-sm);
-    position: relative;
+    flex: 1;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 #sim-canvas {
     width: 100%;
-    height: 220px;
+    height: 120px;
     display: block;
 }
 
@@ -896,56 +1036,62 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     display: flex;
     justify-content: space-around;
     align-items: center;
-    margin-top: 0.8rem;
-    padding-top: 0.6rem;
+    padding-top: 0.4rem;
     border-top: 1px dashed var(--soft-line);
-    font-size: 0.9rem;
+    font-size: 0.82rem;
 }
 
 .sim-stat-summary strong {
-    font-size: 1.15rem;
+    font-size: 1rem;
     color: var(--coral);
 }
 
 /* ========== Page 8 商业定价与理性决策 ========== */
+.decision-card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex: 1;
+    gap: 0.6rem;
+}
+
 .ev-calc-box {
     background: #fff;
     border: 2px solid var(--line);
-    border-radius: 12px;
-    padding: 1.2rem;
-    margin: 1rem 0;
+    border-radius: 10px;
+    padding: 0.8rem 1rem;
     box-shadow: var(--shadow-sm);
 }
 
 .ev-inputs {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-bottom: 1rem;
+    gap: 0.8rem;
+    margin-bottom: 0.6rem;
 }
 
 .ev-field label {
     display: block;
-    font-size: 0.85rem;
+    font-size: 0.78rem;
     font-weight: 700;
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.2rem;
     color: var(--muted-ink);
 }
 
 .ev-field input {
     width: 100%;
-    padding: 0.5rem 0.8rem;
-    border: 2px solid var(--line);
-    border-radius: 8px;
+    padding: 0.35rem 0.6rem;
+    border: 1.5px solid var(--line);
+    border-radius: 6px;
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 0.9rem;
 }
 
 .ev-result-badge {
     text-align: center;
-    padding: 1rem;
-    border-radius: 10px;
-    border: 2px solid var(--line);
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: 1.5px solid var(--line);
     background: #fff6f4;
 }
 
@@ -955,7 +1101,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 }
 
 .ev-result-val {
-    font-size: 1.8rem;
+    font-size: 1.35rem;
     font-weight: 800;
     color: var(--coral);
 }
@@ -963,50 +1109,47 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 .advice-cards {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-top: 1.2rem;
+    gap: 0.8rem;
 }
 
 .advice-card {
     background: var(--paper);
     border: 1.5px solid var(--line);
-    border-radius: 10px;
-    padding: 1rem;
+    border-radius: 8px;
+    padding: 0.6rem 0.8rem;
 }
 
 .advice-card h4 {
-    font-size: 1rem;
-    margin-bottom: 0.4rem;
+    font-size: 0.88rem;
+    margin-bottom: 0.2rem;
 }
 
 .advice-card p {
-    font-size: 0.85rem;
+    font-size: 0.78rem;
     color: var(--muted-ink);
+    line-height: 1.4;
 }
 
-/* 响应式调整 */
-@media (max-width: 600px) {
+/* 移动端紧凑适配 */
+@media (max-width: 680px) {
     .lesson-app {
-        padding: 0 0.6rem;
+        padding: 0 0.5rem;
+        grid-template-rows: 3.4rem minmax(0, 1fr) 3.8rem;
     }
     .lesson-card {
-        padding: 1.2rem 1rem;
+        padding: 0.8rem;
     }
-    .lesson-card h2 {
-        font-size: 1.35rem;
-    }
-    .gacha-stats-bar {
+    .gacha-layout {
         grid-template-columns: 1fr;
-        gap: 0.4rem;
-    }
-    .album-grid {
-        grid-template-columns: repeat(3, 1fr);
+        gap: 0.6rem;
     }
     .stage-row {
-        grid-template-columns: 60px 1fr 60px;
-        gap: 0.5rem;
+        grid-template-columns: 60px 1fr 50px;
+        gap: 0.4rem;
     }
-    .stage-exp {
-        display: none;
+    .stage-exp { display: none; }
+    .luck-comparison, .advice-cards {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
     }
 }
