@@ -450,24 +450,27 @@
     <!-- 拟真撕袋 + 抽拉亚克力立牌浮层 Modal -->
     <div class="unboxing-modal-overlay" id="unboxing-modal">
         <div class="unboxing-stage" id="unboxing-stage">
-            <!-- 1. 铝箔袋背面内衬 -->
+            <!-- 1. 铝箔袋背面内衬 (z: 5) -->
             <div class="foil-bag-back"></div>
 
-            <!-- 2. 内部抽拉亚克力立牌 (初始藏在口袋内，撕开后露出头部) -->
+            <!-- 2. 内部抽拉亚克力立牌 (z: 15) -->
             <div class="acrylic-standee-plate" id="modal-standee" style="display: none;" onclick="triggerPullComplete()">
                 <div class="pull-hint" id="modal-pull-hint">⬆️ 向上提拉或点击立牌！</div>
                 <div class="standee-icon" id="modal-standee-icon">🦊</div>
                 <div class="standee-name" id="modal-standee-name">闪电小狐</div>
             </div>
 
-            <!-- 3. 铝箔袋正面下半部口袋 -->
+            <!-- 3. 铝箔袋正面下半部口袋 (z: 20) -->
             <div class="foil-bag-front">
                 <span class="foil-badge-text">POPMART</span>
             </div>
 
-            <!-- 4. 顶部密封撕条 -->
-            <div class="tear-notch-strip" id="modal-tear-strip" onclick="tearFoilStrip()">
-                ✂️ 点此撕开铝箔封口
+            <!-- 4. 顶部折叠密封铝箔罩 (z: 30, 未撕开时100%遮挡密封) -->
+            <div class="foil-bag-top-sealed" id="modal-tear-strip" onclick="tearFoilStrip()">
+                <div class="foil-crimp-header"></div>
+                <div class="tear-guide-strip">
+                    ✂️ 沿着虚线撕开
+                </div>
             </div>
         </div>
     </div>

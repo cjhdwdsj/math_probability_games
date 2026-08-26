@@ -304,11 +304,10 @@ function openPouchModal(pouchIdx) {
 
     if (tearStrip) {
         tearStrip.classList.remove("torn");
-        tearStrip.style.display = "flex";
     }
 
     if (standee) {
-        standee.style.display = "none";
+        standee.style.display = "flex";
         standee.style.transform = "translateY(0)";
         standee.style.boxShadow = "0 8px 24px rgba(0,0,0,0.25)";
     }
@@ -324,16 +323,9 @@ function tearFoilStrip() {
     isStandeeTorn = true;
 
     const tearStrip = document.getElementById("modal-tear-strip");
-    const standee = document.getElementById("modal-standee");
-
-    if (tearStrip) tearStrip.classList.add("torn");
-
-    setTimeout(() => {
-        if (standee) {
-            standee.style.display = "flex";
-            standee.style.transform = "translateY(0)";
-        }
-    }, 150);
+    if (tearStrip) {
+        tearStrip.classList.add("torn");
+    }
 }
 
 function initStandeeDragListeners() {
