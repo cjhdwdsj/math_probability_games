@@ -1523,9 +1523,9 @@ function renderSSRSwarm(neededDraws, nVal) {
 }
 
 // 基于二级市场博弈闭环的公允建议定价计算：
-// 1. 全套打包建议价 = 官方原价总额 * 1.35 (覆盖拆盒成本，并享受打包折扣)
+// 1. 全套打包建议价 = 官方原价总额 * 1.50 (微低于单买全部，让混合策略在图表中间形成完美的U型最优解谷底)
 function getRecFullPrice(N, pBox) {
-    return Math.round((N * pBox * 1.35) / 5) * 5; // 5元取整
+    return Math.round((N * pBox * 1.50) / 5) * 5; // 5元取整
 }
 
 // 2. 单买确认款建议价 = 单抽原价 * 1.55 (单款挑选溢价，确保买齐N只单买总价高于打包一口价)
