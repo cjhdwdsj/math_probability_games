@@ -1677,6 +1677,17 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 .ev-bar-seg.blue { background: #3498db; }
 .ev-bar-seg.orange { background: #f39c12; }
 .ev-bar-seg.purple { background: #9b59b6; }
+.ev-bar-seg.warning-yellow { background: #f1c40f; color: #4d3800; text-shadow: none; font-weight: 900; }
+
+.ev-warn-pill {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+    font-size: 0.6rem;
+    font-weight: 900;
+    padding: 1px 4px;
+    border-radius: 3px;
+}
 
 .ev-total-val {
     font-size: 0.76rem;
