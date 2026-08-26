@@ -128,9 +128,69 @@
             </section>
 
             <section class="lesson-page" data-page="4" aria-hidden="true" aria-labelledby="page-title-5">
+                <article class="lesson-card card-handoff">
+                    <div class="section-kicker"><span aria-hidden="true">🏷️</span> 看见错位如何传递</div>
+                    <h2 id="page-title-5" tabindex="-1">谁拿着“随机选择权”？</h2>
+                    <p class="lead">中间座位不会决定成败；它只把下一次随机选择交给另一位乘客。</p>
+                    <div class="handoff-track" aria-label="五个座位与错位接力过程">
+                        <div class="handoff-seat endpoint" data-handoff-seat="1"><span>1</span></div>
+                        <div class="handoff-seat" data-handoff-seat="2"><span>2</span></div>
+                        <div class="handoff-seat" data-handoff-seat="3"><span>3</span></div>
+                        <div class="handoff-seat" data-handoff-seat="4"><span>4</span></div>
+                        <div class="handoff-seat endpoint" data-handoff-seat="5"><span>5</span></div>
+                    </div>
+                    <div class="handoff-panel" id="handoff-panel" aria-live="polite">
+                        <div class="handoff-status"><span class="baton-orb" aria-hidden="true"></span><strong>准备观察</strong></div>
+                        <p>点击开始后，观察“随机选择权”如何只在被占座位的乘客之间传递。</p>
+                    </div>
+                    <div class="handoff-story" id="handoff-story">普通乘客坐回自己的座位后，就不再影响最后一位的结果。</div>
+                    <div class="btn-group handoff-controls" aria-label="错位接力演示控制">
+                        <button class="btn btn-secondary" id="start-handoff" type="button" onclick="startHandoffDemo()">▶ 开始接力演示</button>
+                        <button class="btn btn-primary" id="next-handoff" type="button" onclick="nextHandoffStep()" disabled>下一步</button>
+                        <button class="btn btn-quiet" id="reset-handoff" type="button" onclick="resetHandoffDemo()" disabled>↺ 重看</button>
+                    </div>
+                    <div class="terminal-choice hidden" id="terminal-choice" aria-live="polite">
+                        <strong>现在只剩两个终点：接力棒要落到哪里？</strong>
+                        <div class="btn-group">
+                            <button class="btn btn-success" type="button" onclick="resolveHandoff(1)">选 1 号座位</button>
+                            <button class="btn btn-danger" type="button" onclick="resolveHandoff(5)">选 5 号座位</button>
+                        </div>
+                    </div>
+                    <p class="handoff-insight" id="handoff-insight">先推进动画，最后会看到中间座位只是在传递接力棒。</p>
+                </article>
+            </section>
+
+            <section class="lesson-page" data-page="5" aria-hidden="true" aria-labelledby="page-title-6">
+                <article class="lesson-card card-recurrence">
+                    <div class="section-kicker"><span aria-hidden="true">∑</span> 把直觉变成证明</div>
+                    <h2 id="page-title-6" tabindex="-1">递推式为什么总是回到 1 / 2？</h2>
+                    <p class="lead">第一位的选择只有三类：立即成功、立即失败，或把问题缩小成同一种问题。</p>
+                    <div class="proof-map" id="proof-map" aria-label="第一位选择的三类结果">
+                        <div class="proof-choice proof-win"><span>选 1 号座位</span><strong>立即成功</strong><small>贡献 1</small></div>
+                        <div class="proof-choice proof-continue"><span>选中间座位</span><strong>缩成同类问题</strong><small>贡献 p(2) 到 p(n−1)</small></div>
+                        <div class="proof-choice proof-loss"><span>选最后座位</span><strong>立即失败</strong><small>贡献 0</small></div>
+                    </div>
+                    <div class="proof-workspace" id="proof-workspace" aria-live="polite">
+                        <p class="proof-prompt" id="proof-prompt">点击开始，再逐步把“接力棒”写成数学语言。</p>
+                        <div class="proof-line" data-proof-line="1"><span class="line-label">第 1 行</span><code>n · p(n) = 1 + p(2) + p(3) + ··· + p(n−1)</code></div>
+                        <div class="proof-line" data-proof-line="2"><span class="line-label">第 2 行</span><code>(n−1) · p(n−1) = 1 + p(2) + ··· + p(n−2)</code></div>
+                        <div class="proof-line proof-subtract" data-proof-line="3"><span class="line-label">相减</span><code>n · p(n) − (n−1) · p(n−1) = p(n−1)</code></div>
+                        <div class="proof-line proof-key" data-proof-line="4"><span class="line-label">得到</span><code>p(n) = p(n−1)</code></div>
+                        <div class="proof-line proof-final" data-proof-line="5"><span class="line-label">起点</span><code>p(2) = 1 / 2  →  p(n) = 1 / 2</code></div>
+                    </div>
+                    <div class="btn-group proof-controls" aria-label="递推证明控制">
+                        <button class="btn btn-secondary" id="start-proof" type="button" onclick="startProofDemo()">▶ 开始推导</button>
+                        <button class="btn btn-primary" id="next-proof" type="button" onclick="nextProofStep()" disabled>下一步</button>
+                        <button class="btn btn-quiet" id="reset-proof" type="button" onclick="resetProofDemo()" disabled>↺ 重看</button>
+                    </div>
+                    <p class="proof-insight" id="proof-insight">公式里的每一个 p(k)，都代表一次“中间座位继续传递接力棒”。</p>
+                </article>
+            </section>
+
+            <section class="lesson-page" data-page="6" aria-hidden="true" aria-labelledby="page-title-7">
                 <article class="lesson-card card-pattern">
                     <div class="section-kicker"><span aria-hidden="true">💡</span> 先看数据，再问原因</div>
-                    <h2 id="page-title-5" tabindex="-1">人数变了，规律没变</h2>
+                    <h2 id="page-title-7" tabindex="-1">人数变了，规律没变</h2>
                     <p class="lead">多次随机模拟会有波动，但都会围绕 50% 聚集。</p>
                     <div class="pattern-results" aria-label="不同乘客数量的模拟结果">
                         <div class="result-item"><span>N = 2</span><span>51.2%</span><i style="--bar:51.2%"></i></div>
@@ -143,10 +203,10 @@
                 </article>
             </section>
 
-            <section class="lesson-page" data-page="5" aria-hidden="true" aria-labelledby="page-title-6">
+            <section class="lesson-page" data-page="7" aria-hidden="true" aria-labelledby="page-title-8">
                 <article class="lesson-card card-bulk">
                     <div class="section-kicker"><span aria-hidden="true">🧮</span> 用更多样本验证</div>
-                    <h2 id="page-title-6" tabindex="-1">大规模验证：N = 100</h2>
+                    <h2 id="page-title-8" tabindex="-1">大规模验证：N = 100</h2>
                     <p class="lead">每一次实验都独立；曲线会逐渐稳定在 50% 附近。</p>
                     <div class="chart-container" role="img" aria-label="最后一位乘客成功概率的模拟曲线；虚线表示理论值百分之五十。"><svg id="probability-chart" viewBox="0 0 720 250" preserveAspectRatio="none" aria-hidden="true"></svg></div>
                     <div class="simulation-process" aria-live="polite" aria-atomic="true">
@@ -170,10 +230,10 @@
                 </article>
             </section>
 
-            <section class="lesson-page" data-page="6" aria-hidden="true" aria-labelledby="page-title-7">
+            <section class="lesson-page" data-page="8" aria-hidden="true" aria-labelledby="page-title-9">
                 <article class="lesson-card card-theory">
-                    <div class="section-kicker"><span aria-hidden="true">🧠</span> 核心解释</div>
-                    <h2 id="page-title-7" tabindex="-1">为什么答案恒为 1 / 2？</h2>
+                    <div class="section-kicker"><span aria-hidden="true">🧠</span> 两个终点的对称性</div>
+                    <h2 id="page-title-9" tabindex="-1">为什么答案恒为 1 / 2？</h2>
                     <p class="lead">连锁过程最终只会在 <strong>1 号座位</strong> 与 <strong>N 号座位</strong>之间结束。</p>
                     <div class="cases">
                         <div class="case"><div class="case-number">1</div><div><strong>第一位选中 1 号座位</strong><span>后面每个人都能坐回自己的座位，最后一位成功。</span></div><b class="success">成功</b></div>
@@ -185,10 +245,10 @@
                 </article>
             </section>
 
-            <section class="lesson-page" data-page="7" aria-hidden="true" aria-labelledby="page-title-8">
+            <section class="lesson-page" data-page="9" aria-hidden="true" aria-labelledby="page-title-10">
                 <article class="lesson-card card-interactive">
                     <div class="section-kicker"><span aria-hidden="true">🕹️</span> 动手试一试</div>
-                    <h2 id="page-title-8" tabindex="-1">你来当第一位乘客</h2>
+                    <h2 id="page-title-10" tabindex="-1">你来当第一位乘客</h2>
                     <div class="game-controls">
                         <label for="user-n-select">乘客人数</label>
                         <select id="user-n-select" onchange="generateUserGameSeats()">
@@ -215,11 +275,11 @@
                 </article>
             </section>
 
-            <section class="lesson-page" data-page="8" aria-hidden="true" aria-labelledby="page-title-9">
+            <section class="lesson-page" data-page="10" aria-hidden="true" aria-labelledby="page-title-11">
                 <article class="lesson-card card-summary">
                     <span class="eyebrow">课程完成</span>
                     <div class="summary-icon" aria-hidden="true">🎓</div>
-                    <h2 id="page-title-9" tabindex="-1">记住这个结论</h2>
+                    <h2 id="page-title-11" tabindex="-1">记住这个结论</h2>
                     <p class="summary-answer">无论 N 是 2、100 还是 1000，<br>最后一位乘客成功的概率恒为 <strong>1 / 2</strong>。</p>
                     <div class="summary-points">
                         <div class="point"><span aria-hidden="true">💡</span><span>过程会很复杂，但终点只有 1 号座位与 N 号座位。</span></div>
@@ -238,11 +298,13 @@
                 <button class="page-dot" type="button" data-page-index="1" onclick="goToPage(1)" aria-label="第 2 页：规则介绍"></button>
                 <button class="page-dot" type="button" data-page-index="2" onclick="goToPage(2)" aria-label="第 3 页：N 等于 2"></button>
                 <button class="page-dot" type="button" data-page-index="3" onclick="goToPage(3)" aria-label="第 4 页：N 等于 3"></button>
-                <button class="page-dot" type="button" data-page-index="4" onclick="goToPage(4)" aria-label="第 5 页：发现规律"></button>
-                <button class="page-dot" type="button" data-page-index="5" onclick="goToPage(5)" aria-label="第 6 页：大规模验证"></button>
-                <button class="page-dot" type="button" data-page-index="6" onclick="goToPage(6)" aria-label="第 7 页：理论解释"></button>
-                <button class="page-dot" type="button" data-page-index="7" onclick="goToPage(7)" aria-label="第 8 页：互动体验"></button>
-                <button class="page-dot" type="button" data-page-index="8" onclick="goToPage(8)" aria-label="第 9 页：总结"></button>
+                <button class="page-dot" type="button" data-page-index="4" onclick="goToPage(4)" aria-label="第 5 页：错位接力棒"></button>
+                <button class="page-dot" type="button" data-page-index="5" onclick="goToPage(5)" aria-label="第 6 页：递推证明"></button>
+                <button class="page-dot" type="button" data-page-index="6" onclick="goToPage(6)" aria-label="第 7 页：发现规律"></button>
+                <button class="page-dot" type="button" data-page-index="7" onclick="goToPage(7)" aria-label="第 8 页：大规模验证"></button>
+                <button class="page-dot" type="button" data-page-index="8" onclick="goToPage(8)" aria-label="第 9 页：两个终点"></button>
+                <button class="page-dot" type="button" data-page-index="9" onclick="goToPage(9)" aria-label="第 10 页：互动体验"></button>
+                <button class="page-dot" type="button" data-page-index="10" onclick="goToPage(10)" aria-label="第 11 页：总结"></button>
             </div>
             <button class="nav-button nav-next" id="next-page" type="button" onclick="nextPage()"><span>下一页</span> →</button>
         </nav>

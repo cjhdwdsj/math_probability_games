@@ -13,6 +13,8 @@ let n2AnimationRunning = false;
 let n3AnimationRunning = false;
 let n3AnimationRunId = 0;
 let n3ActiveRun = null;
+let handoffRun = null;
+let proofRun = null;
 let currentPageIndex = 0;
 let pageTransitionTimer = null;
 
@@ -78,7 +80,9 @@ function goToPage(index, shouldFocus = true) {
     document.querySelectorAll('.passenger').forEach((passenger) => passenger.remove());
     if (previousIndex === 1 && nextIndex !== 1) resetRulesDemo();
     if (previousIndex === 2 && nextIndex !== 2) resetN2Demo();
-    if (previousIndex === 5 && nextIndex !== 5) pauseBulkSimulation('已暂停：返回本页后可继续观看。');
+    if (previousIndex === 4 && nextIndex !== 4) resetHandoffDemo();
+    if (previousIndex === 5 && nextIndex !== 5) resetProofDemo();
+    if (previousIndex === 7 && nextIndex !== 7) pauseBulkSimulation('已暂停：返回本页后可继续观看。');
     n3AnimationRunId += 1;
     n3AnimationRunning = false;
     n3ActiveRun = null;
@@ -299,6 +303,211 @@ async function playRulesDemo() {
     rulesDemoRunning = false;
     updateRulesFlow(['seated']);
     setRulesControls({ complete: true });
+}
+
+// ===== 错位接力棒直觉演示 =====
+function setHandoffControls({ started = false, complete = false, terminal = false } = {}) {
+    const start = document.getElementById('start-handoff');
+    const next = document.getElementById('next-handoff');
+    const reset = document.getElementById('reset-handoff');
+    if (start) {
+        start.disabled = started && !complete;
+        start.textContent = complete ? '▶ 再演示一次' : '▶ 开始接力演示';
+    }
+    if (next) {
+        next.disabled = !started || complete || terminal;
+        next.textContent = terminal ? '请选择终点' : '下一步';
+    }
+    if (reset) reset.disabled = !started && !complete;
+}
+
+function setHandoffPanel(title, detail, story) {
+    const panel = document.getElementById('handoff-panel');
+    const storyArea = document.getElementById('handoff-story');
+    if (panel) panel.innerHTML = `<div class="handoff-status"><span class="baton-orb" aria-hidden="true"></span><strong>${title}</strong></div><p>${detail}</p>`;
+    if (storyArea) storyArea.textContent = story;
+}
+
+function resetHandoffDemo() {
+    handoffRun = null;
+    document.querySelectorAll('.handoff-seat').forEach((seat) => {
+        seat.classList.remove('occupied', 'direct', 'baton-target', 'endpoint-success', 'endpoint-fail', 'dimmed');
+        delete seat.dataset.owner;
+    });
+    const terminal = document.getElementById('terminal-choice');
+    const insight = document.getElementById('handoff-insight');
+    if (terminal) terminal.classList.add('hidden');
+    if (insight) insight.textContent = '先推进动画，最后会看到中间座位只是在传递接力棒。';
+    setHandoffPanel('准备观察', '点击开始后，观察“随机选择权”如何只在被占座位的乘客之间传递。', '普通乘客坐回自己的座位后，就不再影响最后一位的结果。');
+    setHandoffControls();
+}
+
+function updateHandoffSeats({ occupied = [], direct = [], baton = null, dim = false } = {}) {
+    document.querySelectorAll('.handoff-seat').forEach((seat) => {
+        const number = Number(seat.dataset.handoffSeat);
+        seat.classList.toggle('occupied', occupied.some((item) => item.seat === number));
+        seat.classList.toggle('direct', direct.includes(number));
+        seat.classList.toggle('baton-target', baton === number);
+        seat.classList.toggle('dimmed', dim && number !== 1 && number !== 5);
+        const owner = occupied.find((item) => item.seat === number);
+        if (owner) seat.dataset.owner = String(owner.passenger);
+        else if (direct.includes(number)) seat.dataset.owner = String(number);
+        else delete seat.dataset.owner;
+    });
+}
+
+function startHandoffDemo() {
+    if (currentPageIndex !== 4) return;
+    resetHandoffDemo();
+    handoffRun = { step: 0, terminal: false, complete: false };
+    setHandoffControls({ started: true });
+    setHandoffPanel('接力即将开始', '第一位乘客没有自己的固定座位；他第一次随机选择，会决定接力棒交给谁。', '每一步都只问一件事：谁的座位被占了？谁就拿到下一次随机选择权。');
+}
+
+function nextHandoffStep() {
+    if (!handoffRun || handoffRun.complete || handoffRun.terminal || currentPageIndex !== 4) return;
+    const steps = [
+        {
+            panel: ['乘客 1 把接力棒交给乘客 3', '乘客 1 随机坐到 3 号座位。于是 3 号乘客的座位被占，他将成为下一个需要随机选择的人。', '座位 3 的错位没有决定成败；它只是把接力棒交给乘客 3。'],
+            seats: { occupied: [{ seat: 3, passenger: 1 }], baton: 3 }
+        },
+        {
+            panel: ['乘客 2 直接坐下', '乘客 2 的座位仍然空着，所以他直接坐到 2 号座位。', '乘客 2 没有拿到接力棒；正常入座的人不会改变最终结果。'],
+            seats: { occupied: [{ seat: 3, passenger: 1 }], direct: [2], baton: 3 }
+        },
+        {
+            panel: ['接力棒从乘客 3 传给乘客 4', '乘客 3 发现自己的 3 号座位被占，只能随机坐到 4 号座位。现在轮到 4 号乘客面对被占的座位。', '又一个中间座位出现了：它仍然没有决定成败，只让接力继续。'],
+            seats: { occupied: [{ seat: 3, passenger: 1 }, { seat: 4, passenger: 3 }], direct: [2], baton: 4 }
+        },
+        {
+            panel: ['只剩两个终点', '乘客 4 的 4 号座位已被占。此刻只剩 1 号与 5 号座位可选。', '中间座位都已经退出；最后的成功或失败，只取决于接力棒落到两个终点中的哪一个。'],
+            seats: { occupied: [{ seat: 3, passenger: 1 }, { seat: 4, passenger: 3 }], direct: [2], baton: 4, dim: true },
+            terminal: true
+        }
+    ];
+    const step = steps[handoffRun.step];
+    if (!step) return;
+    updateHandoffSeats(step.seats);
+    setHandoffPanel(...step.panel);
+    handoffRun.step += 1;
+    if (step.terminal) {
+        handoffRun.terminal = true;
+        const terminal = document.getElementById('terminal-choice');
+        if (terminal) terminal.classList.remove('hidden');
+        setHandoffControls({ started: true, terminal: true });
+    }
+}
+
+function resolveHandoff(seat) {
+    if (!handoffRun || !handoffRun.terminal || currentPageIndex !== 4) return;
+    const success = seat === 1;
+    updateHandoffSeats({
+        occupied: [{ seat: 3, passenger: 1 }, { seat: 4, passenger: 3 }, { seat, passenger: 4 }, { seat: success ? 5 : 1, passenger: 5 }],
+        direct: [2]
+    });
+    const selected = document.querySelector(`[data-handoff-seat="${seat}"]`);
+    if (selected) selected.classList.add(success ? 'endpoint-success' : 'endpoint-fail');
+    const terminal = document.getElementById('terminal-choice');
+    const insight = document.getElementById('handoff-insight');
+    if (terminal) terminal.classList.add('hidden');
+    if (success) {
+        setHandoffPanel('接力棒落到 1 号座位', '乘客 4 坐到 1 号座位，最后的乘客 5 就能坐回 5 号座位。', '这条路径的终点是 1 号座位，所以最后一位成功。');
+        if (insight) insight.textContent = '选中 1 号座位 → 最后一位拿到 5 号座位 → 成功。';
+    } else {
+        setHandoffPanel('接力棒落到 5 号座位', '乘客 4 坐到 5 号座位，最后的乘客 5 只剩 1 号座位。', '这条路径的终点是最后座位，所以最后一位失败。');
+        if (insight) insight.textContent = '选中 5 号座位 → 最后一位只剩 1 号座位 → 失败。';
+    }
+    handoffRun.complete = true;
+    handoffRun.terminal = false;
+    setHandoffControls({ started: true, complete: true });
+}
+
+// ===== 递推证明分步演示 =====
+function setProofControls({ started = false, complete = false } = {}) {
+    const start = document.getElementById('start-proof');
+    const next = document.getElementById('next-proof');
+    const reset = document.getElementById('reset-proof');
+    if (start) {
+        start.disabled = started && !complete;
+        start.textContent = complete ? '▶ 重新推导' : '▶ 开始推导';
+    }
+    if (next) next.disabled = !started || complete;
+    if (reset) reset.disabled = !started && !complete;
+}
+
+function resetProofDemo() {
+    proofRun = null;
+    document.querySelectorAll('.proof-line').forEach((line) => line.classList.remove('revealed', 'cancelled'));
+    document.querySelectorAll('.proof-choice').forEach((choice) => choice.classList.remove('is-active'));
+    const prompt = document.getElementById('proof-prompt');
+    const insight = document.getElementById('proof-insight');
+    if (prompt) prompt.textContent = '点击开始，再逐步把“接力棒”写成数学语言。';
+    if (insight) insight.textContent = '公式里的每一个 p(k)，都代表一次“中间座位继续传递接力棒”。';
+    setProofControls();
+}
+
+function startProofDemo() {
+    if (currentPageIndex !== 5) return;
+    resetProofDemo();
+    proofRun = { step: 0, complete: false };
+    const prompt = document.getElementById('proof-prompt');
+    if (prompt) prompt.textContent = '令 p(n) 表示：有 n 位乘客时，最后一位坐回自己座位的概率。';
+    setProofControls({ started: true });
+}
+
+function nextProofStep() {
+    if (!proofRun || proofRun.complete || currentPageIndex !== 5) return;
+    const prompt = document.getElementById('proof-prompt');
+    const insight = document.getElementById('proof-insight');
+    const steps = [
+        {
+            line: 1,
+            active: ['proof-win', 'proof-continue', 'proof-loss'],
+            prompt: '第一位有 n 种等可能选择：选 1 号座位贡献 1；选最后座位贡献 0；若选中间第 k 号座位，剩余局面重编号为 n−k+1 位乘客的同类问题。',
+            insight: '把所有中间 k 汇总后，正好得到 p(2) 到 p(n−1)，于是写成第一行递推式。'
+        },
+        {
+            line: 2,
+            active: ['proof-continue'],
+            prompt: '对规模小一格的同类问题，也能写出完全相同的公式。',
+            insight: '第二行与第一行绝大部分项相同，这正是下一步的关键。'
+        },
+        {
+            line: 3,
+            active: ['proof-continue'],
+            prompt: '两行相减时，重复出现的 1、p(2)、…、p(n−2) 全部抵消。',
+            insight: '留下的只有最右端的 p(n−1)，而不是一大串中间项。',
+            cancel: true
+        },
+        {
+            line: 4,
+            active: ['proof-win', 'proof-loss'],
+            prompt: '整理剩下的等式，得到 p(n) = p(n−1)。规模变大，并没有改变成功概率。',
+            insight: '这说明所有 p(n) 与 p(2) 相同。'
+        },
+        {
+            line: 5,
+            active: ['proof-win', 'proof-loss'],
+            prompt: '而 N = 2 时，我们已经枚举过两种等可能结果：p(2) = 1/2。',
+            insight: '因此 p(n) = p(n−1) = ··· = p(2) = 1/2。'
+        }
+    ];
+    const step = steps[proofRun.step];
+    if (!step) return;
+    document.querySelectorAll('.proof-choice').forEach((choice) => choice.classList.toggle('is-active', step.active.includes(choice.classList[1])));
+    const line = document.querySelector(`[data-proof-line="${step.line}"]`);
+    if (line) line.classList.add('revealed');
+    if (step.cancel) {
+        document.querySelector('[data-proof-line="1"]')?.classList.add('cancelled');
+        document.querySelector('[data-proof-line="2"]')?.classList.add('cancelled');
+    }
+    if (prompt) prompt.textContent = step.prompt;
+    if (insight) insight.textContent = step.insight;
+    proofRun.step += 1;
+    if (proofRun.step === steps.length) {
+        proofRun.complete = true;
+        setProofControls({ started: true, complete: true });
+    }
 }
 
 // ===== N = 2 情形演示 =====
@@ -825,7 +1034,7 @@ function processBulkTick(runId) {
 }
 
 function runBulkSimulation(times) {
-    if (bulkRun || currentPageIndex !== 5) return;
+    if (bulkRun || currentPageIndex !== 7) return;
     const run = {
         id: ++bulkRunId,
         target: times,
@@ -959,7 +1168,7 @@ function markUserSeat(seat, passenger, choice, isLast) {
 }
 
 function userSelectSeat(selectedSeat, n) {
-    if (currentPageIndex !== 7 || userGameRun) return;
+    if (currentPageIndex !== 9 || userGameRun) return;
     const seats = Array.from(document.querySelectorAll('#game-seats .seat.mini'));
     if (!seats.some((seat) => seat.classList.contains('available'))) return;
 
@@ -978,7 +1187,7 @@ function userSelectSeat(selectedSeat, n) {
 
 function nextUserGameStep() {
     const run = userGameRun;
-    if (!run || currentPageIndex !== 7) return;
+    if (!run || currentPageIndex !== 9) return;
 
     const seats = Array.from(document.querySelectorAll('#game-seats .seat.mini'));
     const passenger = run.nextPassenger;

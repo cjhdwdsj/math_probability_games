@@ -400,6 +400,56 @@ h2 { font-size: clamp(1.55rem, 3vw, 2.3rem); line-height: 1.25; margin-top: 0.28
 .bulk-controls .btn-group { margin: 0; }
 .bulk-buttons { justify-content: flex-end; }
 
+/* Handoff intuition */
+.card-handoff, .card-recurrence { max-width: 55rem; text-align: center; }
+.handoff-track { display: flex; justify-content: center; gap: clamp(0.45rem, 1.6vw, 1rem); margin: 0.7rem auto 0.55rem; }
+.handoff-seat { position: relative; display: grid; place-items: center; width: clamp(2.55rem, 5.2vw, 3.55rem); height: clamp(2.55rem, 5.2vw, 3.55rem); border: 2px solid var(--ink); border-radius: 0.78rem; background: #fffdf7; font-family: "Noto Serif SC", serif; font-size: clamp(1rem, 2.2vw, 1.35rem); font-weight: 700; transition: transform 180ms var(--ease-out), background-color 180ms var(--ease-out), opacity 180ms var(--ease-out), box-shadow 180ms var(--ease-out); }
+.handoff-seat.endpoint { box-shadow: inset 0 0 0 3px rgba(247, 200, 75, 0.45); }
+.handoff-seat[data-owner] { background: #bde2ae; }
+.handoff-seat[data-owner]::after { content: "P" attr(data-owner); position: absolute; top: -0.62rem; right: -0.5rem; display: grid; place-items: center; width: 1.25rem; height: 1.25rem; border: 1.5px solid var(--ink); border-radius: 50%; background: var(--sky); color: white; font-family: "Noto Sans SC", sans-serif; font-size: 0.6rem; font-weight: 700; }
+.handoff-seat.direct { background: #edf7ea; opacity: 0.62; }
+.handoff-seat.baton-target { background: #fff4bd; box-shadow: 0 0 0 5px rgba(247, 200, 75, 0.43); transform: translateY(-0.16rem); }
+.handoff-seat.baton-target::before { content: "接力棒"; position: absolute; bottom: calc(100% + 0.24rem); padding: 0.1rem 0.35rem; border-radius: 0.35rem; background: var(--sun); color: var(--ink); font-family: "Noto Sans SC", sans-serif; font-size: 0.56rem; white-space: nowrap; }
+.handoff-seat.dimmed { opacity: 0.28; }
+.handoff-seat.endpoint-success { background: #bde2ae; box-shadow: 0 0 0 5px rgba(104, 168, 77, 0.28); }
+.handoff-seat.endpoint-fail { background: #f7b4a4; box-shadow: 0 0 0 5px rgba(233, 110, 86, 0.23); }
+.handoff-panel, .proof-workspace { max-width: 44rem; margin: 0 auto; padding: 0.55rem 0.7rem; border: 1.5px dashed rgba(47, 42, 37, 0.3); border-radius: 0.72rem; background: linear-gradient(90deg, rgba(90, 171, 217, 0.06) 1px, transparent 1px) 0 0 / 1.2rem 1.2rem, #f7f1e6; text-align: left; }
+.handoff-status { display: flex; align-items: center; gap: 0.42rem; font-size: 0.84rem; }
+.baton-orb { width: 0.6rem; height: 0.6rem; border: 1.5px solid var(--ink); border-radius: 50%; background: var(--sun); animation: status-pulse 760ms var(--ease-out) infinite alternate; }
+.handoff-panel p { min-height: 2.5em; margin: 0.22rem 0 0; color: var(--muted-ink); font-size: 0.76rem; line-height: 1.45; }
+.handoff-story, .handoff-insight, .proof-insight { max-width: 44rem; margin: 0.42rem auto 0; color: var(--muted-ink); font-size: 0.74rem; line-height: 1.42; }
+.handoff-story { padding: 0.38rem 0.6rem; border-radius: 0.52rem; background: #eef8fc; color: var(--sky-deep); font-weight: 700; }
+.handoff-controls, .proof-controls { margin-top: 0.45rem; }
+.terminal-choice { max-width: 34rem; margin: 0.45rem auto 0; padding: 0.48rem; border: 1.5px solid var(--sun); border-radius: 0.7rem; background: #fff9d8; font-size: 0.78rem; }
+.terminal-choice .btn-group { margin: 0.35rem 0 0; }
+.hidden { display: none !important; }
+.btn-success { background: #9bce7e; }
+.btn-danger { background: #f29b88; }
+
+/* Recurrence proof */
+.proof-map { display: grid; grid-template-columns: 1fr 1.35fr 1fr; gap: 0.46rem; max-width: 47rem; margin: 0.65rem auto 0.5rem; }
+.proof-choice { min-height: 4.15rem; display: grid; align-content: center; gap: 0.08rem; padding: 0.34rem 0.42rem; border: 1.5px solid rgba(47, 42, 37, 0.28); border-radius: 0.65rem; background: #f7f1e6; color: var(--muted-ink); transition: transform 180ms var(--ease-out), border-color 180ms var(--ease-out), background-color 180ms var(--ease-out), box-shadow 180ms var(--ease-out); }
+.proof-choice span { font-size: 0.64rem; }
+.proof-choice strong { color: var(--ink); font-size: 0.76rem; }
+.proof-choice small { font-size: 0.61rem; }
+.proof-win { border-color: rgba(104, 168, 77, 0.46); }
+.proof-loss { border-color: rgba(233, 110, 86, 0.46); }
+.proof-continue { border-color: rgba(90, 171, 217, 0.5); }
+.proof-choice.is-active { transform: translateY(-0.1rem); box-shadow: 0 0 0 3px rgba(247, 200, 75, 0.4); background: #fff4bd; border-color: var(--ink); }
+.proof-workspace { padding: 0.5rem 0.65rem; }
+.proof-prompt { min-height: 2.4em; margin: 0 0 0.35rem; color: var(--muted-ink); font-size: 0.75rem; line-height: 1.4; }
+.proof-line { display: none; grid-template-columns: 3rem minmax(0, 1fr); align-items: center; gap: 0.42rem; margin-top: 0.27rem; padding: 0.3rem 0.42rem; border-radius: 0.48rem; background: rgba(255,255,255,0.62); opacity: 0; transform: translateY(0.25rem); }
+.proof-line.revealed { display: grid; opacity: 1; transform: translateY(0); animation: proof-reveal 240ms var(--ease-out) both; }
+.proof-line.cancelled { opacity: 0.46; }
+.proof-line.cancelled code { text-decoration: line-through; text-decoration-color: var(--coral); text-decoration-thickness: 2px; }
+.line-label { padding: 0.12rem 0.28rem; border-radius: 1rem; background: #d9eaf3; color: var(--sky-deep); text-align: center; font-size: 0.61rem; font-weight: 700; }
+.proof-line code { color: var(--ink); font-family: "Noto Serif SC", serif; font-size: clamp(0.69rem, 1.45vw, 0.85rem); line-height: 1.35; white-space: normal; }
+.proof-subtract { border-left: 3px solid var(--coral); }
+.proof-key { background: #eef8fc; border: 1.5px solid var(--sky); }
+.proof-key code { color: var(--sky-deep); font-weight: 700; }
+.proof-final { background: #edf7ea; border: 1.5px solid var(--leaf); }
+.proof-final code { color: #4e8639; font-weight: 700; }
+
 /* Theory */
 .card-theory { max-width: 60rem; }
 .cases { display: grid; gap: 0.5rem; margin: 0.85rem 0; }
@@ -477,6 +527,7 @@ h2 { font-size: clamp(1.55rem, 3vw, 2.3rem); line-height: 1.25; margin-top: 0.28
 @keyframes seat-result-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
 @keyframes passenger-float { from { transform: translateY(-0.15rem) rotate(-4deg); } to { transform: translateY(0.15rem) rotate(4deg); } }
 @keyframes rule-roll { from { transform: translateY(-0.22rem) rotate(-3deg); } to { transform: translateY(0) rotate(0); } }
+@keyframes proof-reveal { from { opacity: 0; transform: translateY(0.25rem); } to { opacity: 1; transform: translateY(0); } }
 
 @media (max-width: 700px) {
     .lesson-app { grid-template-rows: 3.7rem minmax(0, 1fr) 4.3rem; padding: 0 0.8rem; }
@@ -507,6 +558,23 @@ h2 { font-size: clamp(1.55rem, 3vw, 2.3rem); line-height: 1.25; margin-top: 0.28
     .page-dot.active { width: 1rem; }
     .case { grid-template-columns: 1.7rem minmax(0, 1fr); gap: 0.45rem; }
     .case b { grid-column: 2; justify-self: start; }
+    .card-handoff, .card-recurrence { padding: 0.75rem; }
+    .handoff-track { gap: 0.38rem; margin: 0.48rem auto 0.42rem; }
+    .handoff-seat { width: 2.45rem; height: 2.45rem; border-radius: 0.62rem; font-size: 0.95rem; }
+    .handoff-seat[data-owner]::after { width: 1rem; height: 1rem; top: -0.5rem; right: -0.38rem; font-size: 0.5rem; }
+    .handoff-seat.baton-target::before { font-size: 0.48rem; }
+    .handoff-panel, .proof-workspace { padding: 0.4rem 0.48rem; }
+    .handoff-panel p { min-height: 0; font-size: 0.68rem; }
+    .handoff-story, .handoff-insight, .proof-insight { font-size: 0.66rem; }
+    .proof-map { gap: 0.25rem; margin: 0.45rem auto; }
+    .proof-choice { min-height: 3.6rem; padding: 0.22rem; }
+    .proof-choice span { font-size: 0.53rem; }
+    .proof-choice strong { font-size: 0.63rem; }
+    .proof-choice small { font-size: 0.51rem; }
+    .proof-prompt { min-height: 0; font-size: 0.67rem; }
+    .proof-line { grid-template-columns: 2.3rem minmax(0, 1fr); gap: 0.25rem; padding: 0.24rem 0.28rem; }
+    .line-label { font-size: 0.52rem; }
+    .proof-line code { font-size: 0.59rem; }
 }
 
 @media (max-height: 660px) and (min-width: 701px) {
@@ -533,6 +601,15 @@ h2 { font-size: clamp(1.55rem, 3vw, 2.3rem); line-height: 1.25; margin-top: 0.28
     .cases { margin: 0.55rem 0; }
     .case { padding-block: 0.4rem; }
     .summary-points { margin: 0.45rem auto 0.6rem; }
+    .handoff-track { margin: 0.38rem auto; }
+    .handoff-seat { width: 2.35rem; height: 2.35rem; }
+    .handoff-panel { padding: 0.32rem 0.46rem; }
+    .handoff-panel p { min-height: 0; font-size: 0.68rem; }
+    .proof-map { margin: 0.35rem auto; }
+    .proof-choice { min-height: 3.25rem; }
+    .proof-workspace { padding: 0.35rem 0.46rem; }
+    .proof-line { margin-top: 0.18rem; }
+    .handoff-controls, .proof-controls { margin-top: 0.28rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
