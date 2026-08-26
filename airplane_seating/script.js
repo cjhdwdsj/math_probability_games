@@ -147,47 +147,6 @@ function randomAvailableSeat(seatsState) {
     return available[Math.floor(Math.random() * available.length)];
 }
 
-// ===== N = 2 模拟 =====
-function simulateN2() {
-    const simulations = 100;
-    let successCount = 0;
-    const results = [];
-
-    for (let i = 0; i < simulations; i += 1) {
-        const firstChoice = Math.random() < 0.5 ? 0 : 1;
-        const isSuccess = firstChoice === 0;
-        results.push(isSuccess);
-        if (isSuccess) successCount += 1;
-    }
-
-    const percentage = ((successCount / simulations) * 100).toFixed(1);
-    const resultEl = document.querySelector('.n2-result');
-    if (resultEl) {
-        resultEl.innerHTML = `本次模拟：${successCount}/${simulations} = <span class="highlight">${percentage}%</span>`;
-    }
-    animateN2Result(results);
-}
-
-function animateN2Result(results) {
-    const seats = document.querySelectorAll('.card-n2 .seat.mini');
-    const scenarios = document.querySelectorAll('.card-n2 .scenario');
-    if (!seats.length || !scenarios.length) return;
-
-    seats.forEach((seat) => seat.classList.remove('occupied', 'wrong', 'current'));
-    scenarios.forEach((scenario) => scenario.style.opacity = '0.45');
-
-    const isSuccess = results[Math.floor(Math.random() * results.length)];
-    if (isSuccess) {
-        scenarios[0].style.opacity = '1';
-        seats[0].classList.add('occupied');
-        seats[1].classList.add('current');
-    } else {
-        scenarios[1].style.opacity = '1';
-        seats[1].classList.add('occupied', 'wrong');
-        seats[0].classList.add('current');
-    }
-}
-
 // ===== N = 3 动画演示 =====
 function createN3Plan() {
     const seatsState = Array(3).fill(null);

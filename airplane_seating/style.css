@@ -281,6 +281,7 @@ h2 { font-size: clamp(1.55rem, 3vw, 2.3rem); line-height: 1.25; margin-top: 0.28
 .success-dot { background: var(--leaf); } .fail-dot { background: var(--coral); }
 .success { color: #4e8639; } .fail { color: #c95441; }
 .result { margin-top: 0.8rem; font-size: 0.94rem; font-weight: 700; }
+.n2-explanation { max-width: 36rem; margin: 0.45rem auto 0; padding: 0.46rem 0.7rem; border-radius: 0.6rem; background: #fff4bd; color: #67562d; font-size: 0.8rem; line-height: 1.5; }
 .highlight { color: var(--sky-deep); }
 .animation-area {
     min-height: 8.7rem;

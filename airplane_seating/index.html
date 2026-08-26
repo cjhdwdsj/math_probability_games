@@ -47,17 +47,17 @@
                 <article class="lesson-card card-n2">
                     <div class="section-kicker"><span aria-hidden="true">🔬</span> 最简单的情况</div>
                     <h2 id="page-title-2" tabindex="-1">先从 N = 2 开始</h2>
-                    <p class="lead">只有两位乘客时，第一位的每个选择都清清楚楚。</p>
+                    <p class="lead">第一位只有两种等可能选择；不需要模拟，直接列出全部结果即可。</p>
                     <div class="seats-small" aria-label="1号与2号座位">
                         <div class="seat mini" data-seat="1">1</div>
                         <div class="seat mini last" data-seat="2">2</div>
                     </div>
                     <div class="n2-scenarios">
-                        <div class="scenario"><span class="scenario-dot success-dot" aria-hidden="true"></span><span>乘客 1 选座位 1</span><strong class="success">乘客 2 坐座位 2，成功</strong></div>
-                        <div class="scenario"><span class="scenario-dot fail-dot" aria-hidden="true"></span><span>乘客 1 选座位 2</span><strong class="fail">乘客 2 坐座位 1，失败</strong></div>
+                        <div class="scenario"><span class="scenario-dot success-dot" aria-hidden="true"></span><span>乘客 1 选座位 1（概率 1/2）</span><strong class="success">乘客 2 坐座位 2，成功</strong></div>
+                        <div class="scenario"><span class="scenario-dot fail-dot" aria-hidden="true"></span><span>乘客 1 选座位 2（概率 1/2）</span><strong class="fail">乘客 2 坐座位 1，失败</strong></div>
                     </div>
-                    <div class="result n2-result">理论概率：<span class="highlight">1 / 2 = 50%</span></div>
-                    <button class="btn btn-secondary" type="button" onclick="simulateN2()">🎲 随机模拟 100 次</button>
+                    <div class="result n2-result">两种情况各占一半，因此成功概率：<span class="highlight">1 / 2 = 50%</span></div>
+                    <p class="n2-explanation">这已经是完整证明：总共 2 种等可能结果，其中恰有 1 种会成功。</p>
                 </article>
             </section>
 
