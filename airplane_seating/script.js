@@ -171,7 +171,10 @@ function renderN2Status({ state = 'idle', title, detail }) {
 function resetN2Demo() {
     n2AnimationRunId += 1;
     n2AnimationRunning = false;
-    document.querySelectorAll('.card-n2 .seat.mini').forEach((seat) => seat.classList.remove('occupied', 'wrong', 'current', 'checking', 'target'));
+    document.querySelectorAll('.card-n2 .seat.mini').forEach((seat) => {
+        seat.classList.remove('occupied', 'wrong', 'current', 'checking', 'target');
+        delete seat.dataset.passenger;
+    });
     document.querySelectorAll('.card-n2 .scenario').forEach((scenario) => scenario.classList.remove('is-active'));
     setN2ChoiceControls(false);
     renderN2Status({
@@ -217,14 +220,35 @@ async function playN2Scenario(selectedSeatNumber) {
     renderN2Status({
         state: 'running',
         title: `乘客 1 选择 ${selectedSeatNumber} 号座位`,
-        detail: `第一位乘客的随机选择落在 ${selectedSeatNumber} 号座位。现在自动观察乘客 2 的结果。`
+        detail: `第一位乘客的随机选择落在 ${selectedSeatNumber} 号座位。先看乘客 1 移动并坐下。`
     });
-    await sleep(420);
-    if (runId !== n2AnimationRunId || currentPageIndex !== 1) return;
+
+    const passengerOne = document.createElement('div');
+    passengerOne.className = 'passenger';
+    passengerOne.dataset.passenger = '1';
+    passengerOne.textContent = '1';
+    passengerOne.style.display = 'none';
+    document.body.appendChild(passengerOne);
+    const firstRect = seats[selectedSeat].getBoundingClientRect();
+    const firstMoved = await moveN2Passenger(passengerOne, { x: firstRect.left + firstRect.width / 2 - 16, y: firstRect.top + firstRect.height / 2 - 16 }, runId);
+    if (!firstMoved) {
+        passengerOne.remove();
+        return;
+    }
 
     seats[selectedSeat].classList.remove('target');
     seats[selectedSeat].classList.add('occupied');
+    seats[selectedSeat].dataset.passenger = '1';
     if (!isSuccess) seats[selectedSeat].classList.add('wrong');
+    passengerOne.remove();
+    renderN2Status({
+        state: 'seated',
+        title: `乘客 1 已坐到 ${selectedSeatNumber} 号座位`,
+        detail: '第一位乘客的入座动画已完成。接下来自动演示乘客 2 的入座。'
+    });
+    await sleep(360);
+    if (runId !== n2AnimationRunId || currentPageIndex !== 1) return;
+
     seats[remainingSeat].classList.add('target');
     renderN2Status({
         state: 'running',
@@ -232,21 +256,22 @@ async function playN2Scenario(selectedSeatNumber) {
         detail: `乘客 2 的座位只剩 ${remainingSeat + 1} 号；动画现在将其带到该座位。`
     });
 
-    const passenger = document.createElement('div');
-    passenger.className = 'passenger';
-    passenger.dataset.passenger = '2';
-    passenger.textContent = '2';
-    passenger.style.display = 'none';
-    document.body.appendChild(passenger);
-    const rect = seats[remainingSeat].getBoundingClientRect();
-    const moved = await moveN2Passenger(passenger, { x: rect.left + rect.width / 2 - 16, y: rect.top + rect.height / 2 - 16 }, runId);
-    if (!moved) {
-        passenger.remove();
+    const passengerTwo = document.createElement('div');
+    passengerTwo.className = 'passenger';
+    passengerTwo.dataset.passenger = '2';
+    passengerTwo.textContent = '2';
+    passengerTwo.style.display = 'none';
+    document.body.appendChild(passengerTwo);
+    const secondRect = seats[remainingSeat].getBoundingClientRect();
+    const secondMoved = await moveN2Passenger(passengerTwo, { x: secondRect.left + secondRect.width / 2 - 16, y: secondRect.top + secondRect.height / 2 - 16 }, runId);
+    if (!secondMoved) {
+        passengerTwo.remove();
         return;
     }
 
     seats[remainingSeat].classList.remove('target');
     seats[remainingSeat].classList.add('occupied', 'current');
+    seats[remainingSeat].dataset.passenger = '2';
     scenarios[selectedSeat].classList.add('is-active');
     renderN2Status({
         state: isSuccess ? 'success' : 'fail',
@@ -257,7 +282,7 @@ async function playN2Scenario(selectedSeatNumber) {
     });
 
     await sleep(540);
-    passenger.remove();
+    passengerTwo.remove();
     if (runId === n2AnimationRunId) {
         n2AnimationRunning = false;
         setN2ChoiceControls(false);

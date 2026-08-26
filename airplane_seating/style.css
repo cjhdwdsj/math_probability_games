@@ -407,7 +407,7 @@ h2 { font-size: clamp(1.55rem, 3vw, 2.3rem); line-height: 1.25; margin-top: 0.28
 .game-controls select { padding: 0.38rem 0.7rem; border: 2px solid var(--line); border-radius: 0.55rem; background: #fffdf7; color: var(--ink); }
 .game-instructions { margin: 0.65rem 0; color: var(--muted-ink); font-size: 0.86rem; }
 .game-seats { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.55rem; max-width: 46rem; min-height: 3.3rem; margin: 0 auto; }
-#game-seats .seat.mini[data-passenger]::before { content: "P" attr(data-passenger); position: absolute; top: -0.55rem; right: -0.5rem; display: grid; place-items: center; width: 1.15rem; height: 1.15rem; border: 1.5px solid var(--ink); border-radius: 50%; background: var(--sky); color: white; font-size: 0.58rem; font-weight: 700; z-index: 1; }
+#game-seats .seat.mini[data-passenger]::before, .card-n2 .seat.mini[data-passenger]::before { content: "P" attr(data-passenger); position: absolute; top: -0.55rem; right: -0.5rem; display: grid; place-items: center; width: 1.15rem; height: 1.15rem; border: 1.5px solid var(--ink); border-radius: 50%; background: var(--sky); color: white; font-size: 0.58rem; font-weight: 700; z-index: 1; }
 .game-step-status { max-width: 38rem; min-height: 2.6rem; margin: 0.65rem auto 0; padding: 0.48rem 0.7rem; border: 1.5px dashed rgba(47, 42, 37, 0.27); border-radius: 0.65rem; background: #f7f1e6; color: var(--muted-ink); font-size: 0.8rem; line-height: 1.5; }
 .game-result { margin: 0.65rem auto 0; padding: 0.55rem; max-width: 25rem; border-radius: 0.7rem; background: #f7f1e6; }
 .game-result.hidden, .user-stats.hidden { display: none; }
