@@ -35,11 +35,11 @@ document.addEventListener("DOMContentLoaded", () => {
     initKeyboardControls();
     recalcEV();
     initSimCanvas();
+    updateLuckRank(14);
 });
 
 function goToPage(pageIndex) {
     if (pageIndex < 0 || pageIndex >= TOTAL_PAGES) return;
-    const prevPageIdx = currentPage;
     currentPage = pageIndex;
 
     const pages = document.querySelectorAll(".lesson-page");
@@ -206,7 +206,6 @@ function drawMultipleAnimated(count = 5) {
         results.push({ char, isNew });
     }
 
-    // 依次按顺序弹出 5 张迷你卡
     results.forEach((res, idx) => {
         const mini = document.createElement("div");
         mini.className = "mini-reveal-card";
@@ -229,7 +228,7 @@ function drawMultipleAnimated(count = 5) {
     }, count * 120 + 200);
 }
 
-// 一键抽到齐（快速步进动画）
+// 一键抽到齐
 function drawUntilCompleteAnimated() {
     if (gachaState.isAnimating) return;
     if (Object.keys(gachaState.collectedMap).length >= CHARACTERS.length) {
@@ -252,7 +251,6 @@ function drawUntilCompleteAnimated() {
             return;
         }
 
-        // 快速单步
         const rand = Math.floor(Math.random() * CHARACTERS.length);
         const char = CHARACTERS[rand];
         const isNew = !gachaState.collectedMap[char.id];
@@ -343,7 +341,46 @@ function resetGacha() {
 }
 
 // ========================
-// 5. 第 6 页：隐藏款 SSR 机制
+// 5. 第 5 页：欧气段位测算器
+// ========================
+function updateLuckRank(val) {
+    const draws = parseInt(val, 10);
+    const text = document.getElementById("rank-draws-text");
+    const badge = document.getElementById("luck-rank-badge");
+    if (!text || !badge) return;
+
+    text.textContent = `${draws} 次`;
+
+    if (draws === 6) {
+        badge.textContent = "段位：天选神王 👑 (1.5%)";
+        badge.style.color = "#d48806";
+        badge.style.borderColor = "#d48806";
+        badge.style.background = "rgba(247, 200, 75, 0.2)";
+    } else if (draws <= 9) {
+        badge.textContent = "段位：幸运欧皇 ✨ (前15%)";
+        badge.style.color = "#27ae60";
+        badge.style.borderColor = "#27ae60";
+        badge.style.background = "rgba(39, 174, 96, 0.1)";
+    } else if (draws <= 16) {
+        badge.textContent = "段位：普通凡人 😐 (正常均值)";
+        badge.style.color = "var(--ink)";
+        badge.style.borderColor = "var(--line)";
+        badge.style.background = "rgba(47, 42, 37, 0.06)";
+    } else if (draws <= 23) {
+        badge.textContent = "段位：轻度非酋 🌧️ (后20%)";
+        badge.style.color = "var(--coral)";
+        badge.style.borderColor = "var(--coral)";
+        badge.style.background = "rgba(233, 110, 86, 0.1)";
+    } else {
+        badge.textContent = "段位：至尊大冤种 😭 (后7%)";
+        badge.style.color = "var(--purple)";
+        badge.style.borderColor = "var(--purple)";
+        badge.style.background = "rgba(154, 107, 199, 0.15)";
+    }
+}
+
+// ========================
+// 6. 第 6 页：隐藏款 SSR 机制
 // ========================
 function updateSsrCalculation(ssrRate) {
     const rate = parseInt(ssrRate, 10);
@@ -363,7 +400,7 @@ function updateSsrCalculation(ssrRate) {
 }
 
 // ========================
-// 6. 第 7 页：蒙特卡洛大规模模拟引擎
+// 7. 第 7 页：蒙特卡洛大规模模拟引擎
 // ========================
 function initSimCanvas() {
     const canvas = document.getElementById("sim-canvas");
@@ -380,7 +417,6 @@ function runMonteCarloSim() {
     const N = parseInt(nSelect.value, 10);
     const trials = parseInt(trialsSelect.value, 10);
 
-    // 理论期望 N * H_N
     let harmonicN = 0;
     for (let i = 1; i <= N; i++) harmonicN += 1 / i;
     const theoryMean = N * harmonicN;
@@ -428,7 +464,6 @@ function drawHistogram(results, N, theoryMean, simMean, minDraws, maxDraws) {
 
     ctx.clearRect(0, 0, width, height);
 
-    // 统计频数
     const bucketMax = Math.min(maxDraws, Math.max(36, N * 4));
     const bins = new Array(bucketMax + 1).fill(0);
     for (let i = 0; i < results.length; i++) {
@@ -453,7 +488,6 @@ function drawHistogram(results, N, theoryMean, simMean, minDraws, maxDraws) {
     const totalBins = bucketMax - startX + 1;
     const barWidth = Math.max(2, (plotWidth / totalBins) - 1.5);
 
-    // 1. 网格线
     ctx.strokeStyle = "rgba(47, 42, 37, 0.08)";
     ctx.lineWidth = 1;
     for (let i = 0; i <= 3; i++) {
@@ -464,7 +498,6 @@ function drawHistogram(results, N, theoryMean, simMean, minDraws, maxDraws) {
         ctx.stroke();
     }
 
-    // 2. 频数柱子
     for (let d = startX; d <= bucketMax; d++) {
         const freq = bins[d] || 0;
         const barH = (freq / maxFrequency) * plotHeight;
@@ -472,17 +505,16 @@ function drawHistogram(results, N, theoryMean, simMean, minDraws, maxDraws) {
         const y = height - paddingBottom - barH;
 
         if (d <= N + 1) {
-            ctx.fillStyle = "#f7c84b"; // 欧皇黄
+            ctx.fillStyle = "#f7c84b";
         } else if (d > theoryMean * 1.4) {
-            ctx.fillStyle = "#9a6bc7"; // 非酋紫
+            ctx.fillStyle = "#9a6bc7";
         } else {
-            ctx.fillStyle = "#5aabd9"; // 正常蓝
+            ctx.fillStyle = "#5aabd9";
         }
 
         ctx.fillRect(x, y, barWidth, barH);
     }
 
-    // 3. 理论平均红虚线
     const theoryX = paddingLeft + (theoryMean - startX) * (plotWidth / totalBins);
     ctx.beginPath();
     ctx.setLineDash([4, 3]);
@@ -497,7 +529,6 @@ function drawHistogram(results, N, theoryMean, simMean, minDraws, maxDraws) {
     ctx.font = "bold 10px sans-serif";
     ctx.fillText(`平均值 ${theoryMean.toFixed(1)} 次`, theoryX + 4, paddingTop + 10);
 
-    // 4. 坐标轴
     ctx.strokeStyle = "rgba(47, 42, 37, 0.8)";
     ctx.lineWidth = 1.5;
     ctx.beginPath();
@@ -513,7 +544,7 @@ function drawHistogram(results, N, theoryMean, simMean, minDraws, maxDraws) {
 }
 
 // ========================
-// 7. 第 8 页：商业定价期望收益 EV 计算器
+// 8. 第 8 页：商业定价期望收益 EV 计算器
 // ========================
 function recalcEV() {
     const priceInput = document.getElementById("ev-price");

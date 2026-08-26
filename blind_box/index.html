@@ -29,7 +29,7 @@
             </div>
         </header>
 
-        <!-- 主内容区：8 步定高无滚动卡片 -->
+        <!-- 主内容区：8 步居中卡片 -->
         <main class="lesson-stage" aria-label="盲盒收集问题互动课程">
 
             <!-- 第 1 页：封面与直觉预测 -->
@@ -61,11 +61,9 @@
             <!-- 第 2 页：沉浸式开箱抽卡机 (Gacha Lab) -->
             <section class="lesson-page" data-page="1" aria-hidden="true">
                 <article class="lesson-card">
-                    <div>
-                        <div class="section-kicker"><span aria-hidden="true">🎮</span> 互动抽盒机</div>
-                        <h2>亲自抽几发试试手气！</h2>
-                        <p class="lead">看看你需要抽多少次才能集齐 6 款萌宠，体验一下不断抽到重复款的绝望感！</p>
-                    </div>
+                    <div class="section-kicker"><span aria-hidden="true">🎮</span> 互动抽盒机</div>
+                    <h2>亲自抽几发试试手气！</h2>
+                    <p class="lead">看看你需要抽多少次才能集齐 6 款萌宠，体验一下不断抽到重复款的绝望感！</p>
 
                     <div class="gacha-layout">
                         <!-- 左侧：3D 盲盒与操作 -->
@@ -133,55 +131,51 @@
             <!-- 第 3 页：阶段拆解：为什么最后一只像黑洞？ -->
             <section class="lesson-page" data-page="2" aria-hidden="true">
                 <article class="lesson-card">
-                    <div>
-                        <div class="section-kicker"><span aria-hidden="true">🔍</span> 深度拆解</div>
-                        <h2>为什么最后一款最难抽？</h2>
-                        <p class="lead">收集过程就像通关打怪，每多收集一只，抽到“新盲盒”的成功率就会暴跌一次！</p>
+                    <div class="section-kicker"><span aria-hidden="true">🔍</span> 深度拆解</div>
+                    <h2>为什么最后一款最难抽？</h2>
+                    <p class="lead">收集过程就像通关打怪，每多收集一只，抽到“新盲盒”的成功率就会暴跌一次！</p>
+
+                    <div class="difficulty-waterfall">
+                        <div class="stage-row">
+                            <div class="stage-tag">收集第 1 只</div>
+                            <div class="stage-bar-wrap"><div class="stage-bar-fill" style="width: 100%;"></div></div>
+                            <div class="stage-prob">必中全新 (100%)</div>
+                            <div class="stage-exp">平均 <span>1</span> 次搞定</div>
+                        </div>
+                        <div class="stage-row">
+                            <div class="stage-tag">收集第 2 只</div>
+                            <div class="stage-bar-wrap"><div class="stage-bar-fill" style="width: 83.3%;"></div></div>
+                            <div class="stage-prob">5/6 概率中新 (83%)</div>
+                            <div class="stage-exp">平均 <span>1.2</span> 次</div>
+                        </div>
+                        <div class="stage-row">
+                            <div class="stage-tag">收集第 3 只</div>
+                            <div class="stage-bar-wrap"><div class="stage-bar-fill" style="width: 66.7%;"></div></div>
+                            <div class="stage-prob">4/6 概率中新 (67%)</div>
+                            <div class="stage-exp">平均 <span>1.5</span> 次</div>
+                        </div>
+                        <div class="stage-row">
+                            <div class="stage-tag">收集第 4 只</div>
+                            <div class="stage-bar-wrap"><div class="stage-bar-fill" style="width: 50.0%;"></div></div>
+                            <div class="stage-prob">3/6 概率中新 (50%)</div>
+                            <div class="stage-exp">平均 <span>2</span> 次</div>
+                        </div>
+                        <div class="stage-row">
+                            <div class="stage-tag">收集第 5 只</div>
+                            <div class="stage-bar-wrap"><div class="stage-bar-fill" style="width: 33.3%;"></div></div>
+                            <div class="stage-prob">2/6 概率中新 (33%)</div>
+                            <div class="stage-exp">平均 <span>3</span> 次</div>
+                        </div>
+                        <div class="stage-row highlight-row">
+                            <div class="stage-tag" style="color: var(--coral);">最后第 6 只 🔥</div>
+                            <div class="stage-bar-wrap"><div class="stage-bar-fill" style="width: 16.7%;"></div></div>
+                            <div class="stage-prob" style="color: var(--coral);">仅 1/6 概率 (17%)</div>
+                            <div class="stage-exp">单拉它平均 <span>6</span> 次！</div>
+                        </div>
                     </div>
 
-                    <div class="waterfall-card-body">
-                        <div class="difficulty-waterfall">
-                            <div class="stage-row">
-                                <div class="stage-tag">收集第 1 只</div>
-                                <div class="stage-bar-wrap"><div class="stage-bar-fill" style="width: 100%;"></div></div>
-                                <div class="stage-prob">必中全新 (100%)</div>
-                                <div class="stage-exp">平均 <span>1</span> 次搞定</div>
-                            </div>
-                            <div class="stage-row">
-                                <div class="stage-tag">收集第 2 只</div>
-                                <div class="stage-bar-wrap"><div class="stage-bar-fill" style="width: 83.3%;"></div></div>
-                                <div class="stage-prob">5/6 概率中新 (83%)</div>
-                                <div class="stage-exp">平均 <span>1.2</span> 次</div>
-                            </div>
-                            <div class="stage-row">
-                                <div class="stage-tag">收集第 3 只</div>
-                                <div class="stage-bar-wrap"><div class="stage-bar-fill" style="width: 66.7%;"></div></div>
-                                <div class="stage-prob">4/6 概率中新 (67%)</div>
-                                <div class="stage-exp">平均 <span>1.5</span> 次</div>
-                            </div>
-                            <div class="stage-row">
-                                <div class="stage-tag">收集第 4 只</div>
-                                <div class="stage-bar-wrap"><div class="stage-bar-fill" style="width: 50.0%;"></div></div>
-                                <div class="stage-prob">3/6 概率中新 (50%)</div>
-                                <div class="stage-exp">平均 <span>2</span> 次</div>
-                            </div>
-                            <div class="stage-row">
-                                <div class="stage-tag">收集第 5 只</div>
-                                <div class="stage-bar-wrap"><div class="stage-bar-fill" style="width: 33.3%;"></div></div>
-                                <div class="stage-prob">2/6 概率中新 (33%)</div>
-                                <div class="stage-exp">平均 <span>3</span> 次</div>
-                            </div>
-                            <div class="stage-row highlight-row">
-                                <div class="stage-tag" style="color: var(--coral);">最后第 6 只 🔥</div>
-                                <div class="stage-bar-wrap"><div class="stage-bar-fill" style="width: 16.7%;"></div></div>
-                                <div class="stage-prob" style="color: var(--coral);">仅 1/6 概率 (17%)</div>
-                                <div class="stage-exp">单拉它平均 <span>6</span> 次！</div>
-                            </div>
-                        </div>
-
-                        <div class="story-callout">
-                            💡 <strong>大白话总结</strong>：当你手里已经有 5 款时，随便抽一个有 <strong>83% 的概率都是已有的废卡</strong>！为了凑齐最后一只，平均要单独再买 6 个！
-                        </div>
+                    <div class="story-callout">
+                        💡 <strong>大白话总结</strong>：当你手里已经有 5 款时，随便抽一个有 <strong>83% 的概率都是已有的废卡</strong>！为了凑齐最后一只，平均要单独再买 6 个！
                     </div>
                 </article>
             </section>
@@ -189,78 +183,78 @@
             <!-- 第 4 页：大白话求和计算与柱状图 -->
             <section class="lesson-page" data-page="3" aria-hidden="true">
                 <article class="lesson-card">
-                    <div>
-                        <div class="section-kicker"><span aria-hidden="true">📐</span> 累加算账</div>
-                        <h2>把各阶段加起来：真相大白</h2>
-                        <p class="lead">不需要复杂的数学推导，直接把每一阶段平均需要买的次数加在一起：</p>
+                    <div class="section-kicker"><span aria-hidden="true">📐</span> 累加算账</div>
+                    <h2>把各阶段加起来：真相大白</h2>
+                    <p class="lead">不需要复杂的数学推导，直接把每一阶段平均需要买的次数加在一起：</p>
+
+                    <div class="plain-math-banner">
+                        <div class="plain-calc-title">集齐一套 6 款盲盒的真实期望买法：</div>
+                        <div class="plain-calc-steps">
+                            <span class="plain-pill">第1只: 1次</span> +
+                            <span class="plain-pill">第2只: 1.2次</span> +
+                            <span class="plain-pill">第3只: 1.5次</span> +
+                            <span class="plain-pill">第4只: 2次</span> +
+                            <span class="plain-pill">第5只: 3次</span> +
+                            <span class="plain-pill" style="background: rgba(233,110,86,0.25); border-color: var(--coral);">最后1只: 6次</span>
+                            <span style="font-weight: 800; color: var(--coral); font-size: 1.15rem;">= 14.7 次！</span>
+                        </div>
                     </div>
 
-                    <div class="math-card-body">
-                        <div class="plain-math-banner">
-                            <div class="plain-calc-title">集齐一套 6 款盲盒的真实期望买法：</div>
-                            <div class="plain-calc-steps">
-                                <span class="plain-pill">第1只: 1次</span> +
-                                <span class="plain-pill">第2只: 1.2次</span> +
-                                <span class="plain-pill">第3只: 1.5次</span> +
-                                <span class="plain-pill">第4只: 2次</span> +
-                                <span class="plain-pill">第5只: 3次</span> +
-                                <span class="plain-pill" style="background: rgba(233,110,86,0.25); border-color: var(--coral);">最后1只: 6次</span>
-                                <span style="font-weight: 800; color: var(--coral); font-size: 1.15rem;">= 14.7 次！</span>
-                            </div>
-                        </div>
+                    <div class="harmonic-visual">
+                        <div class="h-bar" style="height: 20px;">1.0</div>
+                        <div class="h-bar" style="height: 24px;">1.2</div>
+                        <div class="h-bar" style="height: 30px;">1.5</div>
+                        <div class="h-bar" style="height: 40px;">2.0</div>
+                        <div class="h-bar" style="height: 60px;">3.0</div>
+                        <div class="h-bar last-bar" style="height: 100px;">6.0 次</div>
+                    </div>
+                    <p style="text-align: center; font-size: 0.78rem; color: var(--muted-ink);">柱子高度直观展示：越到后面越难抽，最后一只的难度等于前面的总和！</p>
 
-                        <div class="harmonic-visual">
-                            <div class="h-bar" style="height: 20px;">1.0</div>
-                            <div class="h-bar" style="height: 24px;">1.2</div>
-                            <div class="h-bar" style="height: 30px;">1.5</div>
-                            <div class="h-bar" style="height: 40px;">2.0</div>
-                            <div class="h-bar" style="height: 60px;">3.0</div>
-                            <div class="h-bar last-bar" style="height: 100px;">6.0 次</div>
-                        </div>
-                        <p style="text-align: center; font-size: 0.78rem; color: var(--muted-ink);">柱子高度直观展示：越到后面越难抽，最后一只的难度等于前面的总和！</p>
-
-                        <div class="story-callout" style="border-left-color: var(--sky-deep); background: rgba(90,171,217,0.1);">
-                            📌 <strong>更惊人的事实</strong>：如果是 <strong>12 款</strong>的盲盒大套，平均需要抽 <strong>37.2 次</strong>（花费 ¥2,567）才能集齐！
-                        </div>
+                    <div class="story-callout" style="border-left-color: var(--sky-deep); background: rgba(90,171,217,0.1);">
+                        📌 <strong>更惊人的事实</strong>：如果是 <strong>12 款</strong>的盲盒大套，平均需要抽 <strong>37.2 次</strong>（花费 ¥2,567）才能集齐！
                     </div>
                 </article>
             </section>
 
-            <!-- 第 5 页：欧皇 vs 非酋的真实概率 -->
+            <!-- 第 5 页：欧皇 vs 非酋的真实概率 + 段位测算器 -->
             <section class="lesson-page" data-page="4" aria-hidden="true">
                 <article class="lesson-card">
-                    <div>
-                        <div class="section-kicker"><span aria-hidden="true">👑</span> 运气大比拼</div>
-                        <h2>欧皇与非酋的世界有多大差距？</h2>
-                        <p class="lead">你可能见过一发入魂的大佬，但也可能抽了 25 次依然在风中凌乱！</p>
-                    </div>
+                    <div class="section-kicker"><span aria-hidden="true">👑</span> 运气大比拼</div>
+                    <h2>欧皇与非酋的世界有多大差距？</h2>
+                    <p class="lead">你可能见过一发入魂的大佬，但也可能抽了 25 次依然在风中凌乱！</p>
 
                     <div class="luck-comparison">
                         <div class="luck-card god">
-                            <div>
-                                <div class="luck-title">
-                                    <span style="font-size: 1.4rem;">✨</span>
-                                    <strong>天选欧皇（刚好 6 发不重集齐）</strong>
-                                </div>
-                                <div class="luck-prob">1.54%</div>
+                            <div class="luck-title">
+                                <span style="font-size: 1.3rem;">✨</span>
+                                <strong>天选欧皇（6发不重集齐）</strong>
                             </div>
+                            <div class="luck-prob">1.54%</div>
                             <p class="luck-desc">
-                                相当于 <strong>65 个人里才出 1 位</strong>！连抽 6 个全中不同款的概率只有百分之一点五，堪比中彩票小奖。
+                                相当于 <strong>65 个人里才出 1 位</strong>！连抽 6 个全中不同款的概率只有百分之一点五。
                             </p>
                         </div>
 
                         <div class="luck-card bad">
-                            <div>
-                                <div class="luck-title">
-                                    <span style="font-size: 1.4rem;">😭</span>
-                                    <strong>至尊非酋（抽 25 次仍未集齐）</strong>
-                                </div>
-                                <div class="luck-prob">~ 7.2%</div>
+                            <div class="luck-title">
+                                <span style="font-size: 1.3rem;">😭</span>
+                                <strong>至尊非酋（抽 25 次仍未集齐）</strong>
                             </div>
+                            <div class="luck-prob">~ 7.2%</div>
                             <p class="luck-desc">
-                                花了 ¥1,725（买了 25 个），家里堆满了重复玩偶却依然缺最后一款的概率高达 <strong>7%</strong>！每 14 个人里就有一个大冤种。
+                                花了 ¥1,725，家里堆满重复款却依然缺最后一只的概率高达 <strong>7%</strong>！每 14 人就有 1 个大冤种。
                             </p>
                         </div>
+                    </div>
+
+                    <!-- 欧气段位测算滑块 -->
+                    <div class="luck-rank-box">
+                        <div style="display: flex; align-items: center; gap: 0.6rem; flex: 1;">
+                            <label for="rank-slider" style="font-size: 0.82rem; font-weight: 700; white-space: nowrap;">测测抽盒段位：</label>
+                            <input type="range" id="rank-slider" min="6" max="30" value="14" style="flex: 1; accent-color: var(--coral);" oninput="updateLuckRank(this.value)">
+                            <span id="rank-draws-text" style="font-weight: 800; min-width: 3.5rem; font-size: 0.9rem;">14 次</span>
+                        </div>
+                        <div class="luck-rank-badge" id="luck-rank-badge">段位：普通凡人 😐</div>
                     </div>
                 </article>
             </section>
@@ -268,40 +262,36 @@
             <!-- 第 6 页：隐藏款（SSR）机制的降维打击 -->
             <section class="lesson-page" data-page="5" aria-hidden="true">
                 <article class="lesson-card">
-                    <div>
-                        <div class="section-kicker"><span aria-hidden="true">✨</span> 隐藏款套路</div>
-                        <h2>如果加入 1/72 隐藏款会怎样？</h2>
-                        <p class="lead">很多商家会放入超稀有的“隐藏款”，这会让集齐成本产生怎样的断崖式暴涨？</p>
+                    <div class="section-kicker"><span aria-hidden="true">✨</span> 隐藏款套路</div>
+                    <h2>如果加入 1/72 隐藏款会怎样？</h2>
+                    <p class="lead">很多商家会放入超稀有的“隐藏款”，这会让集齐成本产生怎样的断崖式暴涨？</p>
+
+                    <div class="ssr-box-wrap">
+                        <div class="ssr-control-row">
+                            <label for="ssr-rate-select" style="font-weight: 700; font-size: 0.88rem;">切换隐藏款出现概率：</label>
+                            <select id="ssr-rate-select" onchange="updateSsrCalculation(this.value)">
+                                <option value="72">1/72 (普通隐藏款，约 1.4%)</option>
+                                <option value="144">1/144 (超级大隐藏，约 0.7%)</option>
+                                <option value="0">无隐藏款（仅 6 基础款）</option>
+                            </select>
+                        </div>
+
+                        <div class="ssr-impact-banner">
+                            <div>
+                                <div style="font-size: 0.82rem; color: var(--muted-ink);">普通 6 款平均花费</div>
+                                <div class="impact-num regular">¥ 1,014</div>
+                                <small style="color: var(--muted-ink);">平均抽 14.7 次</small>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.82rem; color: var(--coral);">包含隐藏款平均花费</div>
+                                <div class="impact-num ssr" id="ssr-cost-display">¥ 4,968</div>
+                                <small style="color: var(--coral);" id="ssr-draws-display">平均需要买 72 个！</small>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="ssr-card-body">
-                        <div class="ssr-box-wrap">
-                            <div class="ssr-control-row">
-                                <label for="ssr-rate-select">切换隐藏款出现概率：</label>
-                                <select id="ssr-rate-select" onchange="updateSsrCalculation(this.value)">
-                                    <option value="72">1/72 (普通隐藏款，约 1.4%)</option>
-                                    <option value="144">1/144 (超级大隐藏，约 0.7%)</option>
-                                    <option value="0">无隐藏款（仅 6 基础款）</option>
-                                </select>
-                            </div>
-
-                            <div class="ssr-impact-banner">
-                                <div>
-                                    <div style="font-size: 0.85rem; color: var(--muted-ink);">普通 6 款平均花费</div>
-                                    <div class="impact-num regular">¥ 1,014</div>
-                                    <small style="color: var(--muted-ink);">平均抽 14.7 次</small>
-                                </div>
-                                <div>
-                                    <div style="font-size: 0.85rem; color: var(--coral);">包含隐藏款平均花费</div>
-                                    <div class="impact-num ssr" id="ssr-cost-display">¥ 4,968</div>
-                                    <small style="color: var(--coral);" id="ssr-draws-display">平均需要买 72 个！</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="story-callout">
-                            💡 <strong>商家的暴利秘密</strong>：想要强行单抽隐藏款，平均需要抽整整 72 次（¥4,968）！成本直接飙升 5 倍，这就是为什么隐藏款在二手市场能卖出天价。
-                        </div>
+                    <div class="story-callout">
+                        💡 <strong>商家的暴利秘密</strong>：想要强行单抽隐藏款，平均需要抽整整 72 次（¥4,968）！成本直接飙升 5 倍，这就是为什么隐藏款在二手市场能卖出天价。
                     </div>
                 </article>
             </section>
@@ -309,42 +299,38 @@
             <!-- 第 7 页：蒙特卡洛大规模模拟实验室 -->
             <section class="lesson-page" data-page="6" aria-hidden="true">
                 <article class="lesson-card">
-                    <div>
-                        <div class="section-kicker"><span aria-hidden="true">📊</span> 上万次电脑模拟</div>
-                        <h2>大规模玩家抽盒实验室</h2>
-                        <p class="lead">让电脑一秒模拟上万名玩家抽盒的全过程，看看真实的数据分布长什么样：</p>
+                    <div class="section-kicker"><span aria-hidden="true">📊</span> 上万次电脑模拟</div>
+                    <h2>大规模玩家抽盒实验室</h2>
+                    <p class="lead">让电脑一秒模拟上万名玩家抽盒的全过程，看看真实的数据分布长什么样：</p>
+
+                    <div class="sim-controls-panel">
+                        <div class="sim-input-group">
+                            <label for="sim-n-select">盲盒种类：</label>
+                            <select id="sim-n-select">
+                                <option value="6" selected>6 款 (平均 14.7次)</option>
+                                <option value="8">8 款 (平均 21.7次)</option>
+                                <option value="10">10 款 (平均 29.3次)</option>
+                                <option value="12">12 款 (平均 37.2次)</option>
+                            </select>
+                        </div>
+                        <div class="sim-input-group">
+                            <label for="sim-trials-select">模拟人数：</label>
+                            <select id="sim-trials-select">
+                                <option value="1000">1,000 人</option>
+                                <option value="5000" selected>5,000 人</option>
+                                <option value="20000">20,000 人</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-coral" id="btn-run-sim" type="button" onclick="runMonteCarloSim()">🚀 开始模拟</button>
                     </div>
 
-                    <div class="sim-card-body">
-                        <div class="sim-controls-panel">
-                            <div class="sim-input-group">
-                                <label for="sim-n-select">盲盒种类：</label>
-                                <select id="sim-n-select">
-                                    <option value="6" selected>6 种款式 (平均 14.7次)</option>
-                                    <option value="8">8 种款式 (平均 21.7次)</option>
-                                    <option value="10">10 种款式 (平均 29.3次)</option>
-                                    <option value="12">12 种款式 (平均 37.2次)</option>
-                                </select>
-                            </div>
-                            <div class="sim-input-group">
-                                <label for="sim-trials-select">模拟人数：</label>
-                                <select id="sim-trials-select">
-                                    <option value="1000">1,000 人</option>
-                                    <option value="5000" selected>5,000 人</option>
-                                    <option value="20000">20,000 人</option>
-                                </select>
-                            </div>
-                            <button class="btn btn-coral" id="btn-run-sim" type="button" onclick="runMonteCarloSim()">🚀 开始模拟</button>
-                        </div>
-
-                        <div class="chart-container">
-                            <canvas id="sim-canvas" width="760" height="120"></canvas>
-                            <div class="sim-stat-summary">
-                                <div>实际模拟平均：<strong id="sim-avg-result">--</strong> 次</div>
-                                <div>理论平均：<strong id="sim-theory-result">14.70</strong> 次</div>
-                                <div>运气最好：<strong id="sim-min-result" style="color: var(--leaf);">--</strong> 次</div>
-                                <div>运气最差：<strong id="sim-max-result" style="color: var(--purple);">--</strong> 次</div>
-                            </div>
+                    <div class="chart-container">
+                        <canvas id="sim-canvas" width="760" height="120"></canvas>
+                        <div class="sim-stat-summary">
+                            <div>实际模拟平均：<strong id="sim-avg-result">--</strong> 次</div>
+                            <div>理论平均：<strong id="sim-theory-result">14.70</strong> 次</div>
+                            <div>运气最好：<strong id="sim-min-result" style="color: var(--leaf);">--</strong> 次</div>
+                            <div>运气最差：<strong id="sim-max-result" style="color: var(--purple);">--</strong> 次</div>
                         </div>
                     </div>
                 </article>
@@ -353,44 +339,40 @@
             <!-- 第 8 页：商业定价、沉没成本与理性决策 -->
             <section class="lesson-page" data-page="7" aria-hidden="true">
                 <article class="lesson-card">
-                    <div>
-                        <div class="section-kicker"><span aria-hidden="true">💡</span> 现实与理性决策</div>
-                        <h2>沉没成本陷阱与聪明买法</h2>
-                        <p class="lead">结合课堂研讨：为什么“差一个就齐”最容易上头？集齐奖励究竟合不合算？</p>
-                    </div>
+                    <div class="section-kicker"><span aria-hidden="true">💡</span> 现实与理性决策</div>
+                    <h2>沉没成本陷阱与聪明买法</h2>
+                    <p class="lead">结合课堂研讨：为什么“差一个就齐”最容易上头？集齐奖励究竟合不合算？</p>
 
-                    <div class="decision-card-body">
-                        <!-- 期望收益 EV 计算器 -->
-                        <div class="ev-calc-box">
-                            <h3 style="font-size: 0.95rem; margin-bottom: 0.4rem;">🧮 商家集齐奖励测算器（算算你亏不亏）</h3>
-                            <div class="ev-inputs">
-                                <div class="ev-field">
-                                    <label for="ev-price">单抽价格（元）：</label>
-                                    <input type="number" id="ev-price" value="69" min="1" oninput="recalcEV()">
-                                </div>
-                                <div class="ev-field">
-                                    <label for="ev-reward">集齐奖励 / 回收价（元）：</label>
-                                    <input type="number" id="ev-reward" value="300" min="0" oninput="recalcEV()">
-                                </div>
+                    <!-- 期望收益 EV 计算器 -->
+                    <div class="ev-calc-box">
+                        <h3 style="font-size: 0.92rem; margin-bottom: 0.35rem;">🧮 商家集齐奖励测算器（算算你亏不亏）</h3>
+                        <div class="ev-inputs">
+                            <div class="ev-field">
+                                <label for="ev-price">单抽价格（元）：</label>
+                                <input type="number" id="ev-price" value="69" min="1" oninput="recalcEV()">
                             </div>
-
-                            <div class="ev-result-badge negative" id="ev-badge">
-                                <div>玩家平均每轮净盈亏：</div>
-                                <div class="ev-result-val" id="ev-val">- ¥ 714.30</div>
-                                <small id="ev-tip" style="color: var(--muted-ink); font-size: 0.75rem;">平均每玩一轮亏损 714 元！商家稳赚不赔。</small>
+                            <div class="ev-field">
+                                <label for="ev-reward">集齐奖励 / 回收价（元）：</label>
+                                <input type="number" id="ev-reward" value="300" min="0" oninput="recalcEV()">
                             </div>
                         </div>
 
-                        <!-- 理性建议卡片 -->
-                        <div class="advice-cards">
-                            <div class="advice-card">
-                                <h4>🛑 拒绝沉没成本</h4>
-                                <p>“已经抽了 12 个就差最后一只”时，盲盒**没有记忆**，最后一只平均依然要再抽 6 次（¥414）！及时收手才是止损。</p>
-                            </div>
-                            <div class="advice-card">
-                                <h4>🛍️ 聪明消费建议</h4>
-                                <p>只想享受拆盒惊喜 ➔ <strong>买 1~2 个即可</strong>；<br>真想集齐一套 ➔ <strong>直接端盒或二手收全套</strong>（能省下一半以上的冤枉钱）！</p>
-                            </div>
+                        <div class="ev-result-badge negative" id="ev-badge">
+                            <div style="font-size: 0.8rem;">玩家平均每轮净盈亏：</div>
+                            <div class="ev-result-val" id="ev-val">- ¥ 714.30</div>
+                            <small id="ev-tip" style="color: var(--muted-ink); font-size: 0.75rem;">平均每玩一轮亏损 714 元！商家稳赚不赔。</small>
+                        </div>
+                    </div>
+
+                    <!-- 理性建议卡片 -->
+                    <div class="advice-cards">
+                        <div class="advice-card">
+                            <h4>🛑 拒绝沉没成本</h4>
+                            <p>“已经抽了 12 个就差最后一只”时，盲盒**没有记忆**，最后一只平均依然要再抽 6 次（¥414）！及时收手才是止损。</p>
+                        </div>
+                        <div class="advice-card">
+                            <h4>🛍️ 聪明消费建议</h4>
+                            <p>只想享受拆盒惊喜 ➔ <strong>买 1~2 个即可</strong>；<br>真想集齐一套 ➔ <strong>直接端盒或二手收全套</strong>（能省下一半以上的冤枉钱）！</p>
                         </div>
                     </div>
                 </article>

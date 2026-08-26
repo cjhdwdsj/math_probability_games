@@ -13,10 +13,10 @@
     --gold: #f39c12;
     --gold-glow: rgba(243, 156, 18, 0.45);
     --paper: #fffef9;
-    --card-bg: rgba(255, 254, 249, 0.95);
+    --card-bg: rgba(255, 254, 249, 0.96);
     --line: rgba(47, 42, 37, 0.85);
     --soft-line: rgba(47, 42, 37, 0.14);
-    --shadow: 5px 6px 0 rgba(47, 42, 37, 0.16);
+    --shadow: 6px 7px 0 rgba(47, 42, 37, 0.15);
     --shadow-sm: 3px 4px 0 rgba(47, 42, 37, 0.14);
     --shadow-active: 1px 2px 0 rgba(47, 42, 37, 0.2);
     --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
@@ -81,7 +81,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 .doodle-3 { top: 22%; left: 5%; width: 3.5rem; height: 1.5rem; border-width: 0 0 2px; transform: rotate(-12deg); }
 .doodle-4 { bottom: 18%; right: 5%; width: 2.5rem; height: 2.5rem; border-radius: 6px; transform: rotate(28deg); }
 
-/* 主框架：绝对定高三段式无滚动布局 */
+/* 主框架：绝对定高三段式布局 */
 .lesson-app {
     height: 100dvh;
     min-height: 0;
@@ -89,7 +89,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     grid-template-rows: 3.8rem minmax(0, 1fr) 4.2rem;
     max-width: 1040px;
     margin: 0 auto;
-    padding: 0 1.2rem;
+    padding: 0 1.25rem;
     overflow: hidden;
 }
 
@@ -104,7 +104,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 .brand {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.55rem;
     text-decoration: none;
     color: var(--ink);
     font-weight: 700;
@@ -138,7 +138,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     color: var(--muted-ink);
 }
 
-/* 中间主舞台：绝对定位单页滑动容器（无滚动条） */
+/* 中间主舞台：居中展示卡片 */
 .lesson-stage {
     position: relative;
     width: 100%;
@@ -150,10 +150,9 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 .lesson-page {
     position: absolute;
     inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.6rem 0;
+    display: grid;
+    place-items: center; /* 完美水平与垂直居中！ */
+    padding: clamp(0.5rem, 1.8vh, 1.2rem) 0;
     opacity: 0;
     pointer-events: none;
     transform: translateX(2rem);
@@ -172,22 +171,18 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     transform: translateX(-2rem);
 }
 
-/* 课程卡片 */
+/* 课程卡片：自然高度，居中呈现，两边留有舒适呼吸边距 */
 .lesson-card {
-    width: 100%;
-    max-width: 900px;
-    height: 100%;
+    width: min(100%, 58rem);
     max-height: 100%;
     background: var(--card-bg);
     border: 2px solid var(--line);
-    border-radius: 18px;
+    border-radius: 1.25rem 1.4rem;
     box-shadow: var(--shadow);
-    padding: clamp(1rem, 2.5vh, 1.8rem) clamp(1.2rem, 3vw, 2.2rem);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    padding: clamp(1rem, 2.8vh, 1.8rem) clamp(1.2rem, 3vw, 2.2rem);
     overflow: hidden;
     position: relative;
+    margin: auto;
 }
 
 .section-kicker {
@@ -205,15 +200,15 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 }
 
 .lesson-card h2 {
-    font-size: clamp(1.25rem, 2.8vh, 1.65rem);
+    font-size: clamp(1.25rem, 2.6vh, 1.55rem);
     margin-bottom: 0.2rem;
     color: var(--ink);
 }
 
 .lead {
-    font-size: clamp(0.9rem, 1.8vh, 1rem);
+    font-size: clamp(0.88rem, 1.7vh, 0.98rem);
     color: var(--muted-ink);
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.75rem;
 }
 
 /* 按钮规范 */
@@ -222,11 +217,11 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     align-items: center;
     justify-content: center;
     gap: 0.4rem;
-    padding: 0.5rem 1.1rem;
+    padding: 0.45rem 1.05rem;
     border: 2px solid var(--line);
     border-radius: 10px;
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     box-shadow: var(--shadow-sm);
     transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease;
     user-select: none;
@@ -305,9 +300,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 /* ========== Page 1 封面专属样式 ========== */
 .cover-card {
     text-align: center;
-    align-items: center;
-    justify-content: center;
-    gap: 0.6rem;
+    padding: clamp(1.5rem, 3.5vh, 2.5rem) 1.5rem;
 }
 
 .eyebrow {
@@ -315,16 +308,18 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     color: var(--coral);
     font-size: 0.85rem;
     letter-spacing: 0.1em;
+    display: block;
+    margin-bottom: 0.4rem;
 }
 
 .cover-icon-box {
     position: relative;
     display: inline-block;
-    margin: 0.3rem auto;
+    margin: 0.4rem auto;
 }
 
 .cover-icon {
-    font-size: clamp(3.2rem, 8vh, 4.5rem);
+    font-size: clamp(3rem, 7vh, 4.2rem);
     display: inline-block;
     filter: drop-shadow(4px 6px 0 rgba(47, 42, 37, 0.15));
     animation: boxFloat 3s ease-in-out infinite;
@@ -332,19 +327,19 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 
 @keyframes boxFloat {
     0%, 100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-8px) rotate(4deg); }
+    50% { transform: translateY(-7px) rotate(4deg); }
 }
 
 .cover-title {
-    font-size: clamp(1.6rem, 3.8vh, 2.2rem);
-    margin-bottom: 0.2rem;
+    font-size: clamp(1.5rem, 3.5vh, 2.1rem);
+    margin-bottom: 0.3rem;
 }
 
 .cover-subtitle {
-    font-size: clamp(0.95rem, 2vh, 1.1rem);
+    font-size: clamp(0.9rem, 1.8vh, 1.05rem);
     color: var(--muted-ink);
     max-width: 580px;
-    margin: 0 auto;
+    margin: 0 auto 0.6rem;
 }
 
 /* 猜想互动区 */
@@ -355,7 +350,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     padding: 0.8rem 1.4rem;
     max-width: 480px;
     width: 100%;
-    margin: 0.4rem auto;
+    margin: 0.6rem auto 1rem;
 }
 
 .guess-prompt {
@@ -368,7 +363,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     display: flex;
     align-items: center;
     gap: 0.8rem;
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.3rem;
 }
 
 .guess-slider {
@@ -395,8 +390,6 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     display: grid;
     grid-template-columns: 1fr 1.15fr;
     gap: 1.2rem;
-    flex: 1;
-    min-height: 0;
     align-items: stretch;
 }
 
@@ -410,9 +403,9 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    min-height: 240px;
 }
 
-/* 3D 盲盒与连抽托盘展示区 */
 .box-scene {
     flex: 1;
     min-height: 120px;
@@ -423,8 +416,8 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 }
 
 .mystery-box {
-    width: 100px;
-    height: 120px;
+    width: 95px;
+    height: 115px;
     background: linear-gradient(135deg, #ffd369, #fa983a);
     border: 2.5px solid var(--ink);
     border-radius: 12px;
@@ -443,12 +436,12 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 .mystery-box::before {
     content: "OPEN ME";
     position: absolute;
-    top: 8px;
-    font-size: 0.6rem;
+    top: 7px;
+    font-size: 0.58rem;
     font-weight: 800;
     letter-spacing: 0.08em;
     color: var(--ink);
-    background: rgba(255,255,255,0.8);
+    background: rgba(255,255,255,0.85);
     padding: 1px 5px;
     border-radius: 4px;
     border: 1px solid var(--ink);
@@ -470,7 +463,6 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     80% { transform: scale(1.15) rotate(6deg); }
 }
 
-/* 单抽揭晓大卡 */
 .reveal-card {
     position: absolute;
     top: 50%;
@@ -526,7 +518,6 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     color: var(--muted-ink);
 }
 
-/* 五连抽托盘 */
 .multi-reveal-tray {
     display: none;
     position: absolute;
@@ -534,10 +525,10 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     background: rgba(255, 254, 249, 0.96);
     border-radius: 10px;
     z-index: 12;
-    padding: 0.5rem;
+    padding: 0.4rem;
     align-items: center;
     justify-content: center;
-    gap: 0.4rem;
+    gap: 0.35rem;
 }
 
 .multi-reveal-tray.show {
@@ -562,13 +553,12 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     transform: translateY(0) scale(1);
 }
 
-.mini-icon { font-size: 1.6rem; }
-.mini-name { font-size: 0.7rem; font-weight: 700; }
+.mini-icon { font-size: 1.5rem; }
+.mini-name { font-size: 0.68rem; font-weight: 700; }
 .mini-status { font-size: 0.6rem; font-weight: 700; }
 .mini-status.new { color: var(--leaf); }
 .mini-status.dup { color: var(--muted-ink); }
 
-/* 图鉴展示区 */
 .album-box {
     background: var(--paper);
     border: 2px solid var(--line);
@@ -587,20 +577,13 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     margin-bottom: 0.4rem;
 }
 
-.album-header h3 {
-    font-size: 0.95rem;
-}
-
-.album-counter {
-    font-weight: 700;
-    font-size: 0.88rem;
-    color: var(--coral);
-}
+.album-header h3 { font-size: 0.95rem; }
+.album-counter { font-weight: 700; font-size: 0.88rem; color: var(--coral); }
 
 .album-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
+    gap: 0.45rem;
     margin-bottom: 0.5rem;
 }
 
@@ -608,7 +591,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     background: var(--card-bg);
     border: 1.5px solid var(--soft-line);
     border-radius: 8px;
-    padding: 0.4rem 0.2rem;
+    padding: 0.35rem 0.2rem;
     text-align: center;
     position: relative;
     transition: all 0.2s ease;
@@ -631,25 +614,14 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 }
 
 .item-avatar {
-    font-size: 1.8rem;
+    font-size: 1.7rem;
     filter: grayscale(1) opacity(0.25);
     transition: filter 0.3s ease;
 }
 
-.album-item.collected .item-avatar {
-    filter: none;
-}
-
-.item-name {
-    font-size: 0.72rem;
-    font-weight: 700;
-    margin-top: 0.1rem;
-    color: var(--muted-ink);
-}
-
-.album-item.collected .item-name {
-    color: var(--ink);
-}
+.album-item.collected .item-avatar { filter: none; }
+.item-name { font-size: 0.72rem; font-weight: 700; margin-top: 0.1rem; color: var(--muted-ink); }
+.album-item.collected .item-name { color: var(--ink); }
 
 .item-count-badge {
     position: absolute;
@@ -667,12 +639,8 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     align-items: center;
     justify-content: center;
 }
+.album-item.has-dup .item-count-badge { display: flex; }
 
-.album-item.has-dup .item-count-badge {
-    display: flex;
-}
-
-/* 消费与战况统计 */
 .gacha-stats-bar {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -684,24 +652,13 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     text-align: center;
 }
 
-.stat-metric {
-    font-size: 0.7rem;
-    color: var(--muted-ink);
-}
+.stat-metric { font-size: 0.7rem; color: var(--muted-ink); }
+.stat-number { font-size: 1.05rem; font-weight: 800; color: var(--ink); }
+.stat-number.price { color: var(--coral); }
 
-.stat-number {
-    font-size: 1.05rem;
-    font-weight: 800;
-    color: var(--ink);
-}
-.stat-number.price {
-    color: var(--coral);
-}
-
-/* 欧气评价浮层 */
 .gacha-complete-banner {
     display: none;
-    margin-top: 0.4rem;
+    margin-top: 0.3rem;
     background: #fff8e6;
     border: 1.5px solid var(--sun);
     padding: 0.3rem 0.6rem;
@@ -713,19 +670,12 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     animation: fadeIn 0.3s ease;
 }
 
-/* ========== Page 3 难度递增阶梯图 ========== */
-.waterfall-card-body {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    flex: 1;
-    gap: 0.5rem;
-}
-
+/* ========== Page 3 阶梯图 ========== */
 .difficulty-waterfall {
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
+    margin: 0.4rem 0;
 }
 
 .stage-row {
@@ -752,10 +702,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     50% { transform: scale(1.01); }
 }
 
-.stage-tag {
-    font-weight: 700;
-    font-size: 0.8rem;
-}
+.stage-tag { font-weight: 700; font-size: 0.8rem; }
 
 .stage-bar-wrap {
     background: rgba(47,42,37,0.08);
@@ -771,26 +718,10 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     background: var(--sky);
     transition: width 0.6s var(--ease-out);
 }
-.stage-row.highlight-row .stage-bar-fill {
-    background: var(--coral);
-}
-
-.stage-prob {
-    font-weight: 700;
-    font-size: 0.8rem;
-    text-align: right;
-}
-
-.stage-exp {
-    font-size: 0.82rem;
-    font-weight: 700;
-    color: var(--ink);
-    text-align: right;
-}
-.stage-exp span {
-    color: var(--coral);
-    font-size: 0.95rem;
-}
+.stage-row.highlight-row .stage-bar-fill { background: var(--coral); }
+.stage-prob { font-weight: 700; font-size: 0.8rem; text-align: right; }
+.stage-exp { font-size: 0.82rem; font-weight: 700; color: var(--ink); text-align: right; }
+.stage-exp span { color: var(--coral); font-size: 0.95rem; }
 
 .story-callout {
     background: rgba(233,110,86,0.09);
@@ -800,17 +731,10 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     font-size: 0.85rem;
     font-weight: 600;
     line-height: 1.5;
+    margin-top: 0.5rem;
 }
 
-/* ========== Page 4 柱状面积拼图与白话计算 ========== */
-.math-card-body {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    flex: 1;
-    gap: 0.6rem;
-}
-
+/* ========== Page 4 柱状图 ========== */
 .plain-math-banner {
     background: #fff;
     border: 2px solid var(--line);
@@ -818,10 +742,11 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     padding: 0.7rem 1rem;
     box-shadow: var(--shadow-sm);
     text-align: center;
+    margin-bottom: 0.5rem;
 }
 
 .plain-calc-title {
-    font-size: 0.95rem;
+    font-size: 0.92rem;
     font-weight: 700;
     color: var(--muted-ink);
     margin-bottom: 0.4rem;
@@ -833,7 +758,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     justify-content: center;
     align-items: center;
     gap: 0.4rem;
-    font-size: 0.95rem;
+    font-size: 0.92rem;
 }
 
 .plain-pill {
@@ -851,7 +776,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     justify-content: center;
     gap: 0.6rem;
     height: 110px;
-    margin: 0.2rem 0;
+    margin: 0.4rem 0 0.2rem;
     padding-bottom: 6px;
     border-bottom: 2px solid var(--line);
 }
@@ -871,76 +796,77 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     color: #fff;
     transition: height 0.5s var(--ease-out);
 }
-.h-bar.last-bar {
-    background: var(--coral);
-}
+.h-bar.last-bar { background: var(--coral); }
 
-/* ========== Page 5 欧皇 vs 非酋 ========== */
+/* ========== Page 5 欧皇 vs 非酋与段位测算器 ========== */
 .luck-comparison {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    flex: 1;
-    align-items: stretch;
+    gap: 0.8rem;
+    margin-bottom: 0.6rem;
 }
 
 .luck-card {
     background: #fff;
     border: 2px solid var(--line);
     border-radius: 12px;
-    padding: 1rem;
+    padding: 0.8rem 1rem;
     box-shadow: var(--shadow-sm);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
 }
-
-.luck-card.god {
-    border-color: var(--sun);
-    background: #fffdf2;
-}
-
-.luck-card.bad {
-    border-color: var(--purple);
-    background: #faf6ff;
-}
+.luck-card.god { border-color: var(--sun); background: #fffdf2; }
+.luck-card.bad { border-color: var(--purple); background: #faf6ff; }
 
 .luck-title {
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    font-size: 1.05rem;
+    font-size: 0.95rem;
 }
 
 .luck-prob {
-    font-size: clamp(1.6rem, 3.5vh, 2.2rem);
+    font-size: 1.65rem;
     font-weight: 800;
-    margin: 0.2rem 0;
+    margin: 0.15rem 0;
 }
 .luck-card.god .luck-prob { color: #d48806; }
 .luck-card.bad .luck-prob { color: var(--purple); }
 
 .luck-desc {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--muted-ink);
-    line-height: 1.5;
+    line-height: 1.45;
+}
+
+/* 欧气段位快速测算 */
+.luck-rank-box {
+    background: var(--paper);
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    padding: 0.6rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.luck-rank-badge {
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: var(--coral);
+    background: rgba(233,110,86,0.1);
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    border: 1px solid var(--coral);
 }
 
 /* ========== Page 6 隐藏款 SSR 机制 ========== */
-.ssr-card-body {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    flex: 1;
-    gap: 0.8rem;
-}
-
 .ssr-box-wrap {
     background: #fff;
     border: 2px solid var(--line);
     border-radius: 12px;
-    padding: 0.9rem 1.2rem;
+    padding: 0.8rem 1.2rem;
     box-shadow: var(--shadow-sm);
+    margin-bottom: 0.6rem;
 }
 
 .ssr-control-row {
@@ -948,11 +874,11 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    margin-bottom: 0.8rem;
+    margin-bottom: 0.6rem;
 }
 
 .ssr-control-row select {
-    padding: 0.3rem 0.6rem;
+    padding: 0.25rem 0.6rem;
     border: 1.5px solid var(--line);
     border-radius: 6px;
     background: #fff;
@@ -965,26 +891,15 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     gap: 0.8rem;
     text-align: center;
     background: rgba(47, 42, 37, 0.04);
-    padding: 0.8rem;
+    padding: 0.6rem;
     border-radius: 8px;
 }
 
-.impact-num {
-    font-size: 1.5rem;
-    font-weight: 800;
-}
+.impact-num { font-size: 1.4rem; font-weight: 800; }
 .impact-num.regular { color: var(--sky-deep); }
 .impact-num.ssr { color: var(--coral); }
 
 /* ========== Page 7 蒙特卡洛大规模模拟 ========== */
-.sim-card-body {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    flex: 1;
-    gap: 0.6rem;
-}
-
 .sim-controls-panel {
     display: flex;
     flex-wrap: wrap;
@@ -995,6 +910,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     border: 1.5px solid var(--line);
     border-radius: 8px;
     padding: 0.4rem 0.8rem;
+    margin-bottom: 0.4rem;
 }
 
 .sim-input-group {
@@ -1017,13 +933,8 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     background: #fff;
     border: 2px solid var(--line);
     border-radius: 10px;
-    padding: 0.6rem;
+    padding: 0.5rem 0.8rem;
     box-shadow: var(--shadow-sm);
-    flex: 1;
-    min-height: 140px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
 }
 
 #sim-canvas {
@@ -1047,27 +958,20 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 }
 
 /* ========== Page 8 商业定价与理性决策 ========== */
-.decision-card-body {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    flex: 1;
-    gap: 0.6rem;
-}
-
 .ev-calc-box {
     background: #fff;
     border: 2px solid var(--line);
     border-radius: 10px;
-    padding: 0.8rem 1rem;
+    padding: 0.7rem 1rem;
     box-shadow: var(--shadow-sm);
+    margin-bottom: 0.6rem;
 }
 
 .ev-inputs {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.8rem;
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.5rem;
 }
 
 .ev-field label {
@@ -1089,22 +993,14 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 
 .ev-result-badge {
     text-align: center;
-    padding: 0.5rem;
+    padding: 0.45rem;
     border-radius: 8px;
     border: 1.5px solid var(--line);
     background: #fff6f4;
 }
 
-.ev-result-badge.negative {
-    background: #fff1f0;
-    border-color: var(--coral);
-}
-
-.ev-result-val {
-    font-size: 1.35rem;
-    font-weight: 800;
-    color: var(--coral);
-}
+.ev-result-badge.negative { background: #fff1f0; border-color: var(--coral); }
+.ev-result-val { font-size: 1.35rem; font-weight: 800; color: var(--coral); }
 
 .advice-cards {
     display: grid;
@@ -1119,37 +1015,15 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     padding: 0.6rem 0.8rem;
 }
 
-.advice-card h4 {
-    font-size: 0.88rem;
-    margin-bottom: 0.2rem;
-}
+.advice-card h4 { font-size: 0.88rem; margin-bottom: 0.2rem; }
+.advice-card p { font-size: 0.78rem; color: var(--muted-ink); line-height: 1.4; }
 
-.advice-card p {
-    font-size: 0.78rem;
-    color: var(--muted-ink);
-    line-height: 1.4;
-}
-
-/* 移动端紧凑适配 */
+/* 移动端适配 */
 @media (max-width: 680px) {
-    .lesson-app {
-        padding: 0 0.5rem;
-        grid-template-rows: 3.4rem minmax(0, 1fr) 3.8rem;
-    }
-    .lesson-card {
-        padding: 0.8rem;
-    }
-    .gacha-layout {
-        grid-template-columns: 1fr;
-        gap: 0.6rem;
-    }
-    .stage-row {
-        grid-template-columns: 60px 1fr 50px;
-        gap: 0.4rem;
-    }
+    .lesson-app { padding: 0 0.5rem; }
+    .lesson-card { padding: 0.8rem; }
+    .gacha-layout { grid-template-columns: 1fr; gap: 0.6rem; }
+    .stage-row { grid-template-columns: 60px 1fr 50px; gap: 0.4rem; }
     .stage-exp { display: none; }
-    .luck-comparison, .advice-cards {
-        grid-template-columns: 1fr;
-        gap: 0.5rem;
-    }
+    .luck-comparison, .advice-cards { grid-template-columns: 1fr; gap: 0.5rem; }
 }
