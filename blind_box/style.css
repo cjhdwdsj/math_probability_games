@@ -842,29 +842,11 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 }
 
 /* ========== Page 6 隐藏款 SSR 机制 ========== */
-.ssr-box-wrap {
-    background: #fff;
-    border: 2px solid var(--line);
-    border-radius: 12px;
-    padding: 0.8rem 1.2rem;
-    box-shadow: var(--shadow-sm);
+.ssr-sliders-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.7rem;
     margin-bottom: 0.6rem;
-}
-
-.ssr-control-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-bottom: 0.6rem;
-}
-
-.ssr-control-row select {
-    padding: 0.25rem 0.6rem;
-    border: 1.5px solid var(--line);
-    border-radius: 6px;
-    background: #fff;
-    font-weight: 700;
 }
 
 .ssr-impact-banner {
@@ -873,13 +855,56 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     gap: 0.8rem;
     text-align: center;
     background: rgba(47, 42, 37, 0.04);
-    padding: 0.6rem;
+    padding: 0.5rem 0.8rem;
     border-radius: 8px;
+    border: 1.5px solid var(--soft-line);
+    margin-bottom: 0.4rem;
 }
 
-.impact-num { font-size: 1.4rem; font-weight: 800; }
+.impact-num { font-size: 1.35rem; font-weight: 800; }
 .impact-num.regular { color: var(--sky-deep); }
 .impact-num.ssr { color: var(--coral); }
+
+/* 通用滑块控制组 */
+.slider-control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    background: var(--paper);
+    border: 1.5px solid var(--soft-line);
+    border-radius: 8px;
+    padding: 0.35rem 0.65rem;
+}
+
+.slider-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+
+.slider-label-row span:first-child {
+    color: var(--muted-ink);
+}
+
+.slider-val-badge {
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: var(--coral);
+    background: rgba(233, 110, 86, 0.1);
+    padding: 1px 5px;
+    border-radius: 4px;
+    border: 1px solid rgba(233, 110, 86, 0.25);
+}
+
+.custom-range-slider {
+    width: 100%;
+    accent-color: var(--coral);
+    height: 5px;
+    cursor: pointer;
+    margin: 0.15rem 0;
+}
 
 /* ========== Page 7 蒙特卡洛大规模模拟 ========== */
 .sim-controls-panel {
@@ -1018,45 +1043,51 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     background: var(--sun);
 }
 
-.ev-inputs {
+.ev-sliders-grid {
     display: grid;
-    grid-template-columns: 1.1fr 1fr 1.1fr;
-    gap: 0.6rem;
+    grid-template-columns: 1fr 1fr 1.05fr;
+    gap: 0.55rem;
     margin-bottom: 0.4rem;
 }
 
-.ev-field label {
-    display: block;
-    font-size: 0.74rem;
-    font-weight: 700;
-    margin-bottom: 0.15rem;
-    color: var(--muted-ink);
-}
-
-.ev-field input, .ev-field select {
-    width: 100%;
-    padding: 0.25rem 0.5rem;
-    border: 1.5px solid var(--line);
-    border-radius: 6px;
-    font-weight: 700;
-    font-size: 0.85rem;
-    background: #fff;
-}
-
-.ev-steps-breakdown {
+.cost-breakdown-panel {
+    display: grid;
+    grid-template-columns: 1fr 1.25fr 1fr;
+    gap: 0.3rem;
     background: rgba(47, 42, 37, 0.04);
-    border: 1px dashed var(--soft-line);
-    border-radius: 6px;
-    padding: 0.3rem 0.6rem;
+    border: 1.5px solid var(--soft-line);
+    border-radius: 8px;
+    padding: 0.35rem 0.5rem;
     margin-bottom: 0.4rem;
+    text-align: center;
+}
+
+.cost-stat-item {
     display: flex;
-    justify-content: space-between;
-    font-size: 0.75rem;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0.1rem 0.2rem;
+}
+
+.cost-stat-title {
+    font-size: 0.7rem;
+    font-weight: 700;
     color: var(--muted-ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
 }
-.ev-steps-breakdown span strong {
-    color: var(--ink);
+
+.cost-stat-num {
+    font-size: 1.05rem;
+    font-weight: 800;
+    margin: 0.05rem 0;
 }
+
+.cost-stat-num.min-cost { color: var(--leaf); }
+.cost-stat-num.exp-cost { color: var(--sky-deep); }
+.cost-stat-num.prize-cost { color: #d48806; }
 
 .ev-result-badge {
     text-align: center;
@@ -1070,6 +1101,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 }
 
 .ev-result-badge.negative { background: #fff1f0; border-color: var(--coral); }
+.ev-result-badge.positive { background: #f0fdf4; border-color: var(--leaf); }
 .ev-result-val { font-size: 1.25rem; font-weight: 800; color: var(--coral); }
 
 .advice-cards {

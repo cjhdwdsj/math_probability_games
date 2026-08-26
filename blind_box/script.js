@@ -19,6 +19,15 @@ const CHARACTERS = [
 
 const PRICE_PER_BOX = 69;
 
+const SSR_RATES = [
+    { denom: 24, label: "1/24 (微型隐藏)" },
+    { denom: 36, label: "1/36 (小隐藏)" },
+    { denom: 72, label: "1/72 (普通隐藏)" },
+    { denom: 96, label: "1/96 (较难隐藏)" },
+    { denom: 144, label: "1/144 (超级大隐藏)" },
+    { denom: 288, label: "1/288 (至尊典藏)" }
+];
+
 // 玩家抽盒状态
 let gachaState = {
     draws: 0,
@@ -38,9 +47,10 @@ document.addEventListener("DOMContentLoaded", () => {
     initAlbumGrid();
     updateNavigation();
     initKeyboardControls();
-    recalcEV();
     initSimCanvasListeners();
     updateLuckRank(14);
+    updateSsrFromSliders();
+    updateEVFromSliders();
 
     window.addEventListener("resize", () => {
         if (currentPage === 6 && simCache) {
@@ -384,23 +394,38 @@ function updateLuckRank(val) {
 }
 
 // ========================
-// 6. 第 6 页：隐藏款 SSR 机制
+// 6. 第 6 页：隐藏款 SSR 机制（滑块实时测算）
 // ========================
-function updateSsrCalculation(ssrRate) {
-    const rate = parseInt(ssrRate, 10);
-    const costDisp = document.getElementById("ssr-cost-display");
-    const drawsDisp = document.getElementById("ssr-draws-display");
+function updateSsrFromSliders() {
+    const nSlider = document.getElementById("ssr-n-slider");
+    const rateSlider = document.getElementById("ssr-rate-slider");
+    if (!nSlider || !rateSlider) return;
 
-    if (rate === 0) {
-        costDisp.textContent = "¥ 1,014";
-        drawsDisp.textContent = "平均抽 14.7 次（无隐藏款）";
-    } else if (rate === 72) {
-        costDisp.textContent = "¥ 4,968";
-        drawsDisp.textContent = "平均需要买 72 个 (1/72 隐藏款)！";
-    } else if (rate === 144) {
-        costDisp.textContent = "¥ 9,936";
-        drawsDisp.textContent = "平均需要买 144 个 (1/144 超级隐藏)！";
-    }
+    const N = parseInt(nSlider.value, 10);
+    const rateIdx = parseInt(rateSlider.value, 10) - 1;
+    const ssrInfo = SSR_RATES[rateIdx] || SSR_RATES[2];
+
+    document.getElementById("ssr-n-badge").textContent = `${N} 款一套`;
+    document.getElementById("ssr-rate-badge").textContent = ssrInfo.label;
+
+    // 基础全套期望
+    let harmonicN = 0;
+    for (let i = 1; i <= N; i++) harmonicN += 1 / i;
+    const regularDraws = N * harmonicN;
+    const regularCost = regularDraws * PRICE_PER_BOX;
+
+    // 隐藏款期望
+    const ssrDraws = ssrInfo.denom;
+    const ssrCost = ssrDraws * PRICE_PER_BOX;
+    const ratio = (ssrDraws / regularDraws).toFixed(1);
+
+    document.getElementById("ssr-regular-cost").textContent = `¥ ${Math.round(regularCost).toLocaleString()}`;
+    document.getElementById("ssr-regular-draws").textContent = `平均抽 ${regularDraws.toFixed(1)} 次`;
+
+    document.getElementById("ssr-cost-display").textContent = `¥ ${Math.round(ssrCost).toLocaleString()}`;
+    document.getElementById("ssr-draws-display").textContent = `平均需要买 ${ssrDraws} 个！`;
+
+    document.getElementById("ssr-ratio-display").textContent = `${ratio} 倍`;
 }
 
 // ========================
@@ -720,43 +745,50 @@ function drawRoundedRect(ctx, x, y, width, height, radius) {
 }
 
 // ========================
-// 8. 第 8 页：商业定价期望收益 EV 计算器
+// 8. 第 8 页：商业定价期望收益 EV 计算器（滑块实时联动）
 // ========================
 function setEVPreset(n, price, reward) {
-    const nSelect = document.getElementById("ev-n");
-    const priceInput = document.getElementById("ev-price");
-    const rewardInput = document.getElementById("ev-reward");
-    if (nSelect) nSelect.value = n;
-    if (priceInput) priceInput.value = price;
-    if (rewardInput) rewardInput.value = reward;
-    recalcEV();
+    const nSlider = document.getElementById("ev-n-slider");
+    const priceSlider = document.getElementById("ev-price-slider");
+    const rewardSlider = document.getElementById("ev-reward-slider");
+    if (nSlider) nSlider.value = n;
+    if (priceSlider) priceSlider.value = price;
+    if (rewardSlider) rewardSlider.value = reward;
+    updateEVFromSliders();
 }
 
-function recalcEV() {
-    const nSelect = document.getElementById("ev-n");
-    const priceInput = document.getElementById("ev-price");
-    const rewardInput = document.getElementById("ev-reward");
-    if (!priceInput || !rewardInput) return;
+function updateEVFromSliders() {
+    const nSlider = document.getElementById("ev-n-slider");
+    const priceSlider = document.getElementById("ev-price-slider");
+    const rewardSlider = document.getElementById("ev-reward-slider");
+    if (!nSlider || !priceSlider || !rewardSlider) return;
 
-    const N = nSelect ? parseInt(nSelect.value, 10) : 6;
-    const price = parseFloat(priceInput.value) || 0;
-    const reward = parseFloat(rewardInput.value) || 0;
+    const N = parseInt(nSlider.value, 10);
+    const price = parseFloat(priceSlider.value) || 0;
+    const reward = parseFloat(rewardSlider.value) || 0;
 
-    // 动态计算理论期望 N * H_N
+    document.getElementById("ev-n-badge").textContent = `${N} 款一套`;
+    document.getElementById("ev-price-badge").textContent = `¥ ${price}`;
+    document.getElementById("ev-reward-badge").textContent = `¥ ${reward}`;
+
+    // 1. 最低门槛 (0重复)
+    const minCost = N * price;
+    document.getElementById("ev-min-cost-display").textContent = `¥ ${minCost.toLocaleString()}`;
+    document.getElementById("ev-min-draws-sub").textContent = `买齐 ${N} 个无重复`;
+
+    // 2. 数学期望总花费
     let harmonicN = 0;
     for (let i = 1; i <= N; i++) harmonicN += 1 / i;
     const expectedDraws = N * harmonicN;
     const expectedCost = expectedDraws * price;
+    document.getElementById("ev-exp-cost-display").textContent = `¥ ${expectedCost.toFixed(2)}`;
+    document.getElementById("ev-exp-draws-sub").textContent = `平均需抽 ${expectedDraws.toFixed(1)} 次`;
+
+    // 3. 商家大奖
+    document.getElementById("ev-prize-display").textContent = `¥ ${reward.toFixed(2)}`;
+
+    // 4. 最终净盈亏
     const expectedValue = reward - expectedCost;
-
-    // 步骤拆解显示
-    const stepDraws = document.getElementById("ev-step-draws");
-    const stepCost = document.getElementById("ev-step-cost");
-    const stepReward = document.getElementById("ev-step-reward");
-    if (stepDraws) stepDraws.textContent = `${expectedDraws.toFixed(1)} 次 (${N}款一套)`;
-    if (stepCost) stepCost.textContent = `¥${expectedCost.toFixed(2)}`;
-    if (stepReward) stepReward.textContent = `+¥${reward.toFixed(2)}`;
-
     const badge = document.getElementById("ev-badge");
     const valElem = document.getElementById("ev-val");
     const tipElem = document.getElementById("ev-tip");
@@ -765,13 +797,13 @@ function recalcEV() {
         badge.className = "ev-result-badge negative";
         valElem.style.color = "var(--coral)";
         valElem.textContent = `- ¥ ${Math.abs(expectedValue).toFixed(2)}`;
-        if (reward > N * price) {
-            tipElem.textContent = `看似奖金高于全套原价 (¥${(N*price).toFixed(0)}) 稳赚，但因重复抽盒平均需花 ¥${expectedCost.toFixed(1)}，最终净亏 ¥${Math.abs(expectedValue).toFixed(1)}！商家稳赚。`;
+        if (reward > minCost) {
+            tipElem.textContent = `看似奖金高于全套原价 (¥${minCost.toFixed(0)})，但因重复抽盒平均需花 ¥${expectedCost.toFixed(1)}，最终净亏 ¥${Math.abs(expectedValue).toFixed(1)}！商家稳赚。`;
         } else {
-            tipElem.textContent = `奖金连全套原价 (¥${(N*price).toFixed(0)}) 都不到，属于纯亏损活动。`;
+            tipElem.textContent = `奖金连全套最低原价 (¥${minCost.toFixed(0)}) 都不到，属于纯亏损活动。`;
         }
     } else {
-        badge.className = "ev-result-badge";
+        badge.className = "ev-result-badge positive";
         valElem.style.color = "var(--leaf)";
         valElem.textContent = `+ ¥ ${expectedValue.toFixed(2)}`;
         tipElem.textContent = `商家大放血！只要坚持抽齐，玩家平均期望净赚 +¥${expectedValue.toFixed(1)}！`;

@@ -263,35 +263,42 @@
             <section class="lesson-page" data-page="5" aria-hidden="true">
                 <article class="lesson-card">
                     <div class="section-kicker"><span aria-hidden="true">✨</span> 隐藏款套路</div>
-                    <h2>如果加入 1/72 隐藏款会怎样？</h2>
-                    <p class="lead">很多商家会放入超稀有的“隐藏款”，这会让集齐成本产生怎样的断崖式暴涨？</p>
+                    <h2>超稀有隐藏款带来的成本断崖暴涨</h2>
+                    <p class="lead">拖动滑块调节基础款数与隐藏款稀有度，实时观察单抽隐藏与普通全套的断崖差距：</p>
 
-                    <div class="ssr-box-wrap">
-                        <div class="ssr-control-row">
-                            <label for="ssr-rate-select" style="font-weight: 700; font-size: 0.88rem;">切换隐藏款出现概率：</label>
-                            <select id="ssr-rate-select" onchange="updateSsrCalculation(this.value)">
-                                <option value="72">1/72 (普通隐藏款，约 1.4%)</option>
-                                <option value="144">1/144 (超级大隐藏，约 0.7%)</option>
-                                <option value="0">无隐藏款（仅 6 基础款）</option>
-                            </select>
+                    <div class="ssr-sliders-wrap">
+                        <div class="slider-control-group">
+                            <div class="slider-label-row">
+                                <span>基础款款式数 (N)：</span>
+                                <span class="slider-val-badge" id="ssr-n-badge">6 款一套</span>
+                            </div>
+                            <input type="range" class="custom-range-slider" id="ssr-n-slider" min="4" max="16" value="6" oninput="updateSsrFromSliders()">
                         </div>
 
-                        <div class="ssr-impact-banner">
-                            <div>
-                                <div style="font-size: 0.82rem; color: var(--muted-ink);">普通 6 款平均花费</div>
-                                <div class="impact-num regular">¥ 1,014</div>
-                                <small style="color: var(--muted-ink);">平均抽 14.7 次</small>
+                        <div class="slider-control-group">
+                            <div class="slider-label-row">
+                                <span>隐藏款稀有度：</span>
+                                <span class="slider-val-badge" id="ssr-rate-badge">1/72 (普通隐藏)</span>
                             </div>
-                            <div>
-                                <div style="font-size: 0.82rem; color: var(--coral);">包含隐藏款平均花费</div>
-                                <div class="impact-num ssr" id="ssr-cost-display">¥ 4,968</div>
-                                <small style="color: var(--coral);" id="ssr-draws-display">平均需要买 72 个！</small>
-                            </div>
+                            <input type="range" class="custom-range-slider" id="ssr-rate-slider" min="1" max="6" value="3" oninput="updateSsrFromSliders()">
                         </div>
                     </div>
 
-                    <div class="story-callout">
-                        💡 <strong>商家的暴利秘密</strong>：想要强行单抽隐藏款，平均需要抽整整 72 次（¥4,968）！成本直接飙升 5 倍，这就是为什么隐藏款在二手市场能卖出天价。
+                    <div class="ssr-impact-banner">
+                        <div>
+                            <div style="font-size: 0.82rem; color: var(--muted-ink);">普通基础全套平均花费</div>
+                            <div class="impact-num regular" id="ssr-regular-cost">¥ 1,014</div>
+                            <small style="color: var(--muted-ink);" id="ssr-regular-draws">平均抽 14.7 次</small>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.82rem; color: var(--coral);">单抽隐藏款平均花费</div>
+                            <div class="impact-num ssr" id="ssr-cost-display">¥ 4,968</div>
+                            <small style="color: var(--coral);" id="ssr-draws-display">平均需要买 72 个！</small>
+                        </div>
+                    </div>
+
+                    <div class="story-callout" id="ssr-callout">
+                        💡 <strong>成本膨胀分析</strong>：单抽隐藏款的平均花费是普通全套的 <strong id="ssr-ratio-display" style="color: var(--coral); font-size: 1.05rem;">4.9 倍</strong>！想要单抽硬怼隐藏，成本直接断崖式飙升！
                     </div>
                 </article>
             </section>
@@ -306,7 +313,7 @@
                     <div class="sim-controls-panel">
                         <div class="sim-input-group">
                             <label for="sim-n-select">盲盒种类：</label>
-                            <select id="sim-n-select">
+                            <select id="sim-n-select" onchange="runMonteCarloSim()">
                                 <option value="6" selected>6 款 (平均 14.7次)</option>
                                 <option value="8">8 款 (平均 21.7次)</option>
                                 <option value="10">10 款 (平均 29.3次)</option>
@@ -315,7 +322,7 @@
                         </div>
                         <div class="sim-input-group">
                             <label for="sim-trials-select">模拟人数：</label>
-                            <select id="sim-trials-select">
+                            <select id="sim-trials-select" onchange="runMonteCarloSim()">
                                 <option value="1000">1,000 人</option>
                                 <option value="5000" selected>5,000 人</option>
                                 <option value="20000">20,000 人</option>
@@ -349,48 +356,79 @@
                 <article class="lesson-card">
                     <div class="section-kicker"><span aria-hidden="true">💡</span> 现实与理性决策</div>
                     <h2>沉没成本陷阱与聪明买法</h2>
-                    <p class="lead">结合课堂研讨：为什么“差一个就齐”最容易上头？集齐奖励究竟合不合算？</p>
+                    <p class="lead">调节各项参数滑块，对比【欧皇最低成本】与【真实期望花费】，洞察商家营销套路：</p>
 
                     <!-- 期望收益 EV 计算器 -->
                     <div class="ev-calc-box">
                         <div class="ev-presets-row">
-                            <span>真实营销套路案例：</span>
-                            <button class="preset-pill" type="button" onclick="setEVPreset(6, 69, 800)">案例一：¥69手办 (6款奖¥800·看似翻倍)</button>
-                            <button class="preset-pill" type="button" onclick="setEVPreset(10, 5, 100)">案例二：课堂研讨 (10款抽卡¥5·奖¥100)</button>
-                            <button class="preset-pill" type="button" onclick="setEVPreset(6, 69, 1200)">案例三：良心大促 (6款奖¥1200·玩家正收益)</button>
+                            <span>真实案例代入：</span>
+                            <button class="preset-pill" type="button" onclick="setEVPreset(6, 69, 800)">案例一：¥69手办 (6款奖¥800)</button>
+                            <button class="preset-pill" type="button" onclick="setEVPreset(10, 5, 100)">案例二：课堂研讨 (10款抽卡¥5奖¥100)</button>
+                            <button class="preset-pill" type="button" onclick="setEVPreset(6, 69, 1200)">案例三：良心大促 (6款奖¥1200)</button>
                         </div>
 
-                        <div class="ev-inputs">
-                            <div class="ev-field">
-                                <label for="ev-n">盲盒总款式数：</label>
-                                <select id="ev-n" onchange="recalcEV()">
-                                    <option value="6" selected>一套 6 款 (原价6个¥414)</option>
-                                    <option value="8">一套 8 款 (原价8个¥552)</option>
-                                    <option value="10">一套 10 款 (原价10个¥690)</option>
-                                    <option value="12">一套 12 款 (原价12个¥828)</option>
-                                </select>
+                        <!-- 3 个实时滑动条 -->
+                        <div class="ev-sliders-grid">
+                            <div class="slider-control-group">
+                                <div class="slider-label-row">
+                                    <span>盲盒总款式数：</span>
+                                    <span class="slider-val-badge" id="ev-n-badge">6 款一套</span>
+                                </div>
+                                <input type="range" class="custom-range-slider" id="ev-n-slider" min="4" max="16" value="6" oninput="updateEVFromSliders()">
                             </div>
-                            <div class="ev-field">
-                                <label for="ev-price">单抽价格（元）：</label>
-                                <input type="number" id="ev-price" value="69" min="1" oninput="recalcEV()">
+
+                            <div class="slider-control-group">
+                                <div class="slider-label-row">
+                                    <span>单抽价格：</span>
+                                    <span class="slider-val-badge" id="ev-price-badge">¥ 69</span>
+                                </div>
+                                <input type="range" class="custom-range-slider" id="ev-price-slider" min="2" max="150" step="1" value="69" oninput="updateEVFromSliders()">
                             </div>
-                            <div class="ev-field">
-                                <label for="ev-reward">集齐大奖/回收价（元）：</label>
-                                <input type="number" id="ev-reward" value="800" min="0" oninput="recalcEV()">
+
+                            <div class="slider-control-group">
+                                <div class="slider-label-row">
+                                    <span>商家集齐大奖：</span>
+                                    <span class="slider-val-badge" id="ev-reward-badge" style="color: #d48806; background: rgba(247,200,75,0.2); border-color: #d48806;">¥ 800</span>
+                                </div>
+                                <input type="range" class="custom-range-slider" id="ev-reward-slider" min="20" max="2500" step="10" value="800" oninput="updateEVFromSliders()">
                             </div>
                         </div>
 
-                        <!-- 步骤详细拆解 -->
-                        <div class="ev-steps-breakdown">
-                            <span>集齐需抽：<strong id="ev-step-draws">14.7 次</strong></span>
-                            <span>预计总花费：<strong id="ev-step-cost">¥1,014.30</strong></span>
-                            <span>商家奖励：<strong id="ev-step-reward">+¥300.00</strong></span>
+                        <!-- 成本与大奖对比面板 (最低成本 vs 预计总花费 vs 商家大奖) -->
+                        <div class="cost-breakdown-panel">
+                            <div class="cost-stat-item">
+                                <div class="cost-stat-title">
+                                    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--leaf);"></span>
+                                    欧皇最低门槛 (0重复)
+                                </div>
+                                <div class="cost-stat-num min-cost" id="ev-min-cost-display">¥ 414</div>
+                                <small style="font-size:0.68rem;color:var(--muted-ink);" id="ev-min-draws-sub">买齐 6 个无重复</small>
+                            </div>
+
+                            <div class="cost-stat-item" style="border-left: 1px dashed var(--soft-line); border-right: 1px dashed var(--soft-line);">
+                                <div class="cost-stat-title">
+                                    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--sky-deep);"></span>
+                                    数学期望总花费 (平均抽齐)
+                                </div>
+                                <div class="cost-stat-num exp-cost" id="ev-exp-cost-display">¥ 1,014.30</div>
+                                <small style="font-size:0.68rem;color:var(--muted-ink);" id="ev-exp-draws-sub">平均需抽 14.7 次</small>
+                            </div>
+
+                            <div class="cost-stat-item">
+                                <div class="cost-stat-title">
+                                    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#d48806;"></span>
+                                    商家宣称大奖
+                                </div>
+                                <div class="cost-stat-num prize-cost" id="ev-prize-display">¥ 800.00</div>
+                                <small style="font-size:0.68rem;color:var(--muted-ink);">集齐全套发放</small>
+                            </div>
                         </div>
 
+                        <!-- 最终净盈亏大徽章 -->
                         <div class="ev-result-badge negative" id="ev-badge">
-                            <div style="font-size: 0.82rem; font-weight: 700;">玩家平均每轮净盈亏：</div>
-                            <div class="ev-result-val" id="ev-val">- ¥ 714.30</div>
-                            <small id="ev-tip" style="color: var(--muted-ink); font-size: 0.75rem;">平均每玩一轮净亏损 714.3 元！</small>
+                            <div style="font-size: 0.82rem; font-weight: 700;">玩家平均每轮期望净盈亏：</div>
+                            <div class="ev-result-val" id="ev-val">- ¥ 214.30</div>
+                            <small id="ev-tip" style="color: var(--muted-ink); font-size: 0.75rem;">看似奖金高于全套原价 (¥414)，但因重复抽盒平均需花 ¥1014.3，最终净亏 ¥214.3！商家稳赚。</small>
                         </div>
                     </div>
 
