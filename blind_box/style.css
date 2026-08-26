@@ -1231,19 +1231,21 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 
 .fl-knob-control-wrap {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: center;
     gap: 0.35rem;
     position: relative;
+    padding-bottom: 2px;
 }
 
 .fl-knob-limit-label {
-    font-size: 0.64rem;
+    font-size: 0.62rem;
     font-weight: 800;
     color: var(--muted-ink);
     opacity: 0.75;
     user-select: none;
     white-space: nowrap;
+    margin-bottom: 2px;
 }
 
 .fl-knob-dial {
