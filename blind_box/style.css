@@ -538,7 +538,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 }
 
 .foil-pouch::before {
-    content: "POPMART";
+    content: "POPMATH";
     position: absolute;
     top: 3px;
     font-size: 0.42rem;
