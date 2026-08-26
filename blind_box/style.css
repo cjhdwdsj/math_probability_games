@@ -1566,6 +1566,8 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    min-height: 68px;
+    box-sizing: border-box;
     transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
@@ -1574,10 +1576,20 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     box-shadow: 0 3px 8px rgba(47, 42, 37, 0.08);
 }
 
+.slider-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.25rem;
+    white-space: nowrap;
+    line-height: 1.2;
+}
+
 .ev-slider-title {
     font-size: 0.72rem;
     font-weight: 800;
     color: var(--muted-ink);
+    white-space: nowrap;
 }
 
 .ev-card-val-wrap {

@@ -1580,8 +1580,8 @@ function updateEVFromSliders() {
     const recFull = getRecFullPrice(N, pBox);
     const recSingleBtn = document.getElementById("ev-rec-single-btn");
     const recFullBtn = document.getElementById("ev-rec-full-btn");
-    if (recSingleBtn) recSingleBtn.textContent = `💡 建议 ¥${recSingle}`;
-    if (recFullBtn) recFullBtn.textContent = `💡 建议 ¥${recFull}`;
+    if (recSingleBtn) recSingleBtn.textContent = `建议 ¥${recSingle}`;
+    if (recFullBtn) recFullBtn.textContent = `建议 ¥${recFull}`;
 
     // 1. 构建所有策略列表
     const strategies = [];
