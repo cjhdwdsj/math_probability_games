@@ -179,6 +179,13 @@ function goToPage(pageIndex) {
     }
 }
 
+let returnToSummary = false;
+
+function jumpFromSummary(pageIdx) {
+    returnToSummary = true;
+    goToPage(pageIdx);
+}
+
 function nextPage() {
     if (currentPage < TOTAL_PAGES - 1) {
         goToPage(currentPage + 1);
@@ -199,7 +206,23 @@ function updateNavigation() {
     const btnNext = document.getElementById("btn-next");
     if (!btnPrev || !btnNext) return;
 
-    btnPrev.disabled = (currentPage === 0);
+    if (currentPage === 8) {
+        returnToSummary = false;
+    }
+
+    if (returnToSummary && currentPage !== 8) {
+        btnPrev.disabled = false;
+        btnPrev.innerHTML = '<span aria-hidden="true">←</span> 回到总结页';
+        btnPrev.onclick = () => {
+            returnToSummary = false;
+            goToPage(8);
+        };
+    } else {
+        btnPrev.disabled = (currentPage === 0);
+        btnPrev.innerHTML = '<span aria-hidden="true">←</span> 上一步';
+        btnPrev.onclick = prevPage;
+    }
+
     btnNext.disabled = false;
     btnNext.className = "btn btn-primary";
 
