@@ -1632,7 +1632,7 @@ function updateEVFromSliders() {
 
         let barSegmentsHtml = "";
         if (s.isWarningYellow) {
-            barSegmentsHtml = `<div class="ev-bar-seg warning-yellow" style="width: 100%;">⚠️ 一口价 ¥${s.totalCost.toFixed(0)} (单买${N}只仅¥${s.singleAllCost.toFixed(0)})</div>`;
+            barSegmentsHtml = `<div class="ev-bar-seg warning-yellow" style="width: 100%;">一口价 ¥${s.totalCost.toFixed(0)}（单买${N}个仅需 ¥${s.singleAllCost.toFixed(0)}）</div>`;
         } else if (s.isPurple) {
             barSegmentsHtml = `<div class="ev-bar-seg purple" style="width: 100%;">一口价 ¥${s.totalCost.toFixed(0)}</div>`;
         } else {
@@ -1647,7 +1647,7 @@ function updateEVFromSliders() {
         row.innerHTML = `
             <div class="ev-row-label">
                 <span class="ev-strategy-name">${s.name}</span>
-                ${s.isOverpriced ? '<span class="ev-warn-pill">⚠️ 智商税</span>' : ''}
+                ${s.isOverpriced ? `<span class="ev-warn-pill">不如单买 ${N} 个</span>` : ''}
                 ${isBest ? '<span class="ev-best-badge">🏆 最优解</span>' : ''}
             </div>
             <div class="ev-bar-track">
@@ -1675,7 +1675,7 @@ function updateEVFromSliders() {
         }
 
         if (isOverpricedFull) {
-            calloutHtml += `<br><span style="color:#f7c84b;font-size:0.71rem;">⚠️ <strong>小心机警示</strong>：当前全套打包一口价 (¥${pFull}) 竟然比分别单买 ${N} 只确认款 (¥${singleAllCost.toFixed(0)}) 还要贵 ¥${(pFull - singleAllCost).toFixed(0)}！全套被严重恶意炒高，若要纯走二手渠道请直接单买。</span>`;
+            calloutHtml += `<br><span style="color:#f7c84b;font-size:0.71rem;">💡 <strong>价格提示</strong>：当前全套打包一口价 (¥${pFull}) 高于分别单买 ${N} 个确认款的总价 (¥${singleAllCost.toFixed(0)})，若想纯走二手渠道，建议直接单买 ${N} 个更划算（省 ¥${(pFull - singleAllCost).toFixed(0)}）。</span>`;
         }
 
         summaryElem.innerHTML = calloutHtml;
