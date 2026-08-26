@@ -1371,26 +1371,39 @@ function updateSSRVisual() {
         noteElem.innerHTML = `💡 达成 <strong>${(P * 100).toFixed(0)}% 把握</strong>需要买整整 <strong>${neededDraws} 袋</strong>。此时普通 ${nVal} 款早已全部集齐，桌上已产生 <strong>${neededDraws - 1} 个</strong> 普通款重复立牌！`;
     }
 
-    // 动态渲染环绕普通款立牌蜂群
+    // 动态渲染层层包裹的普通款立牌茧
     const swarmContainer = document.getElementById("ssr-orbit-swarm");
     if (swarmContainer) {
         swarmContainer.innerHTML = "";
-        const swarmCount = Math.min(20, Math.max(8, Math.round(neededDraws / 10)));
-        const radius = 72;
+        
+        // 真实显示数量：根据 neededDraws 动态铺满多层同心圆（上限设为 180 个以保持最佳性能与视觉清晰度）
+        const displayCount = Math.min(neededDraws, 180);
+        const fragment = document.createDocumentFragment();
+        
+        const minR = 28;  // 内层贴近黄金核心
+        const maxR = 112; // 外层延伸到舞台边缘
+        const goldenAngle = 2.399963229728653; // 137.507764度 黄金角分布，自然密铺
 
-        for (let i = 0; i < swarmCount; i++) {
-            const theta = (i / swarmCount) * Math.PI * 2 - Math.PI / 2;
-            const x = Math.round(radius * Math.cos(theta));
-            const y = Math.round(radius * Math.sin(theta));
+        for (let i = 0; i < displayCount; i++) {
+            const norm = Math.sqrt((i + 1) / displayCount); // 均匀面积密度
+            const r = minR + norm * (maxR - minR);
+            const theta = i * goldenAngle;
 
+            const x = Math.round(r * Math.cos(theta));
+            const y = Math.round(r * Math.sin(theta));
+
+            // 外层的动物头尺寸逐渐缩小 (从 1.05x 递减到 0.62x)，保证层层递进包裹感且全部清晰可见
+            const scale = (1.05 - norm * 0.42).toFixed(2);
             const char = ALL_CHARACTERS[i % nVal] || ALL_CHARACTERS[0];
-            const item = document.createElement("div");
-            item.className = "ssr-orbit-item";
-            item.style.transform = `translate(${x}px, ${y}px)`;
-            item.title = `普通款: ${char.name}`;
+
+            const item = document.createElement("span");
+            item.className = "ssr-cocoon-item";
+            item.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
             item.textContent = char.icon;
-            swarmContainer.appendChild(item);
+            item.title = `第 ${i + 1} 抽: ${char.name}`;
+            fragment.appendChild(item);
         }
+        swarmContainer.appendChild(fragment);
     }
 }
 
