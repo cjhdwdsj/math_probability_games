@@ -284,6 +284,7 @@ function startTabletopGame() {
 // 4. 第 2 页：拟真桌面拆盒台
 // ========================
 function initTabletopScene(count = 14) {
+    hasCelebratedSlam = false;
     tableState.boughtCount = count;
     tableState.openedCount = 0;
     tableState.collectedMap = {};
@@ -567,7 +568,7 @@ function completeUnboxingPouch() {
         setTimeout(() => shelfSlot.classList.remove("just-popped"), 500);
     }
 
-    // 6款全齐，解锁胜利结算
+    // 6款全齐，解锁胜利结算并触发6款顺次闪烁一遍金光波
     if (uniqueCount >= 6) {
         const winBtn = document.getElementById("btn-victory-settle");
         if (winBtn) {
@@ -575,8 +576,28 @@ function completeUnboxingPouch() {
             winBtn.textContent = "全部集齐！立即胜利结算 →";
             winBtn.className = "btn btn-gold btn-sm";
         }
+        triggerGrandSlamFlash();
     }
     updateNavigation();
+}
+
+let hasCelebratedSlam = false;
+
+function triggerGrandSlamFlash() {
+    if (hasCelebratedSlam) return;
+    hasCelebratedSlam = true;
+
+    CHARACTERS.forEach((char, index) => {
+        setTimeout(() => {
+            const slot = document.getElementById(`shelf-slot-${char.id}`);
+            if (slot) {
+                slot.classList.remove("grand-slam-flash");
+                void slot.offsetWidth;
+                slot.classList.add("grand-slam-flash");
+                setTimeout(() => slot.classList.remove("grand-slam-flash"), 600);
+            }
+        }, index * 120);
+    });
 }
 
 // ========================

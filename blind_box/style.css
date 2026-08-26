@@ -675,6 +675,30 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     animation: standeePop 0.5s var(--ease-bounce);
 }
 
+.standee-slot.grand-slam-flash {
+    animation: slamWaveFlash 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    z-index: 5;
+}
+
+@keyframes slamWaveFlash {
+    0% {
+        transform: scale(1);
+        box-shadow: 2px 2px 0 var(--soft-line);
+        background: #fff;
+    }
+    45% {
+        transform: scale(1.22);
+        box-shadow: 0 0 22px rgba(255, 211, 105, 0.95), 0 0 35px rgba(243, 156, 18, 0.7);
+        border-color: #fa983a;
+        background: #fff8db;
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 2px 2px 0 var(--soft-line);
+        background: #fff;
+    }
+}
+
 @keyframes standeePop {
     0% { transform: scale(0.7); background: var(--sun); }
     50% { transform: scale(1.18); background: var(--sun); }
