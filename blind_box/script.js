@@ -495,18 +495,20 @@ function runMonteCarloSim() {
     document.getElementById("sim-min-result").textContent = minDraws;
     document.getElementById("sim-max-result").textContent = maxDraws;
 
-    const bucketMax = Math.min(maxDraws, Math.max(36, N * 4));
-    const bins = new Array(bucketMax + 1).fill(0);
+    const sorted = results.slice().sort((a, b) => a - b);
+    const p99 = sorted[Math.floor(trials * 0.995)];
+    const bucketMax = Math.min(maxDraws, Math.max(p99, Math.ceil(theoryMean * 2.2)));
+
+    const bins = new Array(maxDraws + 1).fill(0);
     for (let i = 0; i < results.length; i++) {
-        const val = results[i];
-        if (val <= bucketMax) {
-            bins[val]++;
-        } else {
-            bins[bucketMax]++;
-        }
+        bins[results[i]]++;
     }
 
-    const maxFrequency = Math.max(...bins);
+    let maxFrequency = 0;
+    for (let d = N; d <= bucketMax; d++) {
+        if (bins[d] > maxFrequency) maxFrequency = bins[d];
+    }
+    if (maxFrequency === 0) maxFrequency = 1;
 
     simCache = {
         results,
@@ -525,13 +527,12 @@ function runMonteCarloSim() {
     // 触发平滑生长动画
     if (animFrameId) cancelAnimationFrame(animFrameId);
     let startTime = null;
-    const duration = 320;
+    const duration = 300;
 
     function animateChart(timestamp) {
         if (!startTime) startTime = timestamp;
         const elapsed = timestamp - startTime;
         const progress = Math.min(1, elapsed / duration);
-        // ease-out cubic
         const ease = 1 - Math.pow(1 - progress, 3);
         renderHistogram(ease);
 
@@ -564,7 +565,7 @@ function renderHistogram(progress = 1) {
 
     const { N, theoryMean, simMean, bucketMax, bins, maxFrequency, trials } = simCache;
 
-    const paddingLeft = 46;
+    const paddingLeft = 44;
     const paddingBottom = 26;
     const paddingTop = 20;
     const paddingRight = 20;
@@ -575,7 +576,7 @@ function renderHistogram(progress = 1) {
     const startX = N;
     const totalBins = bucketMax - startX + 1;
     const binStep = plotWidth / totalBins;
-    const barWidth = Math.max(3, binStep - 2);
+    const barWidth = Math.max(1.5, binStep - 1);
 
     simCache.layout = { N, bucketMax, plotWidth, paddingLeft, totalBins };
 
@@ -618,12 +619,12 @@ function renderHistogram(progress = 1) {
 
         curvePoints.push({ x: x + barWidth / 2, y });
 
-        // 颜色渐变
+        // 颜色渐变：欧皇金 -> 正常蓝 -> 非酋紫
         const grad = ctx.createLinearGradient(x, y, x, cssHeight - paddingBottom);
-        if (d <= N + 2) {
+        if (d <= N + Math.max(2, Math.floor(N * 0.3))) {
             grad.addColorStop(0, "#f7c84b"); // 欧皇金
             grad.addColorStop(1, "#f39c12");
-        } else if (d > theoryMean * 1.35) {
+        } else if (d > theoryMean * 1.3) {
             grad.addColorStop(0, "#b388ff"); // 非酋紫
             grad.addColorStop(1, "#7c4dff");
         } else {
@@ -632,20 +633,20 @@ function renderHistogram(progress = 1) {
         }
 
         ctx.fillStyle = grad;
-        drawRoundedRect(ctx, x, y, barWidth, barH, Math.min(4, barWidth / 2));
+        drawRoundedRect(ctx, x, y, barWidth, barH, Math.min(3, barWidth / 2));
         ctx.fill();
 
         // 鼠标悬停高亮外边框
         if (hoveredBinIndex === d) {
             ctx.strokeStyle = "#2f2a25";
             ctx.lineWidth = 2;
-            drawRoundedRect(ctx, x - 1, y - 1, barWidth + 2, barH + 1, Math.min(4, barWidth / 2));
+            drawRoundedRect(ctx, x - 1, y - 1, barWidth + 2, barH + 1, Math.min(3, barWidth / 2));
             ctx.stroke();
         }
     }
 
     // 3. 绘制平滑拟合趋势曲线 (KDE Curve)
-    if (curvePoints.length > 2 && progress >= 0.8) {
+    if (curvePoints.length > 2 && progress >= 0.7) {
         ctx.beginPath();
         ctx.moveTo(curvePoints[0].x, curvePoints[0].y);
         for (let i = 0; i < curvePoints.length - 1; i++) {
@@ -654,7 +655,7 @@ function renderHistogram(progress = 1) {
             ctx.quadraticCurveTo(curvePoints[i].x, curvePoints[i].y, xc, yc);
         }
         ctx.strokeStyle = "rgba(47, 42, 37, 0.75)";
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 1.8;
         ctx.stroke();
     }
 
@@ -670,11 +671,10 @@ function renderHistogram(progress = 1) {
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // 标牌
         ctx.fillStyle = "#e96e56";
         ctx.font = "bold 10px sans-serif";
         ctx.textAlign = "left";
-        ctx.fillText(`理论期望 E = ${theoryMean.toFixed(1)}次`, theoryX + 4, paddingTop + 8);
+        ctx.fillText(`理论平均 ${theoryMean.toFixed(1)}次`, theoryX + 4, paddingTop + 8);
     }
 
     // 5. 坐标轴与刻度
@@ -686,20 +686,23 @@ function renderHistogram(progress = 1) {
     ctx.lineTo(cssWidth - paddingRight, cssHeight - paddingBottom);
     ctx.stroke();
 
-    // X 轴刻度标签
+    // 动态生成 6 个均匀漂亮的 X 轴刻度
     ctx.fillStyle = "#6e665e";
     ctx.font = "10px sans-serif";
     ctx.textAlign = "center";
 
-    const tickSteps = [N, 10, 15, 20, 25, 30, 35].filter(v => v >= N && v <= bucketMax);
-    tickSteps.forEach(tickVal => {
+    const tickCount = 6;
+    const stepSize = Math.max(1, Math.round((bucketMax - startX) / (tickCount - 1)));
+    const ticks = [];
+    for (let i = 0; i < tickCount; i++) {
+        const val = (i === 0) ? startX : (i === tickCount - 1 ? bucketMax : startX + i * stepSize);
+        if (!ticks.includes(val) && val <= bucketMax) ticks.push(val);
+    }
+
+    ticks.forEach(tickVal => {
         const tickX = paddingLeft + (tickVal - startX) * binStep + binStep / 2;
         ctx.fillText(`${tickVal}次`, tickX, cssHeight - 8);
     });
-
-    if (!tickSteps.includes(bucketMax)) {
-        ctx.fillText(`${bucketMax}+次`, cssWidth - paddingRight - 15, cssHeight - 8);
-    }
 }
 
 function drawRoundedRect(ctx, x, y, width, height, radius) {
