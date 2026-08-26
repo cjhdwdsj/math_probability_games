@@ -1508,12 +1508,31 @@ function setupKnobControl(dialId, minIdx, maxIdx, initialIdx, onChange) {
     });
 }
 
+const emojiSpriteCache = {};
+
+function getEmojiSprite(icon) {
+    if (emojiSpriteCache[icon]) return emojiSpriteCache[icon];
+
+    const size = 64;
+    const offCanvas = document.createElement("canvas");
+    offCanvas.width = size;
+    offCanvas.height = size;
+    const offCtx = offCanvas.getContext("2d");
+
+    offCtx.textAlign = "center";
+    offCtx.textBaseline = "middle";
+    offCtx.font = "46px 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif";
+    offCtx.fillText(icon, size / 2, size / 2 + 2);
+
+    emojiSpriteCache[icon] = offCanvas;
+    return offCanvas;
+}
+
 function updateSSRVisual(isImmediate = false) {
     const nVal = SSR_N_OPTS[ssrKnobState.nIdx];
     const rateInfo = SSR_RATE_OPTS[ssrKnobState.rateIdx];
     const probInfo = SSR_PROB_OPTS[ssrKnobState.probIdx];
 
-    // 1. 旋钮角度与文本胶囊：立刻更新（划归划，绝对丝滑 0 延迟）
     const dialN = document.getElementById("fl-dial-n");
     const dialRate = document.getElementById("fl-dial-rate");
     const dialProb = document.getElementById("fl-dial-prob");
@@ -1539,41 +1558,30 @@ function updateSSRVisual(isImmediate = false) {
     if (pillRate) pillRate.textContent = `${rateInfo.label}`;
     if (pillProb) pillProb.textContent = `${probInfo.label}`;
 
-    // 2. 异步防抖计算与海量立牌重绘（算归算）
-    if (ssrDebounceTimer) clearTimeout(ssrDebounceTimer);
+    const K = rateInfo.denom;
+    const P = probInfo.pct;
 
-    const performUpdate = () => {
-        const K = rateInfo.denom;
-        const P = probInfo.pct;
+    const neededDraws = calculateFullSetDraws(P, nVal, K);
+    const totalCost = neededDraws * PRICE_PER_BOX;
 
-        const neededDraws = calculateFullSetDraws(P, nVal, K);
-        const totalCost = neededDraws * PRICE_PER_BOX;
+    const drawsElem = document.getElementById("verdict-draws-num");
+    const costElem = document.getElementById("verdict-cost-num");
+    const noteElem = document.getElementById("verdict-note-box");
 
-        const drawsElem = document.getElementById("verdict-draws-num");
-        const costElem = document.getElementById("verdict-cost-num");
-        const noteElem = document.getElementById("verdict-note-box");
+    if (drawsElem) drawsElem.textContent = `${neededDraws} 袋`;
+    if (costElem) costElem.textContent = `¥ ${totalCost.toLocaleString()}`;
 
-        if (drawsElem) drawsElem.textContent = `${neededDraws} 袋`;
-        if (costElem) costElem.textContent = `¥ ${totalCost.toLocaleString()}`;
+    const duplicateCount = Math.max(0, neededDraws - 1 - nVal);
 
-        const duplicateCount = Math.max(0, neededDraws - 1 - nVal);
-
-        if (noteElem) {
-            if (P <= 0.20) {
-                noteElem.innerHTML = `💡 <strong>欧皇速通！</strong>达成 <strong>${(P * 100).toFixed(0)}% 把握</strong> 集齐<strong>全套 ${nVal} 款普通款 + 1 款隐藏款</strong>（共 ${nVal + 1} 款大满贯），需购买 <strong>${neededDraws} 袋</strong>。产生 <strong>${duplicateCount} 个</strong> 普通款重复立牌。`;
-            } else {
-                noteElem.innerHTML = `💡 达成 <strong>${(P * 100).toFixed(0)}% 把握</strong> 集齐<strong>全套 ${nVal} 款普通款 + 1 款隐藏款</strong>（共 ${nVal + 1} 款大满贯），需购买整整 <strong>${neededDraws} 袋</strong>。为了这 1 只隐藏款，桌上堆满了 <strong>${duplicateCount} 个</strong> 普通款重复立牌！`;
-            }
+    if (noteElem) {
+        if (P <= 0.20) {
+            noteElem.innerHTML = `💡 <strong>欧皇速通！</strong>达成 <strong>${(P * 100).toFixed(0)}% 把握</strong> 集齐<strong>全套 ${nVal} 款普通款 + 1 款隐藏款</strong>（共 ${nVal + 1} 款大满贯），需购买 <strong>${neededDraws} 袋</strong>。产生 <strong>${duplicateCount} 个</strong> 普通款重复立牌。`;
+        } else {
+            noteElem.innerHTML = `💡 达成 <strong>${(P * 100).toFixed(0)}% 把握</strong> 集齐<strong>全套 ${nVal} 款普通款 + 1 款隐藏款</strong>（共 ${nVal + 1} 款大满贯），需购买整整 <strong>${neededDraws} 袋</strong>。为了这 1 只隐藏款，桌上堆满了 <strong>${duplicateCount} 个</strong> 普通款重复立牌！`;
         }
-
-        renderSSRSwarm(neededDraws, nVal);
-    };
-
-    if (isImmediate) {
-        performUpdate();
-    } else {
-        ssrDebounceTimer = setTimeout(performUpdate, 40);
     }
+
+    renderSSRSwarm(neededDraws, nVal);
 }
 
 function renderSSRSwarm(neededDraws, nVal) {
@@ -1595,31 +1603,23 @@ function renderSSRSwarm(neededDraws, nVal) {
     const centerX = cssWidth / 2;
     const centerY = cssHeight / 2;
 
-    const displayCount = neededDraws;
-    const minR = 52;  // 内层贴近黄金核心立牌边缘 (半宽约 50px)
+    // 视觉粒子数上限：220 个粒子在 114px 半径内已达到 100% 视觉饱和满铺，彻底消灭过度绘制
+    const displayCount = Math.min(neededDraws, 220);
+    const minR = 52;  // 内层贴近黄金核心立牌边缘
     const maxR = 114; // 外层延伸到圆环边缘
     const goldenAngle = 2.399963229728653; // 137.507764度 黄金角分布
 
-    // 基础自适应字号曲线：
-    let baseFontSize;
-    if (displayCount <= 40) {
-        baseFontSize = 18;
-    } else if (displayCount <= 120) {
-        baseFontSize = 18 - ((displayCount - 40) / 80) * 4;
-    } else if (displayCount <= 300) {
-        baseFontSize = 14 - ((displayCount - 120) / 180) * 3.5;
-    } else if (displayCount <= 800) {
-        baseFontSize = 10.5 - ((displayCount - 300) / 500) * 3.5;
+    // 基础自适应字号
+    let baseSize;
+    if (neededDraws <= 40) {
+        baseSize = 22;
+    } else if (neededDraws <= 120) {
+        baseSize = 22 - ((neededDraws - 40) / 80) * 5; // 22 -> 17px
+    } else if (neededDraws <= 300) {
+        baseSize = 17 - ((neededDraws - 120) / 180) * 4; // 17 -> 13px
     } else {
-        baseFontSize = Math.max(4.5, 7 - ((displayCount - 800) / 800) * 2.5);
+        baseSize = Math.max(8, 13 - ((neededDraws - 300) / 700) * 4.5); // 13 -> 8.5px
     }
-    baseFontSize = Math.round(baseFontSize * 10) / 10;
-
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.shadowColor = "rgba(0, 0, 0, 0.16)";
-    ctx.shadowBlur = 2;
-    ctx.shadowOffsetY = 1;
 
     for (let i = 0; i < displayCount; i++) {
         let char;
@@ -1638,12 +1638,12 @@ function renderSSRSwarm(neededDraws, nVal) {
         const x = centerX + r * Math.cos(theta);
         const y = centerY + r * Math.sin(theta);
 
-        // 从内到外严格呈现“由大到小”的明显层级衰减 (内层 1.35x 放大 -> 外层 0.65x 密集微缩)
-        const scale = 1.35 - norm * 0.70;
-        const fontSize = Math.max(4, Math.round(baseFontSize * scale * 10) / 10);
+        // 从内到外由大到小：内层 1.40x，外层 0.60x
+        const scale = 1.40 - norm * 0.80;
+        const itemSize = Math.max(6, Math.round(baseSize * scale));
 
-        ctx.font = `${fontSize}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif`;
-        ctx.fillText(char.icon, x, y);
+        const sprite = getEmojiSprite(char.icon);
+        ctx.drawImage(sprite, x - itemSize / 2, y - itemSize / 2, itemSize, itemSize);
     }
 }
 
