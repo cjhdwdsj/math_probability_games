@@ -268,26 +268,29 @@ h2 { font-size: clamp(1.55rem, 3vw, 2.3rem); line-height: 1.25; margin-top: 0.28
 .rule-seat.rolling { background: #fff3bd; box-shadow: 0 0 0 4px rgba(247, 200, 75, 0.72); animation: rule-roll 150ms var(--ease-out) both; }
 
 /* Rules introduction */
-.card-rules { max-width: 53rem; text-align: center; }
-.rule-flow { display: grid; justify-items: center; max-width: 43rem; margin: 0.55rem auto 0.35rem; }
-.flow-node, .flow-branch { width: min(100%, 30rem); padding: 0.38rem 0.65rem; border: 1.5px solid rgba(47, 42, 37, 0.32); border-radius: 0.68rem; background: #f7f1e6; color: var(--muted-ink); text-align: center; transition: background-color 180ms var(--ease-out), border-color 180ms var(--ease-out), box-shadow 180ms var(--ease-out), transform 180ms var(--ease-out); }
-.flow-node strong, .flow-branch strong { display: block; color: var(--ink); font-size: 0.82rem; }
-.flow-node small { display: block; margin-top: 0.1rem; font-size: 0.71rem; line-height: 1.35; }
-.flow-tag, .branch-label { display: inline-block; margin-bottom: 0.12rem; padding: 0.08rem 0.38rem; border-radius: 1rem; background: rgba(47, 42, 37, 0.1); color: var(--muted-ink); font-size: 0.64rem; font-weight: 700; }
-.flow-arrow { height: 0.72rem; color: rgba(47, 42, 37, 0.55); font-size: 1rem; line-height: 0.72rem; }
-.flow-split { display: grid; grid-template-columns: 1fr 1fr; width: min(100%, 34rem); margin: -0.08rem 0 -0.18rem; color: rgba(47, 42, 37, 0.58); font-size: 1.08rem; line-height: 1; }
-.flow-split span:first-child { justify-self: end; margin-right: 4.4rem; }
-.flow-split span:last-child { justify-self: start; margin-left: 4.4rem; }
-.flow-branches { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; width: min(100%, 42rem); }
-.flow-branch { width: auto; min-height: 3.2rem; display: grid; align-content: center; padding: 0.35rem 0.45rem; }
-.flow-branch strong { font-size: 0.75rem; line-height: 1.35; }
-.flow-node.is-active, .flow-branch.is-active { border-color: var(--ink); background: #fff4bd; box-shadow: 0 0 0 4px rgba(247, 200, 75, 0.48); color: var(--ink); transform: translateY(-0.08rem); }
+.card-rules { max-width: 53rem; padding: clamp(0.7rem, 1.8vh, 1.15rem) clamp(0.9rem, 2.2vw, 1.6rem); text-align: center; }
+.card-rules h2 { font-size: clamp(1.35rem, 2.5vw, 1.9rem); }
+.card-rules .lead { max-width: 46rem; margin: 0.3rem auto 0; font-size: clamp(0.76rem, 1.45vw, 0.9rem); line-height: 1.45; }
+.rule-flow { display: grid; justify-items: center; max-width: 39rem; margin: 0.35rem auto 0.22rem; }
+.flow-node, .flow-branch { width: min(100%, 28rem); padding: 0.23rem 0.48rem; border: 1.5px solid rgba(47, 42, 37, 0.32); border-radius: 0.6rem; background: #f7f1e6; color: var(--muted-ink); text-align: center; transition: background-color 180ms var(--ease-out), border-color 180ms var(--ease-out), box-shadow 180ms var(--ease-out), transform 180ms var(--ease-out); }
+.flow-node strong, .flow-branch strong { display: block; color: var(--ink); font-size: 0.76rem; }
+.flow-node small { display: block; margin-top: 0.04rem; font-size: 0.64rem; line-height: 1.25; }
+.flow-tag, .branch-label { display: inline-block; margin-bottom: 0.04rem; padding: 0.04rem 0.3rem; border-radius: 1rem; background: rgba(47, 42, 37, 0.1); color: var(--muted-ink); font-size: 0.58rem; font-weight: 700; }
+.flow-arrow { height: 0.5rem; color: rgba(47, 42, 37, 0.55); font-size: 0.86rem; line-height: 0.5rem; }
+.flow-split { display: grid; grid-template-columns: 1fr 1fr; width: min(100%, 30rem); margin: -0.12rem 0 -0.23rem; color: rgba(47, 42, 37, 0.58); font-size: 0.88rem; line-height: 1; }
+.flow-split span:first-child { justify-self: end; margin-right: 3.9rem; }
+.flow-split span:last-child { justify-self: start; margin-left: 3.9rem; }
+.flow-branches { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.36rem; width: min(100%, 39rem); }
+.flow-branch { width: auto; min-height: 2.55rem; display: grid; align-content: center; padding: 0.25rem 0.35rem; }
+.flow-branch strong { font-size: 0.68rem; line-height: 1.2; }
+.flow-node.is-active, .flow-branch.is-active { border-color: var(--ink); background: #fff4bd; box-shadow: 0 0 0 3px rgba(247, 200, 75, 0.48); color: var(--ink); transform: translateY(-0.05rem); }
 .flow-node.is-active .flow-tag, .flow-branch.is-active .branch-label { background: var(--sun); color: var(--ink); }
-.rule-flow-hint { margin: 0 auto 0.35rem; color: var(--sky-deep); font-size: 0.72rem; font-weight: 700; }
-.rules-seat-row { display: flex; justify-content: center; gap: 0.55rem; margin: 0.45rem 0; }
-.rules-animation-area { min-height: 4.85rem; max-width: 43rem; margin: 0 auto; padding: 0.58rem 0.75rem; overflow: hidden; border: 1.5px dashed rgba(47, 42, 37, 0.32); border-radius: 0.75rem; background: linear-gradient(90deg, rgba(90, 171, 217, 0.06) 1px, transparent 1px) 0 0 / 1.2rem 1.2rem, #f7f1e6; text-align: left; }
-.rules-animation-area .animation-text { min-height: 0; margin-bottom: 0; }
-.rules-note { max-width: 45rem; margin: 0.55rem auto 0; color: var(--muted-ink); font-size: 0.72rem; line-height: 1.45; }
+.rule-flow-hint, .rules-note { display: none; }
+.rules-seat-row { display: flex; justify-content: center; gap: 0.45rem; margin: 0.28rem 0; }
+.rules-animation-area { min-height: 3.55rem; max-width: 43rem; margin: 0 auto; padding: 0.38rem 0.58rem; overflow: hidden; border: 1.5px dashed rgba(47, 42, 37, 0.32); border-radius: 0.65rem; background: linear-gradient(90deg, rgba(90, 171, 217, 0.06) 1px, transparent 1px) 0 0 / 1.2rem 1.2rem, #f7f1e6; text-align: left; }
+.rules-animation-area .animation-text { min-height: 0; margin-bottom: 0; font-size: 0.74rem; line-height: 1.35; }
+.rules-controls { margin-top: 0.42rem; }
+.rules-controls .btn { padding: 0.42rem 0.68rem; font-size: 0.76rem; }
 
 .card-n2, .card-n3, .card-pattern { max-width: 48rem; text-align: center; }
 .n2-choice-guide { margin: 0.3rem 0 0; color: var(--muted-ink); font-size: 0.81rem; }
@@ -509,6 +512,17 @@ h2 { font-size: clamp(1.55rem, 3vw, 2.3rem); line-height: 1.25; margin-top: 0.28
 @media (max-height: 660px) and (min-width: 701px) {
     .lesson-app { grid-template-rows: 3.55rem minmax(0, 1fr) 3.9rem; }
     .lesson-card { padding: 0.85rem 1.5rem; }
+    .card-rules { padding: 0.52rem 1rem; }
+    .card-rules .lead { font-size: 0.7rem; line-height: 1.32; }
+    .rule-flow { margin: 0.22rem auto 0.12rem; }
+    .flow-node, .flow-branch { padding: 0.16rem 0.38rem; }
+    .flow-node small { font-size: 0.58rem; }
+    .flow-arrow { height: 0.36rem; line-height: 0.36rem; }
+    .flow-branch { min-height: 2.2rem; }
+    .rules-seat-row { margin: 0.2rem 0; }
+    .rules-animation-area { min-height: 3rem; padding: 0.28rem 0.48rem; }
+    .rules-controls { margin-top: 0.28rem; }
+    .rules-controls .btn { padding: 0.34rem 0.55rem; }
     .cover-icon, .summary-icon { font-size: 2.2rem; }
     .cover-subtitle { margin: 0.35rem auto 0.6rem; }
     .rule-list { margin-bottom: 0.55rem; }
