@@ -1600,10 +1600,10 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 
 .ev-row {
     display: grid;
-    grid-template-columns: 145px 1fr 68px;
+    grid-template-columns: 185px 1fr 65px;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.15rem 0.35rem;
+    padding: 0.2rem 0.4rem;
     border-radius: 6px;
     transition: background 0.15s ease;
 }
@@ -1620,9 +1620,14 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 .ev-row-label {
     display: flex;
     align-items: center;
-    gap: 0.3rem;
-    font-size: 0.73rem;
+    justify-content: space-between;
+    gap: 0.35rem;
+    font-size: 0.74rem;
     font-weight: 800;
+    white-space: nowrap;
+}
+
+.ev-strategy-name {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1635,6 +1640,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     font-weight: 900;
     padding: 1px 5px;
     border-radius: 4px;
+    flex-shrink: 0;
     animation: bestPulse 2s infinite ease-in-out;
 }
 

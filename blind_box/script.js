@@ -1556,7 +1556,7 @@ function updateEVFromSliders() {
         // 单买 N 只更便宜：直接显示橙色的单买 N 个策略
         strategies.push({
             type: "used_singles",
-            name: `【纯二手】单买 ${N} 个`,
+            name: `二手单买 ${N} 款`,
             blindDraws: 0,
             blindCost: 0,
             usedCost: singleAllCost,
@@ -1568,7 +1568,7 @@ function updateEVFromSliders() {
         // 打包一口价更便宜：显示紫色的全套打包策略
         strategies.push({
             type: "used_full",
-            name: "【纯二手】全套打包",
+            name: "二手全套打包",
             blindDraws: 0,
             blindCost: 0,
             usedCost: pFull,
@@ -1608,7 +1608,7 @@ function updateEVFromSliders() {
     const pureBlindCost = pureExpDraws * pBox;
     strategies.push({
         type: "pure_blind",
-        name: "【纯盲抽】头铁到底",
+        name: "纯盲抽到底",
         blindDraws: pureExpDraws,
         blindCost: pureBlindCost,
         usedCost: 0,
