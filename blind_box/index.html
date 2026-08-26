@@ -24,12 +24,12 @@
                 <span class="brand-badge">趣味概率</span>
             </a>
             <div class="progress-copy" aria-live="polite">
-                <span id="current-page">1</span><span class="progress-separator">/</span><span id="page-count">8</span>
+                <span id="current-page">1</span><span class="progress-separator">/</span><span id="page-count">9</span>
                 <span class="progress-label">正在探索</span>
             </div>
         </header>
 
-        <!-- 主内容区：8 步居中卡片 -->
+        <!-- 主内容区：9 步居中卡片 -->
         <main class="lesson-stage" aria-label="盲盒收集问题互动课程">
 
             <!-- 第 1 页：封面与加减调节器 -->
@@ -39,7 +39,7 @@
                         <span class="cover-icon" aria-hidden="true">🎁</span>
                     </div>
                     <h1 class="cover-title">集齐一套 6 款盲盒，平均要买几个？</h1>
-                    <p class="cover-subtitle">很多人直觉觉得买 8~10 个就够了，猜猜你的直觉数字：</p>
+                    <p class="cover-subtitle">猜猜你的直觉数字：</p>
 
                     <!-- 加减步进器 -->
                     <div class="stepper-control-wrap">
@@ -56,15 +56,40 @@
                     <button class="btn btn-primary btn-gold" style="font-size: 1.05rem; padding: 0.55rem 1.6rem;" type="button" onclick="startTabletopGame()">
                         带着我的直觉，开拆！👉
                     </button>
+
+                    <p style="font-size: 0.75rem; color: var(--muted-ink); margin-top: 1rem;">
+                        * 声明：每款概率完全均等 (1/6)，无任何伪随机保底，纯看脸。（本品最终解释权归数学所有）
+                    </p>
                 </article>
             </section>
 
-            <!-- 第 2 页：拟真桌面拆盒台 (Tabletop Unboxing) -->
+            <!-- 第 1.5 页：过渡页（采购完毕扔桌上） -->
             <section class="lesson-page" data-page="1" aria-hidden="true">
-                <article class="lesson-card">
-                    <div class="section-kicker"><span aria-hidden="true">📦</span> 拟真桌面拆盒</div>
-                    <h2 id="tabletop-title">你猜了 14 个？桌上已经备齐，亲手拆开看！</h2>
-                    <p class="lead" id="tabletop-lead">点击桌上任意盲袋进入特写，撕开铝箔袋口并往上提拉立牌，把 6 款萌宠全部集齐：</p>
+                <article class="lesson-card" style="text-align: center; padding: clamp(1.6rem, 4vh, 2.5rem) 1.5rem;">
+                    <div class="section-kicker"><span aria-hidden="true">🛍️</span> 采购备齐</div>
+                    <div style="font-size: 3.5rem; margin: 0.4rem 0;" aria-hidden="true">📦✨</div>
+                    <h2 style="font-size: 1.6rem; margin-bottom: 0.4rem;">
+                        你猜了 <span id="trans-guess-num" style="color: var(--coral); font-weight: 900;">14</span> 个？你以为 14 个就能凑齐？
+                    </h2>
+                    <p class="lead" style="max-width: 500px; margin: 0 auto 1.4rem; font-size: 1.02rem;">
+                        行！<strong id="trans-guess-count" style="color: var(--coral);">14</strong> 袋盲盒已经全给你买好扔桌上了，去桌前亲手拆拆看！
+                    </p>
+
+                    <button class="btn btn-primary btn-gold" style="font-size: 1.05rem; padding: 0.55rem 1.8rem;" type="button" onclick="goToPage(2)">
+                        坐到桌前，沉浸开箱 👉
+                    </button>
+                </article>
+            </section>
+
+            <!-- 第 2 页：拟真桌面全屏拆盒台 (Tabletop Unboxing) -->
+            <section class="lesson-page" data-page="2" aria-hidden="true">
+                <article class="lesson-card" style="padding: clamp(0.7rem, 1.8vh, 1.1rem) clamp(0.9rem, 2vw, 1.5rem);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+                        <div class="section-kicker" style="margin-bottom: 0;"><span aria-hidden="true">📦</span> 拟真桌面拆盒</div>
+                        <div style="font-size: 0.78rem; font-weight: 700; color: var(--muted-ink);">
+                            点击桌上盲袋进入特写，撕开袋口拉出立牌
+                        </div>
+                    </div>
 
                     <div class="tabletop-layout">
                         <!-- 左侧：收银台账与控制 -->
@@ -113,7 +138,7 @@
                                 </div>
                             </div>
                             <div style="font-size: 0.72rem; color: var(--muted-ink); text-align: center; border-top: 1px dashed var(--soft-line); padding-top: 0.3rem;">
-                                💡 必须点亮全部 6 款才能开启【胜利结算】
+                                💡 点亮全部 6 款解锁【胜利结算】
                             </div>
                         </div>
                     </div>
@@ -121,7 +146,7 @@
             </section>
 
             <!-- 第 2.5 页：个人开箱战报过渡页 (Battle Report) -->
-            <section class="lesson-page" data-page="2" aria-hidden="true">
+            <section class="lesson-page" data-page="3" aria-hidden="true">
                 <article class="lesson-card report-card">
                     <div class="section-kicker"><span aria-hidden="true">📊</span> 专属开箱战报</div>
                     <div id="report-badge-container">
@@ -144,8 +169,8 @@
                 </article>
             </section>
 
-            <!-- 第 4 页：大白话求和计算与柱状图 (理论真相) -->
-            <section class="lesson-page" data-page="3" aria-hidden="true">
+            <!-- 第 3 页：大白话求和计算与柱状图 (理论真相) -->
+            <section class="lesson-page" data-page="4" aria-hidden="true">
                 <article class="lesson-card">
                     <div class="section-kicker"><span aria-hidden="true">📐</span> 逐级累加动画</div>
                     <h2>把各阶段加起来：真相大白</h2>
@@ -180,8 +205,8 @@
                 </article>
             </section>
 
-            <!-- 第 5 页：欧皇 vs 非酋的真实概率 + 段位测算器 -->
-            <section class="lesson-page" data-page="4" aria-hidden="true">
+            <!-- 第 4 页：欧皇 vs 非酋的真实概率 + 段位测算器 -->
+            <section class="lesson-page" data-page="5" aria-hidden="true">
                 <article class="lesson-card">
                     <div class="section-kicker"><span aria-hidden="true">👑</span> 运气大比拼</div>
                     <h2>欧皇与非酋的世界有多大差距？</h2>
@@ -223,8 +248,8 @@
                 </article>
             </section>
 
-            <!-- 第 6 页：隐藏款 SSR 的暴击陷阱 -->
-            <section class="lesson-page" data-page="5" aria-hidden="true">
+            <!-- 第 5 页：隐藏款 SSR 的暴击陷阱 -->
+            <section class="lesson-page" data-page="6" aria-hidden="true">
                 <article class="lesson-card">
                     <div class="section-kicker"><span aria-hidden="true">💎</span> 终极陷阱</div>
                     <h2>隐藏款 SSR：成本的指数级爆炸</h2>
@@ -274,8 +299,8 @@
                 </article>
             </section>
 
-            <!-- 第 7 页：蒙特卡洛 10000 人模拟 -->
-            <section class="lesson-page" data-page="6" aria-hidden="true">
+            <!-- 第 6 页：蒙特卡洛 10000 人模拟 -->
+            <section class="lesson-page" data-page="7" aria-hidden="true">
                 <article class="lesson-card">
                     <div class="section-kicker"><span aria-hidden="true">🧪</span> 大数定律验证</div>
                     <h2>10,000 位玩家开箱模拟：看清长尾</h2>
@@ -325,8 +350,8 @@
                 </article>
             </section>
 
-            <!-- 第 8 页：第三方全套定价与理性决策 -->
-            <section class="lesson-page" data-page="7" aria-hidden="true">
+            <!-- 第 7 页：第三方全套定价与理性决策 -->
+            <section class="lesson-page" data-page="8" aria-hidden="true">
                 <article class="lesson-card">
                     <div class="section-kicker"><span aria-hidden="true">💡</span> 二手市场与理性决策</div>
                     <h2>第三方全套溢价卖，买家看似亏实则血赚？</h2>
@@ -424,7 +449,7 @@
 
     <!-- 拟真撕袋 + 抽拉亚克力立牌浮层 Modal -->
     <div class="unboxing-modal-overlay" id="unboxing-modal">
-        <div class="unboxing-stage">
+        <div class="unboxing-stage" id="unboxing-stage">
             <!-- 铝箔袋外壳 -->
             <div class="modal-foil-bag" id="modal-foil-bag">
                 <div class="tear-notch-strip" id="modal-tear-strip" onclick="tearFoilStrip()">
@@ -432,8 +457,8 @@
                 </div>
             </div>
             <!-- 内部抽拉亚克力立牌 -->
-            <div class="acrylic-standee-plate" id="modal-standee" style="display: none;">
-                <div class="pull-hint" id="modal-pull-hint">⬆️ 向上提拉出立牌！</div>
+            <div class="acrylic-standee-plate" id="modal-standee" style="display: none;" onclick="triggerPullComplete()">
+                <div class="pull-hint" id="modal-pull-hint">⬆️ 向上拉出或点击立牌！</div>
                 <div class="standee-icon" id="modal-standee-icon">🦊</div>
                 <div class="standee-name" id="modal-standee-name">闪电小狐</div>
             </div>

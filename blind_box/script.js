@@ -5,7 +5,7 @@
 // ========================
 // 1. 全局配置与状态
 // ========================
-const TOTAL_PAGES = 8;
+const TOTAL_PAGES = 9;
 let currentPage = 0;
 
 const CHARACTERS = [
@@ -49,11 +49,11 @@ let isDraggingStandee = false;
 let dragStartY = 0;
 let currentPullDist = 0;
 
-// 第 4 页（理论页）动画状态
+// 第 3 页（理论真相）动画状态
 let currentHarmonicN = 6;
 let harmonicTimers = [];
 
-// 第 7 页（模拟器）缓存数据
+// 第 6 页（模拟器）缓存数据
 let simCache = null;
 let animFrameId = null;
 
@@ -74,8 +74,8 @@ document.addEventListener("DOMContentLoaded", () => {
     animateHarmonicPage(6);
 
     window.addEventListener("resize", () => {
-        if (currentPage === 2) renderTrajectoryChart();
-        if (currentPage === 6 && simCache) renderHistogram(1);
+        if (currentPage === 3) renderTrajectoryChart();
+        if (currentPage === 7 && simCache) renderHistogram(1);
     });
 });
 
@@ -99,11 +99,11 @@ function goToPage(pageIndex) {
     updateNavigation();
 
     // 页面专属生命周期触发
-    if (currentPage === 2) {
+    if (currentPage === 3) {
         setTimeout(renderTrajectoryChart, 80);
-    } else if (currentPage === 3) {
+    } else if (currentPage === 4) {
         setTimeout(() => animateHarmonicPage(currentHarmonicN), 80);
-    } else if (currentPage === 6) {
+    } else if (currentPage === 7) {
         setTimeout(runMonteCarloSim, 80);
     }
 }
@@ -146,7 +146,7 @@ function initKeyboardControls() {
 }
 
 // ========================
-// 3. 第 1 页：猜想步进器
+// 3. 第 1 页：猜想步进器与第 1.5 页过渡
 // ========================
 function adjustGuess(delta) {
     userGuess = Math.max(6, Math.min(30, userGuess + delta));
@@ -155,8 +155,13 @@ function adjustGuess(delta) {
 }
 
 function startTabletopGame() {
+    const transNum = document.getElementById("trans-guess-num");
+    const transCount = document.getElementById("trans-guess-count");
+    if (transNum) transNum.textContent = userGuess;
+    if (transCount) transCount.textContent = userGuess;
+
     initTabletopScene(userGuess);
-    goToPage(1);
+    goToPage(1); // 翻入第 1.5 页过渡页
 }
 
 // ========================
@@ -169,9 +174,8 @@ function initTabletopScene(count = 14) {
     tableState.trajectoryHistory = [{ step: 0, uniqueCount: 0, cost: 0 }];
     tableState.pouches = [];
 
-    // 生成随机倾斜角度的盲袋数据
     for (let i = 0; i < count; i++) {
-        const tilt = (Math.random() * 20 - 10).toFixed(1); // -10deg ~ 10deg
+        const tilt = (Math.random() * 20 - 10).toFixed(1);
         tableState.pouches.push({
             id: i,
             isOpened: false,
@@ -180,26 +184,15 @@ function initTabletopScene(count = 14) {
         });
     }
 
-    // 渲染桌面盲袋
     renderTablePouches();
-
-    // 渲染右侧亚克力展架
     renderShelfGrid();
-
-    // 更新左侧收银台账
     updateLedgerUI();
 
-    // 更新标题文字
-    const titleElem = document.getElementById("tabletop-title");
-    if (titleElem) {
-        titleElem.textContent = `你猜了 ${count} 个？桌上已经备齐，亲手拆开看！`;
-    }
-
-    // 重置胜利按钮状态
     const winBtn = document.getElementById("btn-victory-settle");
     if (winBtn) {
         winBtn.disabled = true;
         winBtn.textContent = "🏆 胜利结算 (需集齐6款)";
+        winBtn.className = "btn btn-gold btn-sm";
     }
 }
 
@@ -261,7 +254,6 @@ function updateLedgerUI() {
     if (costElem) costElem.textContent = `¥ ${cost.toLocaleString()}`;
 }
 
-// 桌面加买、全退、重置
 function buyOneMoreBag() {
     tableState.boughtCount++;
     const newIdx = tableState.pouches.length;
@@ -289,20 +281,19 @@ function resetLife() {
 }
 
 // ========================
-// 5. 拟真撕铝箔袋 + 抽拉亚克力立牌 Modal
+// 5. 拟真撕铝箔袋 + 抽拉/点击亚克力立牌
 // ========================
 function openPouchModal(pouchIdx) {
     if (tableState.pouches[pouchIdx].isOpened) return;
     activePouchIdx = pouchIdx;
 
-    // 随机抽取萌宠
     const randChar = CHARACTERS[Math.floor(Math.random() * CHARACTERS.length)];
     activeCharacter = randChar;
     tableState.pouches[pouchIdx].character = randChar;
 
-    // 初始化 Modal 状态
     isStandeeTorn = false;
     isStandeePulled = false;
+    isDraggingStandee = false;
     currentPullDist = 0;
 
     const modal = document.getElementById("unboxing-modal");
@@ -319,6 +310,7 @@ function openPouchModal(pouchIdx) {
     if (standee) {
         standee.style.display = "none";
         standee.style.transform = "translateY(0)";
+        standee.style.boxShadow = "0 8px 24px rgba(0,0,0,0.25)";
     }
 
     if (standeeIcon) standeeIcon.textContent = randChar.icon;
@@ -341,29 +333,29 @@ function tearFoilStrip() {
             standee.style.display = "flex";
             standee.style.transform = "translateY(0)";
         }
-    }, 280);
+    }, 220);
 }
 
 function initStandeeDragListeners() {
     const standee = document.getElementById("modal-standee");
     if (!standee) return;
 
-    // 鼠标手势
+    // 鼠标拖拽
     standee.addEventListener("mousedown", (e) => {
         if (!isStandeeTorn || isStandeePulled) return;
         isDraggingStandee = true;
         dragStartY = e.clientY;
+        currentPullDist = 0;
         standee.style.transition = "none";
     });
 
     window.addEventListener("mousemove", (e) => {
-        if (!isDraggingStandee) return;
-        const deltaY = dragStartY - e.clientY; // 向上拖拽
+        if (!isDraggingStandee || isStandeePulled) return;
+        const deltaY = dragStartY - e.clientY;
         if (deltaY > 0) {
             currentPullDist = deltaY;
             standee.style.transform = `translateY(-${Math.min(180, deltaY)}px)`;
-
-            if (deltaY >= 130 && !isStandeePulled) {
+            if (deltaY >= 80) {
                 triggerPullComplete();
             }
         }
@@ -373,8 +365,12 @@ function initStandeeDragListeners() {
         if (!isDraggingStandee) return;
         isDraggingStandee = false;
         if (!isStandeePulled) {
-            standee.style.transition = "transform 0.3s var(--ease-bounce)";
-            standee.style.transform = "translateY(0)";
+            if (currentPullDist >= 40) {
+                triggerPullComplete();
+            } else {
+                standee.style.transition = "transform 0.3s var(--ease-bounce)";
+                standee.style.transform = "translateY(0)";
+            }
         }
     });
 
@@ -383,17 +379,17 @@ function initStandeeDragListeners() {
         if (!isStandeeTorn || isStandeePulled) return;
         isDraggingStandee = true;
         dragStartY = e.touches[0].clientY;
+        currentPullDist = 0;
         standee.style.transition = "none";
     }, { passive: true });
 
     window.addEventListener("touchmove", (e) => {
-        if (!isDraggingStandee) return;
+        if (!isDraggingStandee || isStandeePulled) return;
         const deltaY = dragStartY - e.touches[0].clientY;
         if (deltaY > 0) {
             currentPullDist = deltaY;
             standee.style.transform = `translateY(-${Math.min(180, deltaY)}px)`;
-
-            if (deltaY >= 130 && !isStandeePulled) {
+            if (deltaY >= 80) {
                 triggerPullComplete();
             }
         }
@@ -403,13 +399,18 @@ function initStandeeDragListeners() {
         if (!isDraggingStandee) return;
         isDraggingStandee = false;
         if (!isStandeePulled) {
-            standee.style.transition = "transform 0.3s var(--ease-bounce)";
-            standee.style.transform = "translateY(0)";
+            if (currentPullDist >= 40) {
+                triggerPullComplete();
+            } else {
+                standee.style.transition = "transform 0.3s var(--ease-bounce)";
+                standee.style.transform = "translateY(0)";
+            }
         }
     });
 }
 
 function triggerPullComplete() {
+    if (!isStandeeTorn || isStandeePulled) return;
     isStandeePulled = true;
     isDraggingStandee = false;
 
@@ -417,9 +418,9 @@ function triggerPullComplete() {
     const modal = document.getElementById("unboxing-modal");
 
     if (standee) {
-        standee.style.transition = "transform 0.4s var(--ease-bounce), box-shadow 0.3s ease";
-        standee.style.transform = "translateY(-170px) scale(1.06)";
-        standee.style.boxShadow = "0 0 25px rgba(247, 200, 75, 0.8)";
+        standee.style.transition = "transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease";
+        standee.style.transform = "translateY(-170px) scale(1.08)";
+        standee.style.boxShadow = "0 0 28px rgba(247, 200, 75, 0.9)";
     }
 
     setTimeout(() => {
@@ -441,26 +442,24 @@ function completeUnboxingPouch() {
 
     const uniqueCount = Object.keys(tableState.collectedMap).length;
 
-    // 记录轨迹点
+    // 记录开箱轨迹
     tableState.trajectoryHistory.push({
         step: tableState.openedCount,
         uniqueCount: uniqueCount,
         cost: tableState.openedCount * PRICE_PER_BOX
     });
 
-    // 重新渲染桌面
     renderTablePouches();
     updateLedgerUI();
-
-    // 更新展示架
     renderShelfGrid();
+
     const shelfSlot = document.getElementById(`shelf-slot-${char.id}`);
     if (shelfSlot && isNew) {
         shelfSlot.classList.add("just-popped");
         setTimeout(() => shelfSlot.classList.remove("just-popped"), 500);
     }
 
-    // 判断是否胜利集齐
+    // 6款全齐，解锁胜利结算
     if (uniqueCount >= 6) {
         const winBtn = document.getElementById("btn-victory-settle");
         if (winBtn) {
@@ -475,7 +474,7 @@ function completeUnboxingPouch() {
 // 6. 第 2.5 页：专属开箱战报过渡页
 // ========================
 function goToBattleReport() {
-    goToPage(2);
+    goToPage(3); // 翻入第 2.5 战报页 (data-page="3")
 }
 
 function renderTrajectoryChart() {
@@ -485,7 +484,6 @@ function renderTrajectoryChart() {
     const opened = tableState.openedCount;
     const totalCost = opened * PRICE_PER_BOX;
 
-    // 评语与段位结算
     const titleElem = document.getElementById("report-main-title");
     const descElem = document.getElementById("report-sub-desc");
     const heroBadge = document.getElementById("report-badge-hero");
@@ -528,10 +526,9 @@ function renderTrajectoryChart() {
     const plotWidth = cssWidth - paddingLeft - paddingRight;
     const plotHeight = cssHeight - paddingTop - paddingBottom;
 
-    // 坐标系范围：X 轴 0..6款，Y 轴 ¥0..totalCost
     const maxCost = Math.max(totalCost, 14.7 * PRICE_PER_BOX);
 
-    // 1. 绘制网格线
+    // 网格线
     ctx.strokeStyle = "rgba(47, 42, 37, 0.08)";
     ctx.lineWidth = 1;
     ctx.setLineDash([3, 3]);
@@ -564,7 +561,7 @@ function renderTrajectoryChart() {
     });
     ctx.setLineDash([]);
 
-    // 2. 坐标轴
+    // 坐标轴
     ctx.strokeStyle = "rgba(47, 42, 37, 0.8)";
     ctx.lineWidth = 1.5;
     ctx.beginPath();
@@ -573,11 +570,10 @@ function renderTrajectoryChart() {
     ctx.lineTo(cssWidth - paddingRight, cssHeight - paddingBottom);
     ctx.stroke();
 
-    // 3. 绘制玩家真实开箱轨迹折线 (X: uniqueCount, Y: cost)
+    // 绘制轨迹折线
     const history = tableState.trajectoryHistory;
     if (!history || history.length === 0) return;
 
-    // 提取每个 uniqueCount 达到的最小 cost 点
     const points = [{ u: 0, cost: 0 }];
     for (let u = 1; u <= 6; u++) {
         const match = history.find(h => h.uniqueCount === u);
@@ -599,7 +595,6 @@ function renderTrajectoryChart() {
     ctx.lineWidth = 2.5;
     ctx.stroke();
 
-    // 绘制数据圆点
     points.forEach((pt) => {
         const x = paddingLeft + (pt.u / 6) * plotWidth;
         const y = paddingTop + plotHeight * (1 - pt.cost / maxCost);
@@ -615,7 +610,7 @@ function renderTrajectoryChart() {
 }
 
 // ========================
-// 7. 第 4 页：大白话求和与柱状图逐级累加动画
+// 7. 第 3 页：大白话求和与柱状图逐级累加动画
 // ========================
 function replayHarmonicAnimation() {
     animateHarmonicPage(currentHarmonicN);
@@ -624,11 +619,9 @@ function replayHarmonicAnimation() {
 function animateHarmonicPage(N = 6) {
     currentHarmonicN = N;
 
-    // 清除旧定时器
     harmonicTimers.forEach(t => clearTimeout(t));
     harmonicTimers = [];
 
-    // 更新预设按钮状态
     [6, 8, 12].forEach(num => {
         const btn = document.getElementById(`h-btn-${num}`);
         if (btn) {
@@ -645,7 +638,6 @@ function animateHarmonicPage(N = 6) {
     const tipText = document.getElementById("harmonic-tip-text");
     if (!stepsWrap || !barsWrap) return;
 
-    // 计算各阶段理论期望 E_k = N / (N - k + 1)
     const stepValues = [];
     let totalExpectation = 0;
     for (let k = 1; k <= N; k++) {
@@ -654,9 +646,8 @@ function animateHarmonicPage(N = 6) {
         totalExpectation += val;
     }
 
-    const maxVal = stepValues[stepValues.length - 1].val; // N.0 次
+    const maxVal = stepValues[stepValues.length - 1].val;
 
-    // 1. 构建 HTML 骨架（初始隐藏状态）
     stepsWrap.innerHTML = "";
     stepValues.forEach((step, idx) => {
         const isLast = (idx === stepValues.length - 1);
@@ -706,7 +697,6 @@ function animateHarmonicPage(N = 6) {
         barsWrap.appendChild(cont);
     });
 
-    // 动态提示文案
     if (tipText) {
         if (N === 6) {
             tipText.innerHTML = `柱子高度直观展示：越到后面越难抽，最后一只（需买 <strong>6 次</strong>）的难度等于前面所有阶段的总和！`;
@@ -717,7 +707,6 @@ function animateHarmonicPage(N = 6) {
         }
     }
 
-    // 2. 依次逐级执行动画（Staggered Animation）
     const stepDelay = Math.max(90, Math.min(160, 900 / N));
 
     stepValues.forEach((step, idx) => {
@@ -740,7 +729,6 @@ function animateHarmonicPage(N = 6) {
         harmonicTimers.push(timer);
     });
 
-    // 最后一棒：显示总和与爆发徽章
     const finalTimer = setTimeout(() => {
         const sumDisplay = document.getElementById("harmonic-sum-display");
         if (sumDisplay) sumDisplay.classList.add("show");
@@ -749,7 +737,7 @@ function animateHarmonicPage(N = 6) {
 }
 
 // ========================
-// 8. 第 5 页：欧气段位测算器
+// 8. 第 4 页：欧气段位测算器
 // ========================
 function updateLuckRank(val) {
     const draws = parseInt(val, 10);
@@ -788,7 +776,7 @@ function updateLuckRank(val) {
 }
 
 // ========================
-// 9. 第 6 页：隐藏款 SSR 机制
+// 9. 第 5 页：隐藏款 SSR 机制
 // ========================
 function updateSsrFromSliders() {
     const nSlider = document.getElementById("ssr-n-slider");
@@ -836,7 +824,7 @@ function updateSsrFromSliders() {
 }
 
 // ========================
-// 10. 第 7 页：蒙特卡洛大规模模拟
+// 10. 第 6 页：蒙特卡洛大规模模拟
 // ========================
 let hoveredBinIndex = -1;
 
@@ -1011,7 +999,6 @@ function renderHistogram(progress = 1) {
 
     simCache.layout = { N, bucketMax, plotWidth, paddingLeft, totalBins };
 
-    // 1. Y 轴网格虚线
     ctx.lineWidth = 1;
     ctx.setLineDash([3, 3]);
     ctx.font = "10px sans-serif";
@@ -1038,7 +1025,6 @@ function renderHistogram(progress = 1) {
         return paddingTop + plotHeight * (1 - ratio);
     }
 
-    // 2. 绘制频数柱子
     const curvePoints = [];
 
     for (let d = startX; d <= bucketMax; d++) {
@@ -1074,7 +1060,6 @@ function renderHistogram(progress = 1) {
         }
     }
 
-    // 3. 绘制平滑拟合趋势曲线
     if (curvePoints.length > 2 && progress >= 0.7) {
         ctx.beginPath();
         ctx.moveTo(curvePoints[0].x, curvePoints[0].y);
@@ -1088,7 +1073,6 @@ function renderHistogram(progress = 1) {
         ctx.stroke();
     }
 
-    // 4. 理论期望参考线
     const theoryX = paddingLeft + (theoryMean - startX) * binStep + binStep / 2;
     if (theoryX >= paddingLeft && theoryX <= cssWidth - paddingRight) {
         ctx.beginPath();
@@ -1106,7 +1090,6 @@ function renderHistogram(progress = 1) {
         ctx.fillText(`理论平均 ${theoryMean.toFixed(1)}次`, theoryX + 4, paddingTop + 8);
     }
 
-    // 5. 坐标轴与刻度
     ctx.strokeStyle = "rgba(47, 42, 37, 0.85)";
     ctx.lineWidth = 1.5;
     ctx.beginPath();
@@ -1148,7 +1131,7 @@ function drawRoundedRect(ctx, x, y, width, height, radius) {
 }
 
 // ========================
-// 11. 第 8 页：商业定价期望收益 EV 计算器
+// 11. 第 7 页：商业定价期望收益 EV 计算器
 // ========================
 function setEVPreset(n, price, reward) {
     const nSlider = document.getElementById("ev-n-slider");
@@ -1174,12 +1157,10 @@ function updateEVFromSliders() {
     document.getElementById("ev-price-badge").textContent = `¥ ${price}`;
     document.getElementById("ev-reward-badge").textContent = `¥ ${reward}`;
 
-    // 1. 最低门槛 (0重复)
     const minCost = N * price;
     document.getElementById("ev-min-cost-display").textContent = `¥ ${minCost.toLocaleString()}`;
     document.getElementById("ev-min-draws-sub").textContent = `买齐 ${N} 个无重复`;
 
-    // 2. 数学期望总花费
     let harmonicN = 0;
     for (let i = 1; i <= N; i++) harmonicN += 1 / i;
     const expectedDraws = N * harmonicN;
@@ -1187,11 +1168,9 @@ function updateEVFromSliders() {
     document.getElementById("ev-exp-cost-display").textContent = `¥ ${expectedCost.toFixed(2)}`;
     document.getElementById("ev-exp-draws-sub").textContent = `平均需抽 ${expectedDraws.toFixed(1)} 次`;
 
-    // 3. 第三方全套售价
     const thirdPartyPrice = reward;
     document.getElementById("ev-prize-display").textContent = `¥ ${thirdPartyPrice.toFixed(2)}`;
 
-    // 4. 理性省钱对比：盲抽期望花费 - 第三方售价
     const savedAmount = expectedCost - thirdPartyPrice;
     const badge = document.getElementById("ev-badge");
     const valElem = document.getElementById("ev-val");
