@@ -71,11 +71,20 @@
                         <div class="seat mini" data-seat="2">2</div>
                         <div class="seat mini last" data-seat="3">3</div>
                     </div>
-                    <div class="animation-area" id="n3-animation" aria-live="polite">
-                        <p class="animation-text">点击下方按钮，观看一次具体的入座过程。</p>
+                    <div class="animation-area" id="n3-animation" aria-live="polite" aria-atomic="true">
+                        <div class="animation-status is-idle">
+                            <div class="status-line"><span class="status-orb" aria-hidden="true"></span><strong>准备开始</strong></div>
+                            <p class="animation-text">观察每位乘客如何判断座位是否被占，以及连锁反应如何终结。</p>
+                            <ol class="animation-steps" aria-label="三位乘客的入座步骤">
+                                <li><b>1</b><span>乘客 1 随机选座</span></li>
+                                <li><b>2</b><span>乘客 2 判断并入座</span></li>
+                                <li><b>3</b><span>乘客 3 获得最后座位</span></li>
+                            </ol>
+                        </div>
                     </div>
                     <div class="btn-group">
-                        <button class="btn btn-secondary" type="button" onclick="animateN3()">🎬 演示一次</button>
+                        <button class="btn btn-secondary" id="play-n3" type="button" onclick="animateN3()">🎬 演示一次</button>
+                        <button class="btn btn-quiet" id="skip-n3" type="button" onclick="skipN3Animation()" disabled>⏭ 跳过动画</button>
                         <button class="btn btn-outline" type="button" onclick="simulateN3()">📈 模拟 50 次</button>
                     </div>
                     <p class="result" id="n3-result"></p>

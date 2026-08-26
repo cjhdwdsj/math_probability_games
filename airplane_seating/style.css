@@ -261,7 +261,9 @@ h2 { font-size: clamp(1.55rem, 3vw, 2.3rem); line-height: 1.25; margin-top: 0.28
 .seat.mini.last { box-shadow: inset 0 0 0 3px rgba(247, 200, 75, 0.46); }
 .seat.mini.occupied { background: #bde2ae; }
 .seat.mini.wrong { background: #f7b4a4; }
-.seat.mini.current { box-shadow: 0 0 0 4px rgba(247, 200, 75, 0.75); }
+.seat.mini.current { box-shadow: 0 0 0 4px rgba(247, 200, 75, 0.75); animation: seat-result-pulse 920ms var(--ease-out) 2; }
+.seat.mini.checking { background: #fff3bd; animation: seat-check 520ms var(--ease-out) infinite alternate; }
+.seat.mini.target { background: #d7eef9; box-shadow: 0 0 0 5px rgba(90, 171, 217, 0.28); animation: seat-target-pulse 760ms var(--ease-out) infinite; }
 
 .card-n2, .card-n3, .card-pattern { max-width: 48rem; text-align: center; }
 .n2-scenarios { display: grid; gap: 0.55rem; max-width: 39rem; margin: 0 auto; text-align: left; }
@@ -281,17 +283,36 @@ h2 { font-size: clamp(1.55rem, 3vw, 2.3rem); line-height: 1.25; margin-top: 0.28
 .result { margin-top: 0.8rem; font-size: 0.94rem; font-weight: 700; }
 .highlight { color: var(--sky-deep); }
 .animation-area {
-    min-height: 4.5rem;
+    min-height: 8.7rem;
     display: grid;
-    place-items: center;
-    max-width: 35rem;
+    align-items: center;
+    max-width: 38rem;
     margin: 0.8rem auto;
-    padding: 0.8rem;
+    padding: 0.75rem 0.9rem;
+    overflow: hidden;
     border: 1.5px dashed rgba(47, 42, 37, 0.32);
     border-radius: 0.75rem;
-    background: #f7f1e6;
+    background:
+        linear-gradient(90deg, rgba(90, 171, 217, 0.06) 1px, transparent 1px) 0 0 / 1.2rem 1.2rem,
+        #f7f1e6;
+    text-align: left;
 }
-.animation-text { color: var(--muted-ink); font-size: 0.9rem; }
+.animation-status { width: 100%; }
+.status-line { display: flex; align-items: center; gap: 0.45rem; color: var(--ink); font-size: 0.9rem; }
+.status-orb { width: 0.62rem; height: 0.62rem; flex: 0 0 auto; border: 1.5px solid var(--ink); border-radius: 50%; background: #d8d4cd; }
+.is-running .status-orb, .is-checking .status-orb { background: var(--sun); animation: status-pulse 760ms var(--ease-out) infinite; }
+.is-seated .status-orb, .is-success .status-orb { background: var(--leaf); }
+.is-fail .status-orb { background: var(--coral); }
+.animation-text { min-height: 2.7em; margin: 0.25rem 0 0.55rem; color: var(--muted-ink); font-size: 0.84rem; line-height: 1.6; }
+.animation-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.35rem; padding: 0; margin: 0; list-style: none; }
+.animation-steps li { display: flex; align-items: center; gap: 0.32rem; min-width: 0; color: #857c72; font-size: 0.7rem; line-height: 1.25; }
+.animation-steps b { display: grid; place-items: center; width: 1.1rem; height: 1.1rem; flex: 0 0 auto; border: 1px solid currentColor; border-radius: 50%; font-size: 0.66rem; }
+.animation-steps span { min-width: 0; }
+.animation-steps li.is-active { color: var(--sky-deep); font-weight: 700; }
+.animation-steps li.is-active b { color: var(--ink); border-color: var(--ink); background: var(--sun); }
+.animation-steps li.is-done { color: #4e8639; }
+.animation-steps li.is-done b { border-color: #4e8639; background: #bde2ae; }
+.btn:disabled { cursor: not-allowed; opacity: 0.58; box-shadow: none; transform: none; }
 
 /* Pattern */
 .pattern-results { display: grid; gap: 0.5rem; max-width: 36rem; margin: 1.05rem auto; }
@@ -387,15 +408,23 @@ h2 { font-size: clamp(1.55rem, 3vw, 2.3rem); line-height: 1.25; margin-top: 0.28
     justify-content: center;
     border: 2px solid var(--ink);
     border-radius: 50%;
-    background: var(--sky);
+    background: linear-gradient(135deg, #7ac3e9, var(--sky-deep));
     color: white;
     font-size: 0.75rem;
     font-weight: 700;
     box-shadow: 2px 3px 0 rgba(47, 42, 37, 0.2);
-    transition: left 420ms var(--ease-out), top 420ms var(--ease-out);
+    transition: left 620ms var(--ease-out), top 620ms var(--ease-out), transform 180ms var(--ease-out);
 }
+.passenger::after { content: "乘客 " attr(data-passenger); position: absolute; top: calc(100% + 0.2rem); left: 50%; transform: translateX(-50%); padding: 0.08rem 0.3rem; border-radius: 0.3rem; background: rgba(47, 42, 37, 0.84); color: white; font-size: 0.59rem; line-height: 1.25; white-space: nowrap; }
+.passenger.is-flying { animation: passenger-float 620ms var(--ease-out) infinite alternate; }
+.passenger.is-arrived { transform: scale(0.94); box-shadow: 0 0 0 5px rgba(247, 200, 75, 0.32), 2px 3px 0 rgba(47, 42, 37, 0.2); }
 
 @keyframes float { 0%, 100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-0.35rem) rotate(4deg); } }
+@keyframes status-pulse { from { transform: scale(0.82); } to { transform: scale(1.18); } }
+@keyframes seat-check { from { transform: rotate(-2deg) scale(0.98); } to { transform: rotate(2deg) scale(1.03); } }
+@keyframes seat-target-pulse { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-0.15rem); } }
+@keyframes seat-result-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+@keyframes passenger-float { from { transform: translateY(-0.15rem) rotate(-4deg); } to { transform: translateY(0.15rem) rotate(4deg); } }
 
 @media (max-width: 700px) {
     .lesson-app { grid-template-rows: 3.7rem minmax(0, 1fr) 4.3rem; padding: 0 0.8rem; }

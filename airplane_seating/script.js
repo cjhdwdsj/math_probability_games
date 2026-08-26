@@ -3,6 +3,8 @@ let probabilityChart = null;
 let bulkSimulationRunning = false;
 let userGameStats = { wins: 0, total: 0 };
 let n3AnimationRunning = false;
+let n3AnimationRunId = 0;
+let n3ActiveRun = null;
 let currentPageIndex = 0;
 let pageTransitionTimer = null;
 
@@ -66,7 +68,10 @@ function goToPage(index, shouldFocus = true) {
     const newPage = pages[nextIndex];
 
     document.querySelectorAll('.passenger').forEach((passenger) => passenger.remove());
+    n3AnimationRunId += 1;
     n3AnimationRunning = false;
+    n3ActiveRun = null;
+    setN3Controls(false);
 
     if (pageTransitionTimer) window.clearTimeout(pageTransitionTimer);
 
@@ -179,79 +184,207 @@ function animateN2Result(results) {
 }
 
 // ===== N = 3 动画演示 =====
-async function animateN3() {
-    if (n3AnimationRunning || currentPageIndex !== 2) return;
-    n3AnimationRunning = true;
+function createN3Plan() {
+    const seatsState = Array(3).fill(null);
+    const choices = [];
 
-    const animationArea = document.getElementById('n3-animation');
-    const resultEl = document.getElementById('n3-result');
-    const seats = Array.from(document.querySelectorAll('.card-n3 .seat.mini'));
-    if (!animationArea || !seats.length) {
-        n3AnimationRunning = false;
-        return;
+    for (let passenger = 0; passenger < 3; passenger += 1) {
+        const choice = passenger === 0
+            ? Math.floor(Math.random() * 3)
+            : (seatsState[passenger] === null ? passenger : randomAvailableSeat(seatsState));
+        seatsState[choice] = passenger;
+        choices.push(choice);
     }
 
-    seats.forEach((seat) => seat.classList.remove('occupied', 'wrong', 'current'));
-    animationArea.innerHTML = '<p class="animation-text">正在演示入座过程…</p>';
+    return { choices, isSuccess: choices[2] === 2 };
+}
+
+function setN3Controls(isRunning) {
+    const playButton = document.getElementById('play-n3');
+    const skipButton = document.getElementById('skip-n3');
+    if (playButton) {
+        playButton.disabled = isRunning;
+        playButton.textContent = isRunning ? '🎬 正在演示…' : '🎬 演示一次';
+    }
+    if (skipButton) skipButton.disabled = !isRunning;
+}
+
+function renderN3Status({ stage = 'idle', activeStep = -1, title, detail, choices = [] }) {
+    const animationArea = document.getElementById('n3-animation');
+    if (!animationArea) return;
+
+    const stepNames = ['乘客 1 随机选座', '乘客 2 判断并入座', '乘客 3 获得最后座位'];
+    const steps = stepNames.map((name, index) => {
+        const isDone = index < activeStep;
+        const isActive = index === activeStep;
+        const choiceText = isDone && Number.isInteger(choices[index]) ? ` → ${choices[index] + 1} 号座位` : '';
+        return `<li class="${isDone ? 'is-done' : ''} ${isActive ? 'is-active' : ''}"><b>${index + 1}</b><span>${name}${choiceText}</span></li>`;
+    }).join('');
+
+    animationArea.innerHTML = `
+        <div class="animation-status is-${stage}">
+            <div class="status-line"><span class="status-orb" aria-hidden="true"></span><strong>${title}</strong></div>
+            <p class="animation-text">${detail}</p>
+            <ol class="animation-steps" aria-label="三位乘客的入座步骤">${steps}</ol>
+        </div>
+    `;
+}
+
+function describeN3Choice(passenger, choice, ownSeat) {
+    if (passenger === 0) return `第一位没有座位偏好，随机选中了 ${choice + 1} 号座位。`;
+    if (choice === ownSeat) return `自己的 ${ownSeat + 1} 号座位空着，可以直接坐下。`;
+    return `自己的 ${ownSeat + 1} 号座位已被占，只能在剩余座位中随机选中 ${choice + 1} 号座位。`;
+}
+
+async function waitForN3Step(runId, duration) {
+    await sleep(duration);
+    return runId === n3AnimationRunId && currentPageIndex === 2;
+}
+
+async function movePassenger(passenger, position, runId) {
+    passenger.style.display = 'flex';
+    passenger.classList.add('is-flying');
+    passenger.style.left = `${window.innerWidth / 2 - 16}px`;
+    passenger.style.top = '4.6rem';
+    if (!await waitForN3Step(runId, 180)) return false;
+
+    passenger.style.left = `${position.x}px`;
+    passenger.style.top = `${position.y}px`;
+    if (!await waitForN3Step(runId, 620)) return false;
+
+    passenger.classList.remove('is-flying');
+    passenger.classList.add('is-arrived');
+    return true;
+}
+
+function completeN3Animation(plan, wasSkipped = false) {
+    const seats = Array.from(document.querySelectorAll('.card-n3 .seat.mini'));
+    const resultEl = document.getElementById('n3-result');
+    if (!seats.length || !resultEl) return;
+
+    seats.forEach((seat) => seat.classList.remove('occupied', 'wrong', 'current', 'checking', 'target'));
+    plan.choices.forEach((choice, passenger) => {
+        seats[choice].classList.add('occupied');
+        if (choice !== passenger) seats[choice].classList.add('wrong');
+    });
+    seats[plan.choices[2]].classList.add('current');
+
+    renderN3Status({
+        stage: plan.isSuccess ? 'success' : 'fail',
+        activeStep: 3,
+        title: plan.isSuccess ? '终点：最后一位成功' : '终点：最后一位失败',
+        detail: wasSkipped
+            ? `已跳至结果：最后一位乘客坐到了 ${plan.choices[2] + 1} 号座位。`
+            : `三位乘客均已入座，最后一位乘客坐到了 ${plan.choices[2] + 1} 号座位。`,
+        choices: plan.choices
+    });
+    resultEl.innerHTML = plan.isSuccess
+        ? '<span class="success">✅ 最后一位坐到了自己的座位。</span>'
+        : '<span class="fail">❌ 最后一位没有坐到自己的座位。</span>';
+}
+
+async function animateN3() {
+    if (n3AnimationRunning || currentPageIndex !== 2) return;
+
+    const seats = Array.from(document.querySelectorAll('.card-n3 .seat.mini'));
+    const resultEl = document.getElementById('n3-result');
+    if (!seats.length || !resultEl) return;
+
+    const runId = ++n3AnimationRunId;
+    const plan = createN3Plan();
+    n3AnimationRunning = true;
+    n3ActiveRun = plan;
+    setN3Controls(true);
     resultEl.textContent = '';
+    seats.forEach((seat) => seat.classList.remove('occupied', 'wrong', 'current', 'checking', 'target'));
 
     const passengers = Array.from({ length: 3 }, (_, index) => {
         const passenger = document.createElement('div');
         passenger.className = 'passenger';
+        passenger.dataset.passenger = String(index + 1);
         passenger.textContent = String(index + 1);
         passenger.style.display = 'none';
         document.body.appendChild(passenger);
         return passenger;
     });
-
     const seatPositions = seats.map((seat) => {
         const rect = seat.getBoundingClientRect();
         return { x: rect.left + rect.width / 2 - 16, y: rect.top + rect.height / 2 - 16 };
     });
-    const seatsState = Array(3).fill(null);
-    const firstChoice = Math.random() < 0.5 ? 0 : 1;
 
     try {
-        seatsState[firstChoice] = 0;
-        await movePassenger(passengers[0], seatPositions[firstChoice]);
-        if (currentPageIndex !== 2) return;
-        seats[firstChoice].classList.add('occupied', firstChoice === 0 ? '' : 'wrong');
-        animationArea.innerHTML = `<p class="animation-text">乘客 1 坐了 ${firstChoice + 1} 号座位。</p>`;
-        await sleep(650);
+        renderN3Status({
+            stage: 'running',
+            activeStep: 0,
+            title: '入座演示开始',
+            detail: '先观察第一位乘客随机打破规则。',
+            choices: plan.choices
+        });
+        if (!await waitForN3Step(runId, 520)) return;
 
-        const passenger2Choice = seatsState[1] === null ? 1 : randomAvailableSeat(seatsState);
-        seatsState[passenger2Choice] = 1;
-        await movePassenger(passengers[1], seatPositions[passenger2Choice]);
-        if (currentPageIndex !== 2) return;
-        seats[passenger2Choice].classList.add('occupied');
-        if (passenger2Choice !== 1) seats[passenger2Choice].classList.add('wrong');
-        animationArea.innerHTML = `<p class="animation-text">乘客 2 坐了 ${passenger2Choice + 1} 号座位。</p>`;
-        await sleep(650);
+        for (let passenger = 0; passenger < 3; passenger += 1) {
+            const choice = plan.choices[passenger];
+            const ownSeat = passenger;
+            const displaced = passenger > 0 && choice !== ownSeat;
 
-        const lastSeat = seatsState.indexOf(null);
-        seatsState[lastSeat] = 2;
-        await movePassenger(passengers[2], seatPositions[lastSeat]);
-        if (currentPageIndex !== 2) return;
-        seats[lastSeat].classList.add('occupied', 'current');
-        const isSuccess = lastSeat === 2;
-        animationArea.innerHTML = `<p class="animation-text">乘客 3 坐了 ${lastSeat + 1} 号座位。</p>`;
-        resultEl.innerHTML = isSuccess
-            ? '<span class="success">✅ 最后一位坐到了自己的座位。</span>'
-            : '<span class="fail">❌ 最后一位没有坐到自己的座位。</span>';
+            if (displaced) {
+                seats[ownSeat].classList.add('checking');
+                renderN3Status({
+                    stage: 'checking',
+                    activeStep: passenger,
+                    title: `乘客 ${passenger + 1} 发现座位被占`,
+                    detail: `自己的 ${ownSeat + 1} 号座位已被占；现在只剩 ${plan.choices.slice(passenger).map((seat) => `${seat + 1} 号`).join('、')} 座位的连锁选择。`,
+                    choices: plan.choices
+                });
+                if (!await waitForN3Step(runId, 680)) return;
+                seats[ownSeat].classList.remove('checking');
+            }
+
+            seats[choice].classList.add('target');
+            renderN3Status({
+                stage: 'running',
+                activeStep: passenger,
+                title: `轮到乘客 ${passenger + 1}`,
+                detail: describeN3Choice(passenger, choice, ownSeat),
+                choices: plan.choices
+            });
+            if (!await waitForN3Step(runId, 420)) return;
+            if (!await movePassenger(passengers[passenger], seatPositions[choice], runId)) return;
+
+            seats[choice].classList.remove('target');
+            seats[choice].classList.add('occupied');
+            if (choice !== ownSeat) seats[choice].classList.add('wrong');
+            if (passenger === 2) seats[choice].classList.add('current');
+
+            renderN3Status({
+                stage: 'seated',
+                activeStep: passenger + 1,
+                title: `乘客 ${passenger + 1} 已入座`,
+                detail: `座位 ${choice + 1} 已被占用。${passenger < 2 ? '继续观察下一位乘客。' : '答案已经揭晓。'}`,
+                choices: plan.choices
+            });
+            if (!await waitForN3Step(runId, passenger === 2 ? 420 : 720)) return;
+        }
+
+        completeN3Animation(plan);
     } finally {
         passengers.forEach((passenger) => passenger.remove());
-        n3AnimationRunning = false;
+        if (runId === n3AnimationRunId) {
+            n3AnimationRunning = false;
+            n3ActiveRun = null;
+            setN3Controls(false);
+        }
     }
 }
 
-async function movePassenger(passenger, position) {
-    passenger.style.display = 'flex';
-    passenger.style.left = `${window.innerWidth / 2 - 16}px`;
-    passenger.style.top = '4.5rem';
-    await sleep(120);
-    passenger.style.left = `${position.x}px`;
-    passenger.style.top = `${position.y}px`;
-    await sleep(460);
+function skipN3Animation() {
+    if (!n3AnimationRunning || !n3ActiveRun || currentPageIndex !== 2) return;
+    n3AnimationRunId += 1;
+    document.querySelectorAll('.passenger').forEach((passenger) => passenger.remove());
+    completeN3Animation(n3ActiveRun, true);
+    n3AnimationRunning = false;
+    n3ActiveRun = null;
+    setN3Controls(false);
 }
 
 function simulateN3() {
