@@ -32,7 +32,8 @@ const gameState = {
     currentEntrant: null,
     currentStamp: null,
     isMysteryEventTriggered: false,
-    dialogueTyping: false
+    dialogueTyping: false,
+    isTransitioningFlight: false
 };
 
 // 预设名字库

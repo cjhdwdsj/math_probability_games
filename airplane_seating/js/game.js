@@ -62,11 +62,9 @@ function startTutorialPrologue() {
 }
 
 function callNextEntrant() {
-    if (gameState.isEntrantInBooth || gameState.dialogueTyping) return;
+    if (gameState.isEntrantInBooth || gameState.dialogueTyping || gameState.isTransitioningFlight) return;
     
     if (gameState.currentPassengerIndex >= gameState.totalSeats) {
-        typeDialogue("本趟航班所有乘客已全部登机完成！正在结算报告...");
-        setTimeout(() => finalizeFlight(), 1200);
         return;
     }
     
@@ -93,46 +91,47 @@ function callNextEntrant() {
     document.getElementById("queue-count").textContent = `等待登机: ${gameState.totalSeats - gameState.currentPassengerIndex} 人`;
     
     // 时间动态流逝
-    if (gameState.isTutorial) {
-        const times = ["08:10", "08:25"];
-        updateClockDisplay(times[gameState.currentPassengerIndex - 1] || "08:30");
-    } else {
-        const times = ["12:40", "13:00", "13:20", "13:40", "14:00"];
-        updateClockDisplay(times[gameState.currentPassengerIndex - 1] || "14:15");
+    if (gameState.currentPassengerIndex === 1) {
+        updateClockDisplay(gameState.day === 1 && gameState.isTutorial ? "08:00" : "12:30");
+    } else if (gameState.currentPassengerIndex === Math.ceil(gameState.totalSeats / 2)) {
+        updateClockDisplay("13:45");
+    } else if (gameState.currentPassengerIndex === gameState.totalSeats) {
+        updateClockDisplay("14:50");
     }
     
-    // 窗口立绘走入
+    // 窗口角色登场动画
     const portraitCanvas = document.getElementById("portrait-canvas");
-    portraitCanvas.classList.remove("is-walking-in");
-    void portraitCanvas.offsetWidth;
-    portraitCanvas.classList.add("is-walking-in");
-    
-    drawPixelPortrait(portraitCanvas, passenger);
-    drawPixelPhoto(document.getElementById("pass-photo-canvas"), passenger);
-    
-    document.getElementById("boarding-pass").classList.add("hidden");
+    if (portraitCanvas) {
+        portraitCanvas.classList.remove("is-walking-in");
+        void portraitCanvas.offsetWidth;
+        portraitCanvas.classList.add("is-walking-in");
+        drawPixelPortrait(portraitCanvas, passenger);
+    }
+    const photoCanvas = document.getElementById("pass-photo-canvas");
+    if (photoCanvas) {
+        drawPixelPhoto(photoCanvas, passenger);
+    }
     
     setTimeout(() => {
-        let dialogueText = "";
+        let greetText = "";
         if (passenger.isFirst) {
-            dialogueText = `[1号] ${passenger.name}: "呃……检票员师傅，我的登机牌好像找不到了，随便给我安排个位吧！"`;
+            greetText = `[1号乘客] "检票员师傅……我好像把登机牌弄丢了！请问我能登机吗？"`;
+        } else if (passenger.isVip) {
+            greetText = `[${passenger.id}号乘客] "检票员您好，我是本趟航班的末位 VIP，我的专属座位是 ${passenger.id} 号。"`;
         } else {
-            const isSeatTaken = (gameState.cabinSeats[passenger.assignedSeat] !== null);
-            if (isSeatTaken) {
-                const usurperId = gameState.cabinSeats[passenger.assignedSeat];
-                dialogueText = `[${passenger.id}号] ${passenger.name}: "检票员师傅！我刚才看雷达，我的 ${passenger.assignedSeat} 号座位好像被 ${usurperId} 号占了！我该坐哪？"`;
-            } else {
-                dialogueText = `[${passenger.id}号] ${passenger.name}: "检票员您好，这是我的登机牌，我被分配在 ${passenger.assignedSeat} 号座位。"`;
-            }
+            greetText = `[${passenger.id}号乘客] "检票员您好，这是我的登机牌，我被分配在 ${passenger.assignedSeat} 号座位。"`;
         }
         
-        typeDialogue(dialogueText, () => {
+        typeDialogue(greetText, () => {
             presentBoardingPass(passenger);
         });
     }, 550);
 }
 
 function finalizeFlight() {
+    if (gameState.isTransitioningFlight) return;
+    gameState.isTransitioningFlight = true;
+    
     gameState.stats.flightsCompleted += 1;
     const vipSuccess = (gameState.cabinSeats[gameState.totalSeats] === gameState.totalSeats);
     
@@ -165,9 +164,10 @@ function finalizeFlight() {
                     gameState.flightNumber = "EX-1000";
                     gameState.totalSeats = 10;
                 }
+                gameState.isTransitioningFlight = false;
                 initFlightState();
                 typeDialogue(`✈️ 今日第 ${gameState.currentFlightToday} 趟航班 (${gameState.flightNumber}) 已就绪！请按红色喇叭呼叫 1 号乘客登机。`);
-            }, 2000);
+            }, 1800);
         });
     } else {
         // 今日航班全部处理完毕 -> 触发夜幕过幕间与桌面大扫除！
@@ -181,6 +181,7 @@ function finalizeFlight() {
             
             // 2.2 秒后平滑拉起夜间过幕间，并大扫除清理台面
             setTimeout(() => {
+                gameState.isTransitioningFlight = false;
                 if (gameState.day === 1) {
                     triggerNightIntermission(1, () => startDay2());
                 } else if (gameState.day === 2) {

@@ -269,13 +269,25 @@ function returnDocumentToPassenger() {
     gameState.isEntrantInBooth = false;
     gameState.currentEntrant = null;
     document.getElementById("status-indicator").className = "indicator-light";
-    document.getElementById("btn-next-entrant").disabled = false;
     
     renderQueue();
     
-    if (finalSeat === passenger.assignedSeat) {
-        typeDialogue(`[${passenger.id}号] "谢谢检票员！顺利坐回 ${finalSeat} 号位。"`);
+    const isLastPassenger = (gameState.currentPassengerIndex >= gameState.totalSeats);
+    if (!isLastPassenger) {
+        document.getElementById("btn-next-entrant").disabled = false;
     } else {
-        typeDialogue(`[${passenger.id}号] "好的，我这就去坐 ${finalSeat} 号空座位。"`);
+        document.getElementById("btn-next-entrant").disabled = true;
     }
+    
+    const thankMsg = (finalSeat === passenger.assignedSeat) ?
+        `[${passenger.id}号] "谢谢检票员！顺利坐回 ${finalSeat} 号位。"` :
+        `[${passenger.id}号] "好的，我这就去坐 ${finalSeat} 号空座位。"`;
+        
+    typeDialogue(thankMsg, () => {
+        if (isLastPassenger && !gameState.isTransitioningFlight) {
+            setTimeout(() => {
+                if (typeof finalizeFlight === "function") finalizeFlight();
+            }, 1200);
+        }
+    });
 }
