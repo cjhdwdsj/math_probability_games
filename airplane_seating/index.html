@@ -12,8 +12,33 @@
     <link rel="stylesheet" href="css/boarding-pass.css">
     <link rel="stylesheet" href="css/stamp-box.css">
     <link rel="stylesheet" href="css/crt-screen.css">
-    
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- 本地方舟像素体嵌入 (0ms 离线加载) -->
+    <style>
+        @font-face {
+            font-family: "Ark Pixel";
+            src: url("fonts/ark-pixel-12px-proportional-zh_cn.woff2") format("woff2");
+            font-weight: normal;
+            font-style: normal;
+            font-display: block;
+        }
+
+        @font-face {
+            font-family: "Ark Pixel Mono";
+            src: url("fonts/ark-pixel-12px-monospaced-zh_cn.woff2") format("woff2");
+            font-weight: normal;
+            font-style: normal;
+            font-display: block;
+        }
+
+        *, body, button, div, span, p, h1, h2, h3, h4, strong {
+            font-family: "Ark Pixel", "Ark Pixel Mono", monospace, sans-serif !important;
+            -webkit-font-smoothing: none !important;
+            -moz-osx-font-smoothing: unset !important;
+            font-smooth: never !important;
+            text-rendering: geometricPrecision !important;
+        }
+    </style>
 </head>
 <body>
     <!-- 主工作台容器 (1:1 经典上下分屏) -->
