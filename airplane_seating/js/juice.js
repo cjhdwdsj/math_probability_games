@@ -40,17 +40,27 @@ function triggerScreenShake() {
     }, 150);
 }
 
-// 盖印墨汁微粒飞溅 (Ink Splatter Particles)
-function spawnInkParticles(targetEl, color) {
-    if (!targetEl) return;
-    const rect = targetEl.getBoundingClientRect();
+// 盖印墨汁微粒飞溅 (Ink Splatter Particles - 支持坐标与元素投射)
+function spawnInkParticles(x, y, color) {
     const surface = document.getElementById("counter-surface");
+    if (!surface) return;
     const surfaceRect = surface.getBoundingClientRect();
     
-    const originX = (rect.left + rect.width / 2) - surfaceRect.left;
-    const originY = (rect.top + rect.height / 2) - surfaceRect.top;
+    let originX = 0, originY = 0;
+    let inkColor = "#ba2824";
     
-    const count = 10;
+    if (typeof x === "object" && x !== null) {
+        const rect = x.getBoundingClientRect();
+        originX = (rect.left + rect.width / 2) - surfaceRect.left;
+        originY = (rect.top + rect.height / 2) - surfaceRect.top;
+        inkColor = y || inkColor;
+    } else {
+        originX = x - surfaceRect.left;
+        originY = y - surfaceRect.top;
+        inkColor = color || inkColor;
+    }
+    
+    const count = 12;
     for (let i = 0; i < count; i++) {
         const particle = document.createElement("div");
         particle.className = "ink-particle";
@@ -63,7 +73,7 @@ function spawnInkParticles(targetEl, color) {
         
         particle.style.width = `${size}px`;
         particle.style.height = `${size}px`;
-        particle.style.backgroundColor = color;
+        particle.style.backgroundColor = inkColor;
         particle.style.left = `${originX}px`;
         particle.style.top = `${originY}px`;
         particle.style.setProperty("--dx", dx);

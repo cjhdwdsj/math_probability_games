@@ -5,8 +5,13 @@
 function presentBoardingPass(passenger) {
     const passCard = document.getElementById("boarding-pass");
     const stampSlot = document.getElementById("stamp-impression");
-    stampSlot.innerHTML = `<span class="stamp-placeholder-hint">← 拖动印章盒对准此处下压盖印</span>`;
+    stampSlot.innerHTML = `<span class="stamp-placeholder-hint">[ 推荐盖印区 ]</span>`;
+    
+    // 清除上一个乘客登机牌上的历史印章印记
+    passCard.querySelectorAll(".stamped-mark").forEach(el => el.remove());
+    
     document.getElementById("btn-return-doc").disabled = true;
+    gameState.currentStamp = null;
     
     if (passenger.isFirst) {
         document.getElementById("pass-name").textContent = passenger.name;
@@ -25,6 +30,17 @@ function presentBoardingPass(passenger) {
     passCard.classList.remove("hidden");
     highestZIndex += 1;
     passCard.style.zIndex = highestZIndex;
+}
+
+function createStampMark(parentEl, x, y, stampType, rot) {
+    if (!parentEl) return;
+    const mark = document.createElement("div");
+    mark.className = `stamped-mark ${stampType === "ASSIGNED" ? "stamped-assigned" : "stamped-random"}`;
+    mark.style.left = `${x}px`;
+    mark.style.top = `${y}px`;
+    mark.style.setProperty("--rot", rot);
+    mark.textContent = (stampType === "ASSIGNED") ? "🔴 按序就座" : "🔵 批准随意";
+    parentEl.appendChild(mark);
 }
 
 function initStampKnobPullPhysics() {
@@ -68,7 +84,6 @@ function initStampKnobPullPhysics() {
                 isPulling = false;
                 
                 const deltaY = Math.max(0, upEvent.clientY - startY);
-                // 如果只是快速点击（位移 < 4px）且还没盖过章，触发点击盖章
                 if (deltaY < 4 && !hasStamped) {
                     pressStamp(type, true);
                 }
@@ -88,36 +103,109 @@ function initStampKnobPullPhysics() {
 }
 
 function pressStamp(stampType, playAnimate = true) {
-    if (!gameState.isEntrantInBooth || !gameState.currentEntrant) return;
-    
-    const passCard = document.getElementById("boarding-pass");
-    if (passCard.classList.contains("hidden")) return;
-    
     const unitId = (stampType === "ASSIGNED") ? "stamp-unit-assigned" : "stamp-unit-random";
     const knob = document.querySelector(`#${unitId} .stamp-knob`);
+    const shoeEl = document.querySelector(`#${unitId} .stamp-shoe`);
     
     if (playAnimate && knob) {
         knob.classList.add("is-pressing");
         setTimeout(() => knob.classList.remove("is-pressing"), 180);
     }
     
-    gameState.currentStamp = stampType;
-    const stampSlot = document.getElementById("stamp-impression");
-    const rot = (Math.random() * 6 - 3).toFixed(1);
-    
-    const inkColor = (stampType === "ASSIGNED") ? "#ba2824" : "#23588d";
-    
-    if (stampType === "ASSIGNED") {
-        stampSlot.innerHTML = `<div class="stamped-mark stamped-assigned" style="--rot:${rot}">🔴 按序就座</div>`;
+    // 计算印章红色/蓝色块体的中心定位点 (Impact Center Point)
+    let Px = 0, Py = 0;
+    if (shoeEl) {
+        const shoeRect = shoeEl.getBoundingClientRect();
+        Px = shoeRect.left + shoeRect.width / 2;
+        Py = shoeRect.top + shoeRect.height / 2;
     } else {
-        stampSlot.innerHTML = `<div class="stamped-mark stamped-random" style="--rot:${rot}">🔵 批准随意</div>`;
+        Px = window.innerWidth / 2;
+        Py = window.innerHeight / 2;
     }
     
-    // Balatro 风格打击感反馈：微震屏 + 墨汁微粒飞溅
-    if (typeof triggerScreenShake === "function") triggerScreenShake();
-    if (typeof spawnInkParticles === "function") spawnInkParticles(stampSlot, inkColor);
+    const rot = (Math.random() * 6 - 3).toFixed(1);
+    const inkColor = (stampType === "ASSIGNED") ? "#ba2824" : "#23588d";
     
-    document.getElementById("btn-return-doc").disabled = false;
+    // 物理命中检测：全桌面任何物体皆可承接盖章
+    const passCard = document.getElementById("boarding-pass");
+    const isPassVisible = passCard && !passCard.classList.contains("hidden");
+    
+    let hitTarget = null;
+    let hitX = 0;
+    let hitY = 0;
+    
+    // 1. 优先检测是否落在乘客登机牌上
+    if (isPassVisible) {
+        const r = passCard.getBoundingClientRect();
+        if (Px >= r.left && Px <= r.right && Py >= r.top && Py <= r.bottom) {
+            hitTarget = passCard;
+            hitX = Px - r.left;
+            hitY = Py - r.top;
+            
+            // 成功盖在登机牌上！记录指令并激活放行按钮
+            gameState.currentStamp = stampType;
+            document.getElementById("btn-return-doc").disabled = false;
+        }
+    }
+    
+    // 2. 检测是否盖在便签纸上
+    if (!hitTarget) {
+        const memo = document.getElementById("vip-memo");
+        if (memo) {
+            const r = memo.getBoundingClientRect();
+            if (Px >= r.left && Px <= r.right && Py >= r.top && Py <= r.bottom) {
+                hitTarget = memo;
+                hitX = Px - r.left;
+                hitY = Py - r.top;
+            }
+        }
+    }
+    
+    // 3. 检测是否盖在罚单上
+    if (!hitTarget) {
+        const citations = document.querySelectorAll(".citation-paper");
+        for (const cit of citations) {
+            const r = cit.getBoundingClientRect();
+            if (Px >= r.left && Px <= r.right && Py >= r.top && Py <= r.bottom) {
+                hitTarget = cit;
+                hitX = Px - r.left;
+                hitY = Py - r.top;
+                break;
+            }
+        }
+    }
+    
+    // 4. 检测是否盖在左侧工作手册上
+    if (!hitTarget) {
+        const manual = document.getElementById("cabin-manual");
+        if (manual) {
+            const r = manual.getBoundingClientRect();
+            if (Px >= r.left && Px <= r.right && Py >= r.top && Py <= r.bottom) {
+                hitTarget = manual;
+                hitX = Px - r.left;
+                hitY = Py - r.top;
+            }
+        }
+    }
+    
+    // 5. 默认直接印在桌面上 (Counter Surface)
+    if (!hitTarget) {
+        const surface = document.getElementById("counter-surface");
+        if (surface) {
+            const r = surface.getBoundingClientRect();
+            hitTarget = surface;
+            hitX = Px - r.left;
+            hitY = Py - r.top;
+        }
+    }
+    
+    if (hitTarget) {
+        createStampMark(hitTarget, hitX, hitY, stampType, rot);
+    }
+    
+    // Balatro 风格打击感反馈：微震屏 + 在命中定位点爆出墨汁微粒
+    if (typeof triggerScreenShake === "function") triggerScreenShake();
+    if (typeof spawnInkParticles === "function") spawnInkParticles(Px, Py, inkColor);
 }
 
 function returnDocumentToPassenger() {
