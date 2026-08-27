@@ -1,0 +1,275 @@
+/* ==========================================================================
+   CSS 模块 3: 下半屏桌面与左侧工作手册 (DESK.CSS)
+   ========================================================================== */
+
+.desk-viewport {
+    background-color: var(--c-desk-surface);
+    border-top: 4px solid var(--c-desk-dark);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: inset 0 20px 40px rgba(0,0,0,0.4);
+    overflow: hidden;
+}
+
+/* 物理桌面自由交互区 */
+.counter-surface {
+    flex: 1;
+    position: relative;
+    width: 100%;
+    height: calc(100% - 30px);
+    overflow: hidden;
+}
+
+/* 所有可拖拽物体的通用样式 */
+.draggable-item {
+    position: absolute;
+    cursor: grab;
+    touch-action: none;
+}
+
+.draggable-item.is-dragging {
+    cursor: grabbing !important;
+    z-index: 1000 !important;
+    box-shadow: 10px 10px 20px rgba(0,0,0,0.5) !important;
+}
+
+/* 【左边】：工作手册 (第一页：客舱实时雷达，第二页：检票准则，第三页：执勤统计) */
+.cabin-manual-book {
+    position: absolute;
+    left: 16px;
+    top: 12px;
+    bottom: 12px;
+    width: 480px;
+    background-color: var(--c-manual-bg);
+    border: 3.5px solid #2e261a;
+    border-radius: 4px;
+    box-shadow: 5px 5px 0 rgba(0,0,0,0.4);
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+    overflow: hidden;
+}
+
+.manual-tab-bar {
+    background-color: #2e261a;
+    display: flex;
+    gap: 4px;
+    padding: 6px 8px 0;
+}
+
+.tab-btn {
+    background-color: #4d402d;
+    color: #cfc2a9;
+    border: 2px solid #2e261a;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    transition: background-color 0.15s ease;
+}
+
+.tab-btn.active {
+    background-color: var(--c-manual-bg);
+    color: var(--c-ink);
+}
+
+.manual-content {
+    flex: 1;
+    padding: 12px 16px;
+    overflow-y: auto;
+}
+
+.rule-title {
+    font-size: 0.92rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+    color: #2b2318;
+    border-bottom: 2px solid #6b5c43;
+    padding-bottom: 4px;
+}
+
+.rules-list {
+    padding-left: 20px;
+    line-height: 1.6;
+    font-size: 0.82rem;
+}
+
+.cabin-grid-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #6b5c43;
+    padding-bottom: 6px;
+    margin-bottom: 10px;
+    font-weight: 800;
+    font-size: 0.88rem;
+}
+
+.vip-status-pill {
+    background-color: #f7e2a3;
+    color: #634b07;
+    border: 1.5px solid #8f6e12;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.cabin-seats-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.seat-cell {
+    background-color: #fff;
+    border: 2px solid #4a3e2b;
+    border-radius: 5px;
+    padding: 8px 4px;
+    text-align: center;
+    box-shadow: 2px 2px 0 rgba(0,0,0,0.15);
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.seat-cell .seat-num-tag {
+    font-size: 1.15rem;
+    font-family: monospace;
+    font-weight: 900;
+    color: #2b2318;
+}
+
+.seat-cell .seat-status-desc {
+    font-size: 0.68rem;
+    color: #72644e;
+    margin-top: 2px;
+    font-weight: 700;
+}
+
+.seat-cell.is-empty {
+    border-style: dashed;
+    background-color: #faf6ed;
+}
+
+.seat-cell.is-assigned-correct {
+    background-color: #e0f2e1;
+    border-color: #256627;
+}
+.seat-cell.is-assigned-correct .seat-num-tag { color: #174f19; }
+
+.seat-cell.is-stolen {
+    background-color: #fae1e1;
+    border-color: #b82622;
+}
+.seat-cell.is-stolen .seat-num-tag { color: #8a1512; }
+
+.seat-cell.is-vip {
+    border-color: #cfa122;
+    box-shadow: 0 0 10px rgba(207, 161, 34, 0.45);
+}
+
+.cabin-legend {
+    display: flex;
+    gap: 12px;
+    font-size: 0.72rem;
+    color: #5c503b;
+    border-top: 1.5px dashed rgba(68, 60, 44, 0.25);
+    padding-top: 8px;
+    align-items: center;
+}
+
+.leg-item { display: flex; align-items: center; gap: 4px; }
+.leg-box {
+    width: 10px;
+    height: 10px;
+    border: 1.5px solid #4a3e2b;
+    border-radius: 2px;
+    display: inline-block;
+}
+.leg-empty { background: #faf6ed; border-style: dashed; }
+.leg-correct { background: #e0f2e1; border-color: #256627; }
+.leg-stolen { background: #fae1e1; border-color: #b82622; }
+.leg-vip { background: #fff; border-color: #cfa122; }
+
+.stats-box {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.85rem;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px dashed rgba(0,0,0,0.15);
+    padding-bottom: 4px;
+}
+
+.stat-highlight {
+    font-size: 1rem;
+    font-weight: 800;
+    border-bottom: 2px solid #5a4e39;
+    padding-top: 4px;
+}
+
+.stat-note {
+    font-size: 0.72rem;
+    color: #72644e;
+    margin-top: 6px;
+}
+
+/* 左侧：点阵罚单插槽 */
+.citation-printer-slot {
+    position: absolute;
+    top: 0;
+    left: 20px;
+    z-index: 160;
+}
+
+.citation-paper {
+    background-color: var(--c-citation);
+    border: 2px dashed #992323;
+    padding: 8px 12px;
+    font-family: monospace;
+    font-size: 0.78rem;
+    color: #6d1414;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+    animation: citationPrint 0.35s ease-out;
+}
+
+@keyframes citationPrint {
+    0% { transform: translateY(-100%); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+.citation-header { font-weight: 900; font-size: 0.85rem; margin-bottom: 3px; text-align: center; }
+.citation-dismiss {
+    margin-top: 4px;
+    width: 100%;
+    background: #6d1414;
+    color: #fff;
+    border: none;
+    padding: 2px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+/* 底部状态栏 */
+.desk-bottom-bar {
+    height: 30px;
+    background-color: #151819;
+    border-top: 2px solid #0a0d0e;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    font-size: 0.72rem;
+    color: #82929c;
+    font-family: monospace;
+}
+
+.bottom-clock { color: #f5eedb; font-weight: 800; }
+.bottom-hint { color: #5a6870; }

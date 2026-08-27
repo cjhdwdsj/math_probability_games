@@ -1,0 +1,93 @@
+/* ==========================================================================
+   CSS 模块 5: 实体印章盒与按压把手机制 (STAMP-BOX.CSS)
+   ========================================================================== */
+
+.stamp-box-draggable {
+    right: 28px;
+    top: 110px;
+    width: 225px;
+    background-color: #22272a;
+    border: 3px solid #101314;
+    border-radius: 6px;
+    box-shadow: 6px 6px 12px rgba(0,0,0,0.5);
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+}
+
+.stamp-box-frame {
+    background-color: #333a3e;
+    color: #cfd8dc;
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 5px 8px;
+    text-align: center;
+    cursor: grab;
+    border-bottom: 2px solid #171a1c;
+    letter-spacing: 0.5px;
+}
+
+.stamp-plungers-row {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    background-color: #1a1d1f;
+    justify-content: space-around;
+}
+
+.stamp-plunger-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.stamp-knob {
+    background: none;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.08s ease;
+}
+
+.stamp-knob:hover .knob-cap {
+    background: radial-gradient(circle at 35% 25%, #a65e2e, #5a2c0e);
+}
+
+.stamp-knob:active, .stamp-knob.is-pressing {
+    transform: translateY(14px);
+}
+
+.knob-cap {
+    width: 32px;
+    height: 18px;
+    background: radial-gradient(circle at 35% 25%, #8d4f26, #44210a);
+    border: 2px solid #1a0b03;
+    border-radius: 6px 6px 2px 2px;
+    box-shadow: 0 3px 0 #150802, 0 4px 6px rgba(0,0,0,0.5);
+}
+
+.knob-stem {
+    width: 8px;
+    height: 14px;
+    background: linear-gradient(90deg, #666, #999, #444);
+    border-left: 1px solid #222;
+    border-right: 1px solid #222;
+}
+
+.stamp-shoe {
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 1px 1px 0 #000;
+    border: 2px solid #000;
+    box-shadow: 0 3px 0 #000;
+    pointer-events: none;
+}
+
+.stamp-red-unit .stamp-shoe { background-color: var(--c-stamp-red); }
+.stamp-blue-unit .stamp-shoe { background-color: var(--c-stamp-blue); }

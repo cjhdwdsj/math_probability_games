@@ -4,7 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>请出示证件：神秘 VIP 与篡位者航班 (Papers, Please - Flight Edition)</title>
-    <link rel="stylesheet" href="style.css">
+    
+    <!-- 模块化样式表 -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/top-viewport.css">
+    <link rel="stylesheet" href="css/desk.css">
+    <link rel="stylesheet" href="css/boarding-pass.css">
+    <link rel="stylesheet" href="css/stamp-box.css">
+    
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -14,16 +21,16 @@
         <!-- ================= 上半屏：边境与哨所视角 (TOP VIEWPORT) ================= -->
         <div class="top-viewport">
             
-            <!-- 左上：候机长廊与铁丝网排队小人 (从左向右朝检票口排队) -->
+            <!-- 左上：候机长廊与铁丝网排队小人 -->
             <div class="queue-zone" aria-label="候机长廊队列">
                 <div class="zone-header">
-                    <span class="corridor-sign" id="corridor-sign">GATE 404 · 候机长廊 (从右向左排入)</span>
+                    <span class="corridor-sign" id="corridor-sign">GATE 404 · 候机长廊</span>
                     <span class="queue-count" id="queue-count">等待登机: 2 人</span>
                 </div>
                 <div class="queue-track">
                     <div class="corridor-bg-lines"></div>
                     
-                    <!-- 边防铁丝网 / 拦网 (Entrants stand behind the security fence) -->
+                    <!-- 边防铁丝拦网 -->
                     <div class="security-fence">
                         <div class="fence-mesh"></div>
                         <div class="fence-post post-1"></div>
@@ -33,10 +40,10 @@
                         <div class="fence-bar-bottom"></div>
                     </div>
                     
-                    <!-- 动态生成的像素小人队列 (队列排在拦网后) -->
+                    <!-- 动态生成的像素小人队列 -->
                     <div class="queue-line" id="queue-line"></div>
                     
-                    <!-- 右侧安检旋转闸门 / 入口指示牌 -->
+                    <!-- 右侧安检旋转闸门 -->
                     <div class="checkpoint-turnstile">
                         <div class="turnstile-sign">➔ 检票口</div>
                         <div class="turnstile-door" id="turnstile-door"></div>
@@ -228,6 +235,13 @@
 
     </div>
 
-    <script src="script.js"></script>
+    <!-- 模块化脚本加载 -->
+    <script src="js/state.js"></script>
+    <script src="js/pixel-art.js"></script>
+    <script src="js/draggable.js"></script>
+    <script src="js/dialogue.js"></script>
+    <script src="js/cabin.js"></script>
+    <script src="js/stamping.js"></script>
+    <script src="js/game.js"></script>
 </body>
 </html>

@@ -1,0 +1,81 @@
+/* ==========================================================================
+   CSS 模块 1: 基础变量、重置与视口框架 (BASE.CSS)
+   ========================================================================== */
+
+:root {
+    /* 经典冷战/边防官僚色系 */
+    --c-desk-dark: #252a2d;
+    --c-desk-surface: #363d42;
+    --c-desk-rim: #1a1e20;
+    --c-booth-bg: #3f4741;
+    --c-corridor-wall: #2c332e;
+    --c-floor: #1e2420;
+    
+    /* 纸张与证件 */
+    --c-pass-bg: #eae0c2;
+    --c-pass-border: #443c2c;
+    --c-tape-bg: #f5eedb;
+    --c-manual-bg: #f5efe1;
+    
+    /* 墨水与印泥 */
+    --c-ink: #2b2621;
+    --c-stamp-red: #ba2824;
+    --c-stamp-blue: #23588d;
+    --c-gold: #cfa122;
+    --c-green: #387d39;
+    --c-citation: #fad2d2;
+    
+    /* 物理投影与线条 */
+    --pixel-border: 2px solid #1a1e20;
+    --shadow-hard: 4px 4px 0 rgba(0, 0, 0, 0.45);
+    --shadow-soft: 2px 2px 0 rgba(0, 0, 0, 0.3);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+}
+
+html, body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #0f1213;
+    color: var(--c-ink);
+    font-family: "Noto Sans SC", "Courier New", Courier, monospace;
+    image-rendering: pixelated;
+}
+
+button {
+    font-family: inherit;
+    cursor: pointer;
+}
+
+/* 主容器：经典上下分屏 */
+.booth-container {
+    width: 100vw;
+    height: 100vh;
+    display: grid;
+    grid-template-rows: 38vh 62vh;
+    border: 4px solid #111415;
+    position: relative;
+}
+
+/* CRT 扫描线微弱暗角 */
+.booth-container::after {
+    content: " ";
+    position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.12) 50%), 
+                linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+    background-size: 100% 3px, 6px 100%;
+    pointer-events: none;
+    z-index: 200;
+}
+
+.gold-text { color: #876204; font-weight: 800; }
+.green-text { color: var(--c-green); font-weight: 700; }
+.red-text { color: var(--c-stamp-red); font-weight: 700; }
+.hidden { display: none !important; }

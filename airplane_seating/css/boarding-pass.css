@@ -1,0 +1,197 @@
+/* ==========================================================================
+   CSS 模块 4: 登机牌与便签组件 (BOARDING-PASS.CSS)
+   ========================================================================== */
+
+/* 【右边】：绝密便签 */
+.memo-sticky {
+    right: 28px;
+    top: 12px;
+    width: 220px;
+    background-color: #f7ebb8;
+    border: 2px solid #6b5c3b;
+    padding: 8px 12px;
+    transform: rotate(-1.5deg);
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.3);
+    font-size: 0.8rem;
+    line-height: 1.35;
+    z-index: 20;
+}
+
+.memo-pin {
+    position: absolute;
+    top: -5px;
+    left: 14px;
+    width: 10px;
+    height: 10px;
+    background-color: #ba2824;
+    border-radius: 50%;
+    border: 1px solid #500;
+}
+
+.memo-title {
+    font-weight: 800;
+    color: #4a3e20;
+    margin-bottom: 2px;
+    font-size: 0.8rem;
+}
+
+/* 【右边由上往下弹出】：乘客纸质登机牌 (可自由拖拽) */
+.boarding-pass-card {
+    right: 270px;
+    top: 14px;
+    width: 260px;
+    background-color: var(--c-pass-bg);
+    border: 3px solid var(--c-pass-border);
+    border-radius: 4px;
+    padding: 8px 10px;
+    box-shadow: 6px 6px 0 rgba(0,0,0,0.35);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 50;
+    animation: passSlideDown 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.15) forwards;
+}
+
+@keyframes passSlideDown {
+    0% { transform: translateY(-50px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+.pass-drag-handle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #5a4e39;
+    padding-bottom: 4px;
+    cursor: grab;
+}
+
+.pass-drag-title {
+    font-weight: 900;
+    font-size: 0.78rem;
+    letter-spacing: 0.5px;
+}
+
+.pass-type {
+    background: #252a2d;
+    color: #fff;
+    font-size: 0.62rem;
+    padding: 1px 5px;
+    border-radius: 2px;
+    font-weight: 700;
+}
+
+.pass-body {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.pass-photo-frame {
+    width: 44px;
+    height: 55px;
+    background: #222;
+    border: 2px solid #443c2c;
+    flex-shrink: 0;
+}
+
+.pass-details {
+    flex: 1;
+    font-size: 0.78rem;
+    line-height: 1.4;
+}
+
+.pass-details .lbl {
+    color: #6e5f49;
+    font-size: 0.68rem;
+    margin-right: 3px;
+}
+
+.seat-num {
+    font-size: 1.1rem;
+    color: #8c251d;
+    font-family: monospace;
+    font-weight: 900;
+}
+
+/* 印章印记痕迹 */
+.stamp-impression-slot {
+    min-height: 42px;
+    border: 2px dashed rgba(68, 60, 44, 0.4);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.stamp-placeholder-hint {
+    font-size: 0.7rem;
+    color: #796a52;
+    font-style: italic;
+}
+
+.stamped-mark {
+    font-family: "Noto Serif SC", serif;
+    font-size: 1.05rem;
+    font-weight: 900;
+    padding: 3px 8px;
+    border: 3px solid;
+    border-radius: 4px;
+    letter-spacing: 2px;
+    transform: rotate(calc(var(--rot, 0) * 1deg));
+    animation: stampSlam 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.stamped-assigned {
+    color: var(--c-stamp-red);
+    border-color: var(--c-stamp-red);
+    background: rgba(186, 40, 36, 0.1);
+}
+
+.stamped-random {
+    color: var(--c-stamp-blue);
+    border-color: var(--c-stamp-blue);
+    background: rgba(35, 88, 141, 0.1);
+}
+
+@keyframes stampSlam {
+    0% { transform: scale(1.6) rotate(0deg); opacity: 0; }
+    100% { transform: scale(1) rotate(calc(var(--rot, 0) * 1deg)); opacity: 1; }
+}
+
+.pass-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 2px solid #5a4e39;
+    padding-top: 4px;
+}
+
+.barcode-mock {
+    font-family: monospace;
+    letter-spacing: -2px;
+    font-size: 0.68rem;
+    color: #554733;
+}
+
+.btn-return-doc {
+    background-color: #2b4c2c;
+    color: #fff;
+    border: 2px solid #162917;
+    padding: 4px 10px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    box-shadow: 2px 2px 0 #000;
+}
+
+.btn-return-doc:not(:disabled):hover {
+    background-color: #3b663c;
+}
+
+.btn-return-doc:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
