@@ -43,12 +43,15 @@ function runDialogueSequence(lines, onComplete) {
     const el = document.getElementById("tape-dialogue");
     const hintEl = document.getElementById("tape-step-hint");
 
+    let lastActionTimestamp = 0;
+
     function renderLine(index) {
         isCurrentLineDone = false;
         if (hintEl) hintEl.classList.add("hidden");
         
         typeDialogue(lines[index], () => {
             isCurrentLineDone = true;
+            lastActionTimestamp = Date.now();
             if (hintEl) {
                 hintEl.textContent = (index < lines.length - 1) ? "▼ 点击或按空格继续" : "▼ 点击开始执勤";
                 hintEl.classList.remove("hidden");
@@ -57,8 +60,9 @@ function runDialogueSequence(lines, onComplete) {
     }
 
     function advance() {
+        const now = Date.now();
         if (!isCurrentLineDone) {
-            // 如果还在逐字打印，点击直接秒出当前全句
+            // 如果还在逐字打印，按键直接秒出当前全句
             if (activeDialogueTimer) {
                 clearInterval(activeDialogueTimer);
                 activeDialogueTimer = null;
@@ -66,6 +70,7 @@ function runDialogueSequence(lines, onComplete) {
             if (el) el.textContent = lines[currentIndex];
             isCurrentLineDone = true;
             gameState.dialogueTyping = false;
+            lastActionTimestamp = now;
             if (hintEl) {
                 hintEl.textContent = (currentIndex < lines.length - 1) ? "▼ 点击或按空格继续" : "▼ 点击开始执勤";
                 hintEl.classList.remove("hidden");
@@ -73,7 +78,13 @@ function runDialogueSequence(lines, onComplete) {
             return;
         }
 
-        // 已经打印完，步进到下一句
+        // 已经打印完，必须间隔至少 200ms 防止同一次连击按键跳过后续句子
+        if (now - lastActionTimestamp < 200) {
+            return;
+        }
+        lastActionTimestamp = now;
+
+        // 步进到下一句
         currentIndex++;
         if (currentIndex < lines.length) {
             renderLine(currentIndex);
@@ -98,8 +109,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     document.addEventListener("keydown", (e) => {
+        if (e.repeat) return; // 忽略长按自动连发
         if (activeSequence && (e.code === "Space" || e.code === "Enter")) {
             e.preventDefault();
+            e.stopPropagation();
             activeSequence.advance();
         }
     });

@@ -11,11 +11,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function bindKeyboardShortcuts() {
     document.addEventListener("keydown", (e) => {
-        if (gameState.dialogueTyping) return;
+        if (e.repeat) return;
+        if (typeof activeSequence !== "undefined" && activeSequence) return;
+        if (gameState.dialogueTyping || gameState.isTransitioningFlight) return;
         
         if (e.code === "Space" || e.key === "n" || e.key === "N") {
             e.preventDefault();
-            callNextEntrant();
+            if (!gameState.isEntrantInBooth) {
+                callNextEntrant();
+            }
         } else if (e.key === "1") {
             pressStamp("ASSIGNED");
         } else if (e.key === "2") {
