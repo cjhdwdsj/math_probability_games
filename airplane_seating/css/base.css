@@ -1,7 +1,7 @@
 @font-face {
-    font-family: "Ark Pixel";
-    src: url("../fonts/ark-pixel.woff2") format("woff2"),
-         url("../fonts/ark-pixel.ttf") format("truetype");
+    font-family: "Fusion Pixel";
+    src: url("../fonts/fusion-pixel.woff2") format("woff2"),
+         url("../fonts/fusion-pixel.woff") format("woff");
     font-weight: normal;
     font-style: normal;
     font-display: block;

@@ -13,19 +13,19 @@
     <link rel="stylesheet" href="css/stamp-box.css">
     <link rel="stylesheet" href="css/crt-screen.css">
 
-    <!-- 本地方舟像素体嵌入 (0ms 离线加载，双格式保底) -->
+    <!-- 本地缝合像素体嵌入 (Fusion Pixel 12px 比例版，0ms 离线加载) -->
     <style>
         @font-face {
-            font-family: "Ark Pixel";
-            src: url("fonts/ark-pixel.woff2") format("woff2"),
-                 url("fonts/ark-pixel.ttf") format("truetype");
+            font-family: "Fusion Pixel";
+            src: url("fonts/fusion-pixel.woff2") format("woff2"),
+                 url("fonts/fusion-pixel.woff") format("woff");
             font-weight: normal;
             font-style: normal;
             font-display: block;
         }
 
         *, body, button, div, span, p, h1, h2, h3, h4, strong {
-            font-family: "Ark Pixel", monospace, sans-serif !important;
+            font-family: "Fusion Pixel", monospace, sans-serif !important;
             -webkit-font-smoothing: none !important;
             -moz-osx-font-smoothing: unset !important;
             font-smooth: never !important;
@@ -34,13 +34,13 @@
     </style>
     
     <script>
-        // 显式确保字体就绪
+        // 显式加载并挂载像素字体
         try {
-            const f = new FontFace("Ark Pixel", "url(fonts/ark-pixel.woff2)");
+            const f = new FontFace("Fusion Pixel", "url(fonts/fusion-pixel.woff2)");
             f.load().then(loaded => {
                 document.fonts.add(loaded);
-                document.body.style.fontFamily = "'Ark Pixel', monospace";
-            }).catch(e => console.error("Ark pixel font load error:", e));
+                document.body.style.fontFamily = "'Fusion Pixel', monospace";
+            }).catch(e => console.error("Pixel font load error:", e));
         } catch(e) {}
     </script>
 </head>
