@@ -175,14 +175,24 @@
                             </ol>
                         </div>
 
-                        <!-- Tab 3: 执勤战绩 -->
+                        <!-- Tab 3: 执勤战绩与千次验算机 -->
                         <div class="tab-pane hidden" id="tab-stats">
                             <div class="stats-box">
                                 <div class="stat-item"><span>已处理航班总数:</span> <strong id="stat-flights">0</strong> 班</div>
                                 <div class="stat-item"><span>神秘 VIP 成功入座:</span> <strong class="green-text" id="stat-vip-wins">0</strong> 次</div>
                                 <div class="stat-item"><span>神秘 VIP 遭抢出局:</span> <strong class="red-text" id="stat-vip-losses">0</strong> 次</div>
                                 <div class="stat-item stat-highlight"><span>当前 VIP 成功率:</span> <strong class="gold-text" id="stat-vip-rate">0.0%</strong></div>
-                                <p class="stat-note">* 无论航班是 2 人、5 人还是 100 人，观察大数下 VIP 成功率的奇妙收敛。</p>
+                            </div>
+                            
+                            <!-- 终章：千次蒙特卡洛点阵验算机 -->
+                            <div class="sim-panel" style="margin-top: 8px; border-top: 2px dashed #6b5c3b; padding-top: 6px;">
+                                <div style="font-weight: 900; font-size: 0.82rem; margin-bottom: 5px; color: #4a3e20;">⚡ 极速点阵大数验算机</div>
+                                <div style="display: flex; gap: 6px; margin-bottom: 5px;">
+                                    <button type="button" class="btn-start-day2" style="padding: 3px 6px; font-size: 0.7rem;" onclick="runMonteCarloSimulation(1000, 10)">🚀 模拟 1000 班 (N=10)</button>
+                                    <button type="button" class="btn-start-day2" style="padding: 3px 6px; font-size: 0.7rem; background: #23588d; border-color: #122f4c;" onclick="runMonteCarloSimulation(5000, 100)">⚡ 模拟 5000 班 (N=100)</button>
+                                </div>
+                                <canvas id="sim-chart-canvas" width="280" height="65" style="border: 2px solid #333; background: #161b1d; width: 100%; border-radius: 2px;"></canvas>
+                                <div id="sim-result-text" style="font-size: 0.72rem; line-height: 1.35; margin-top: 3px; color: #2b2621;">点击上方按钮，飞速验证无论 N 多少，VIP 成功率均严格收敛至 50.0%！</div>
                             </div>
                         </div>
                     </div>
@@ -315,6 +325,7 @@
     <script src="js/draggable.js"></script>
     <script src="js/dialogue.js"></script>
     <script src="js/intermission.js"></script>
+    <script src="js/simulator.js"></script>
     <script src="js/cabin.js"></script>
     <script src="js/stamping.js"></script>
     <script src="js/game.js"></script>

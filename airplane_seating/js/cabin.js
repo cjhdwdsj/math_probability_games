@@ -64,11 +64,41 @@ function renderCabinGrid() {
             `;
         } else {
             const isCorrect = (occupantId === i);
-            cell.classList.add(isCorrect ? "is-assigned-correct" : "is-stolen");
-            cell.innerHTML = `
-                <div class="seat-num-tag">${i === gameState.totalSeats ? "👑 " + i : i}</div>
-                <div class="seat-status-desc">${occupantId}号就座</div>
-            `;
+            if (isCorrect) {
+                cell.classList.add("is-assigned-correct");
+                if (gameState.isXrayActive && i === 1) {
+                    cell.innerHTML = `
+                        <div class="seat-num-tag">✨ 1</div>
+                        <div class="seat-status-desc" style="color: #2e7d32; font-weight:800;">1号归位(全员拯救)</div>
+                    `;
+                } else {
+                    cell.innerHTML = `
+                        <div class="seat-num-tag">${i === gameState.totalSeats ? "👑 " + i : i}</div>
+                        <div class="seat-status-desc">${occupantId}号就座</div>
+                    `;
+                }
+            } else {
+                cell.classList.add("is-stolen");
+                if (gameState.isXrayActive) {
+                    cell.classList.add("is-usurped-relay");
+                    if (i === gameState.totalSeats) {
+                        cell.innerHTML = `
+                            <div class="seat-num-tag">💥 👑${i}</div>
+                            <div class="seat-status-desc" style="color: #c62828; font-weight:800;">${occupantId}占VIP(覆灭)</div>
+                        `;
+                    } else {
+                        cell.innerHTML = `
+                            <div class="seat-num-tag">🔗 ${i}</div>
+                            <div class="seat-status-desc" style="color: #9c6c08; font-weight:800;">${occupantId}号转交 ➔ ${i}号</div>
+                        `;
+                    }
+                } else {
+                    cell.innerHTML = `
+                        <div class="seat-num-tag">${i === gameState.totalSeats ? "👑 " + i : i}</div>
+                        <div class="seat-status-desc">${occupantId}号占座</div>
+                    `;
+                }
+            }
         }
         
         grid.appendChild(cell);

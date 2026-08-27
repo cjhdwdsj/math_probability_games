@@ -155,16 +155,28 @@
 }
 
 .seat-cell.is-assigned-correct {
-    background-color: #e0f2e1;
-    border-color: #256627;
+    background-color: #d8eed9;
+    border-color: #387d39;
 }
 .seat-cell.is-assigned-correct .seat-num-tag { color: #174f19; }
 
 .seat-cell.is-stolen {
-    background-color: #fae1e1;
-    border-color: #b82622;
+    background-color: #fad7d6;
+    border-color: #ba2824;
 }
 .seat-cell.is-stolen .seat-num-tag { color: #8a1512; }
+
+.seat-cell.is-usurped-relay {
+    border: 2.5px solid #d4af37 !important;
+    background: linear-gradient(135deg, #fff 0%, #fff9e6 100%) !important;
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.45);
+    animation: goldPulse 1.5s infinite alternate ease-in-out;
+}
+
+@keyframes goldPulse {
+    0% { transform: scale(1); box-shadow: 0 0 5px rgba(212, 175, 55, 0.3); }
+    100% { transform: scale(1.03); box-shadow: 0 0 12px rgba(212, 175, 55, 0.65); }
+}
 
 .seat-cell.is-vip {
     border-color: #cfa122;

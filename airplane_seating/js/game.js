@@ -119,7 +119,11 @@ function callNextEntrant() {
     setTimeout(() => {
         let greetText = "";
         if (passenger.isFirst) {
-            greetText = `[1号乘客] "检票员师傅……我好像把登机牌弄丢了！请问我能登机吗？"`;
+            if (gameState.day === 3) {
+                greetText = `[1号西装篡位者] "检票员您好。我手持【VIP特权卡】。若我挑了某位乘客的座，他将继承特权卡继续找座……"`;
+            } else {
+                greetText = `[1号乘客] "检票员师傅……我好像把登机牌弄丢了！请问我能登机吗？"`;
+            }
         } else if (passenger.isVip) {
             greetText = `[${passenger.id}号乘客] "检票员您好，我是本趟航班的末位 VIP，我的专属座位是 ${passenger.id} 号。"`;
         } else {

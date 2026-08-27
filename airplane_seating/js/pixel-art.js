@@ -11,25 +11,53 @@ function drawPixelPortrait(canvas, passenger) {
     ctx.fillStyle = "#21282b";
     ctx.fillRect(0, 0, w, h);
     
-    ctx.fillStyle = passenger.isFirst ? "#524436" : (passenger.isVip ? "#705822" : "#38473c");
-    ctx.fillRect(16, 75, 68, 50);
+    const isDay3Usurper = (gameState.day === 3 && passenger.isFirst);
+
+    // 衣服
+    if (isDay3Usurper) {
+        ctx.fillStyle = "#1b1e22"; // 黑色西装
+        ctx.fillRect(16, 70, 68, 55);
+        ctx.fillStyle = "#fff";     // 衬衫领
+        ctx.fillRect(42, 70, 16, 15);
+        ctx.fillStyle = "#e5b94c"; // 金色领带
+        ctx.fillRect(47, 76, 6, 25);
+    } else {
+        ctx.fillStyle = passenger.isFirst ? "#524436" : (passenger.isVip ? "#705822" : "#38473c");
+        ctx.fillRect(16, 75, 68, 50);
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(42, 75, 16, 12);
+    }
     
-    ctx.fillStyle = "#fff";
-    ctx.fillRect(42, 75, 16, 12);
-    
-    ctx.fillStyle = passenger.isFirst ? "#cfa27c" : "#e0ba97";
+    // 脸部
+    ctx.fillStyle = passenger.isFirst && !isDay3Usurper ? "#cfa27c" : "#e0ba97";
     ctx.fillRect(30, 25, 40, 50);
     
-    ctx.fillStyle = "#111";
-    ctx.fillRect(38, 44, 6, 6);
-    ctx.fillRect(56, 44, 6, 6);
+    // 眼睛 / 墨镜
+    if (isDay3Usurper) {
+        ctx.fillStyle = "#111"; // 墨镜
+        ctx.fillRect(34, 42, 32, 10);
+        ctx.fillStyle = "#333";
+        ctx.fillRect(36, 44, 10, 6);
+        ctx.fillRect(54, 44, 10, 6);
+    } else {
+        ctx.fillStyle = "#111";
+        ctx.fillRect(38, 44, 6, 6);
+        ctx.fillRect(56, 44, 6, 6);
+    }
     
-    ctx.fillStyle = passenger.isFirst ? "#2d1f15" : "#1a2124";
-    if (passenger.isFirst) {
+    // 头发
+    if (isDay3Usurper) {
+        ctx.fillStyle = "#181a1c"; // 精致大背头
+        ctx.fillRect(26, 14, 48, 16);
+        ctx.fillRect(24, 20, 10, 20);
+        ctx.fillRect(66, 20, 10, 20);
+    } else if (passenger.isFirst) {
+        ctx.fillStyle = "#2d1f15";
         ctx.fillRect(24, 15, 52, 16);
         ctx.fillRect(20, 22, 12, 15);
         ctx.fillRect(68, 20, 12, 18);
     } else {
+        ctx.fillStyle = "#1a2124";
         ctx.fillRect(28, 18, 44, 14);
     }
     
