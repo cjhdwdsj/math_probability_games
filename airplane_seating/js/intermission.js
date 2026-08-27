@@ -19,7 +19,7 @@ function triggerNightIntermission(nightIndex, onContinue) {
 
     if (nightIndex === 1) {
         titleEl.textContent = "🌙 第 1 夜 · 暴雨交加";
-        bodyEl.innerHTML = "窗外雷鸣阵阵，狂风肆虐着边检哨所。<br><br>清晨当你再次走入哨所时，发现——<b>客舱实时雷达硬件严重受损，彻底失去信号（SIGNAL LOST）！</b><br><br>今天你将无法直接俯瞰客舱座位，只能凭借登机牌与乘客当面陈述，在脑海中盲盒推演全机命运……";
+        bodyEl.innerHTML = "窗外雷鸣阵阵，狂风肆虐着边检机场机坪。<br><br>清晨当你再次走入机场边检闸口时，发现——<b>客舱实时雷达硬件严重受损，彻底失去信号（SIGNAL LOST）！</b><br><br>今天你将无法直接俯瞰客舱座位，只能凭借登机牌与乘客当面陈述，在脑海中盲盒推演全机命运……";
         btnEl.textContent = "➔ 开启 DAY 2 盲盒执勤";
     } else {
         titleEl.textContent = "🌙 第 2 夜 · 芯片与破晓";

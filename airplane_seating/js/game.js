@@ -175,7 +175,7 @@ function finalizeFlight() {
         const flightTagEl = document.getElementById("flights-left-tag");
         if (flightTagEl) flightTagEl.textContent = `DAY ${gameState.day} 航班已全部处理完毕 (下班打卡)`;
         
-        typeDialogue(`${outcomeText} 🌇【DAY ${gameState.day} 执勤结束】今日航班已全部处理完毕。哨所打卡下班！`, () => {
+        typeDialogue(`${outcomeText} 🌇【DAY ${gameState.day} 执勤结束】今日航班已全部处理完毕。边检机场打卡下班！`, () => {
             document.getElementById("btn-next-entrant").disabled = true;
             document.getElementById("status-indicator").className = "indicator-light";
             
