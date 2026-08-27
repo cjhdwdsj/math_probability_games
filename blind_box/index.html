@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="盲盒集齐为什么比直觉难得多？通俗互动带你探索赠券收集者概率现象。">
+    <title>盲盒收集大揭秘 - 为什么最后一只总抽不到？</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- 复古手绘装饰图形 -->
+    <div class="doodle doodle-1" aria-hidden="true"></div>
+    <div class="doodle doodle-2" aria-hidden="true"></div>
+    <div class="doodle doodle-3" aria-hidden="true"></div>
+    <div class="doodle doodle-4" aria-hidden="true"></div>
+
+    <div class="lesson-app">
+        <!-- 顶部导航条 -->
+        <header class="lesson-topbar">
+            <a class="brand" href="#" onclick="goToPage(0); return false;" aria-label="回到课程首页">
+                <span aria-hidden="true">🎁</span>
+                <span>盲盒收集大揭秘</span>
+                <span class="brand-badge">趣味概率</span>
+            </a>
+            <div class="progress-copy" aria-live="polite">
+                <span id="current-page">1</span><span class="progress-separator">/</span><span id="page-count">9</span>
+                <span class="progress-label">正在探索</span>
+            </div>
+        </header>
+
+        <!-- 主内容区：9 步居中卡片 -->
+        <main class="lesson-stage" aria-label="盲盒收集问题互动课程">
+
+            <!-- 第 1 页：封面与加减调节器 -->
+            <section class="lesson-page active" data-page="0" aria-hidden="false">
+                <article class="lesson-card cover-card">
+                    <div class="cover-icon-box">
+                        <span class="cover-icon" aria-hidden="true">🎁</span>
+                    </div>
+                    <h1 class="cover-title">集齐一套 6 款盲盒，平均要买几个？</h1>
+                    <p class="cover-subtitle">猜猜你的直觉数字：</p>
+
+                    <!-- 加减步进器 -->
+                    <div class="stepper-control-wrap">
+                        <button class="stepper-btn" type="button" onclick="adjustGuess(-10)">-10</button>
+                        <button class="stepper-btn" type="button" onclick="adjustGuess(-1)">-1</button>
+                        <div class="stepper-val-card">
+                            <span class="stepper-number" id="stepper-guess-num">14</span>
+                            <span class="stepper-unit">个</span>
+                        </div>
+                        <button class="stepper-btn" type="button" onclick="adjustGuess(1)">+1</button>
+                        <button class="stepper-btn" type="button" onclick="adjustGuess(10)">+10</button>
+                    </div>
+
+                    <p style="font-size: 0.75rem; color: var(--muted-ink); margin-top: 1rem;">
+                        * 声明：每款概率完全均等 (1/6)，无任何伪随机保底，纯看脸。（本品最终解释权归数学所有）
+                    </p>
+                </article>
+            </section>
+
+            <!-- 第 1.5 页：过渡页（采购完毕扔桌上） -->
+            <section class="lesson-page" data-page="1" aria-hidden="true">
+                <article class="lesson-card" style="text-align: center; padding: clamp(1.6rem, 4vh, 2.5rem) 1.5rem;">
+                    <div class="section-kicker"><span aria-hidden="true">🛍️</span> 采购备齐</div>
+                    <div style="font-size: 3.5rem; margin: 0.4rem 0;" aria-hidden="true">📦✨</div>
+                    <h2 style="font-size: 1.55rem; margin-bottom: 0.4rem;" id="trans-guess-title">
+                        你猜要买 14 个才能集齐？
+                    </h2>
+                    <p class="lead" style="max-width: 520px; margin: 0 auto 0.6rem; font-size: 1.02rem;" id="trans-guess-lead">
+                        行！14 袋盲盒已经全给你买好扔桌上了，去桌前亲手拆拆看 14 袋到底能不能凑齐一套！
+                    </p>
+                </article>
+            </section>
+
+            <!-- 第 2 页：拟真桌面全屏拆盒台 (Tabletop Unboxing) -->
+            <section class="lesson-page" data-page="2" aria-hidden="true">
+                <article class="lesson-card" style="padding: clamp(0.7rem, 1.8vh, 1.1rem) clamp(0.9rem, 2vw, 1.5rem);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+                        <div class="section-kicker" style="margin-bottom: 0;"><span aria-hidden="true">📦</span> 拟真桌面拆盒</div>
+                        <div style="font-size: 0.78rem; font-weight: 700; color: var(--muted-ink);">
+                            点击桌上盲袋进入特写，撕开袋口拉出立牌
+                        </div>
+                    </div>
+
+                    <div class="tabletop-layout">
+                        <!-- 左侧：收银台账与控制 -->
+                        <div class="ledger-card">
+                            <div class="ledger-top">
+                                <div class="ledger-title">
+                                    <span>🧾 桌面记账单</span>
+                                </div>
+                                <div class="ledger-stat-list">
+                                    <div class="ledger-stat-row">
+                                        <span>已购总数：</span>
+                                        <strong id="ledger-bought-count">14 袋</strong>
+                                    </div>
+                                    <div class="ledger-stat-row">
+                                        <span>已拆开：</span>
+                                        <strong id="ledger-opened-count" style="color: var(--coral);">0 袋</strong>
+                                    </div>
+                                    <div class="ledger-stat-row">
+                                        <span>桌上剩余：</span>
+                                        <strong id="ledger-remain-count">14 袋未拆</strong>
+                                    </div>
+                                </div>
+                                <div class="ledger-cost-card">
+                                    <span class="ledger-cost-label">累计开销</span>
+                                    <span class="ledger-total-cost" id="ledger-cost-display">¥ 406</span>
+                                </div>
+                            </div>
+
+                            <div class="ledger-actions">
+                                <button class="btn btn-primary btn-sm" type="button" onclick="buyOneMoreBag()">➕ 再买一袋 (+¥29)</button>
+                                <div class="ledger-actions-row">
+                                    <button class="btn btn-quiet btn-sm" type="button" onclick="refundUnopenedBags()">↩️ 退未拆</button>
+                                    <button class="btn btn-quiet btn-sm" type="button" onclick="resetLife()">🔄 重置</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 中间：散落盲袋桌面 -->
+                        <div class="table-scatter-area" id="table-scatter-area">
+                            <!-- 动态生成铝箔盲袋 -->
+                        </div>
+
+                        <!-- 右侧：6 格萌宠亚克力展示架 -->
+                        <div class="shelf-display">
+                            <div>
+                                <div class="shelf-title">
+                                    <span>🧸 萌宠展架</span>
+                                    <span id="shelf-progress-tag" style="color: var(--coral); font-weight: 800;">0 / 6</span>
+                                </div>
+                                <div class="shelf-grid" id="shelf-grid">
+                                    <!-- 6 个亚克力立牌槽位 -->
+                                </div>
+                            </div>
+                            <div class="shelf-tip-text">
+                                💡 点亮全部 6 款解锁胜利结算
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </section>
+
+            <!-- 第 2.5 页：个人开箱战报过渡页 (Battle Report) -->
+            <section class="lesson-page" data-page="3" aria-hidden="true">
+                <article class="lesson-card report-card">
+                    <div class="section-kicker"><span aria-hidden="true">📊</span> 专属开箱战报</div>
+                    <h2 id="report-main-title" style="margin-top: 0.4rem;">你一共拆了 15 袋，累计花费 ¥ 435！</h2>
+                    <p class="lead" id="report-sub-desc">这是你的开箱花费曲线（横轴：已集齐款式数量，纵轴：累计花费金额）：</p>
+
+                    <!-- 个人开箱轨迹折线图 -->
+                    <div class="trajectory-chart-container">
+                        <canvas id="trajectory-canvas"></canvas>
+                    </div>
+                </article>
+            </section>
+
+            <!-- 第 3 页：大白话求和计算与柱状图 (理论真相) -->
+            <section class="lesson-page" data-page="4" aria-hidden="true">
+                <article class="lesson-card">
+                    <div class="section-kicker"><span aria-hidden="true">📐</span> 数学真相</div>
+                    <h2>为什么最后一只那么难抽？算算每一步的真实代价</h2>
+                    <p class="lead">每一步抽到新样式的概率等于未收集的款式数除以总款式数，而平均需要的尝试次数正是概率的倒数：</p>
+
+                    <div class="plain-math-banner">
+                        <div class="harmonic-preset-row">
+                            <span>切换款式：</span>
+                            <button class="preset-pill" id="h-btn-6" type="button" onclick="animateHarmonicPage(6)">6 款一套 (14.7次)</button>
+                            <button class="preset-pill" id="h-btn-8" type="button" onclick="animateHarmonicPage(8)">8 款一套 (21.7次)</button>
+                            <button class="preset-pill" id="h-btn-12" type="button" onclick="animateHarmonicPage(12)">12 款大套 (37.2次)</button>
+                            <button class="btn btn-quiet" type="button" onclick="replayHarmonicAnimation()" style="padding: 0.12rem 0.5rem; font-size: 0.72rem; margin-left: 0.2rem;">🔄 重播动画</button>
+                        </div>
+
+                        <div class="plain-calc-title" id="harmonic-calc-title">集齐一套 6 款盲盒的真实买法：</div>
+                        <div class="plain-calc-steps" id="harmonic-steps-wrap">
+                            <!-- 动态药丸逐步弹出 -->
+                        </div>
+                    </div>
+
+                    <!-- 动态拔高柱状图 -->
+                    <div class="harmonic-visual" id="harmonic-bars-wrap">
+                        <!-- 动态柱状图 -->
+                    </div>
+                    <p style="text-align: center; font-size: 0.78rem; color: var(--muted-ink); margin-top: 0.35rem;" id="harmonic-tip-text">
+                        柱子高度直观展示：越到后面越难抽，最后一只（需买 6 次，占全套 41%）超过了前 4 只的总和！
+                    </p>
+                </article>
+            </section>
+
+            <!-- 第 4 页（原4、6页合并）：10,000 位玩家开箱模拟与人群排队切分 -->
+            <section class="lesson-page" data-page="5" aria-hidden="true">
+                <article class="lesson-card">
+                    <div class="section-kicker"><span aria-hidden="true">🧪</span> 大数定律</div>
+                    <h2>平均 14.7 抽集齐，那我买 15 袋就稳了吗？来看万人真实战况</h2>
+                    <p class="lead">通过计算机模拟上万名玩家集齐所需的次数分布，左右拖动滑块看看你的成绩在模拟玩家中排在哪个位置：</p>
+
+                    <!-- 顶部款式与图例 -->
+                    <div class="sim-top-bar">
+                        <div class="sim-preset-chips">
+                            <span>款式数量：</span>
+                            <button class="preset-pill active" id="sim-btn-6" type="button" onclick="setSimN(6)">6 款一套 (均值14.7)</button>
+                            <button class="preset-pill" id="sim-btn-8" type="button" onclick="setSimN(8)">8 款一套 (均值21.7)</button>
+                            <button class="preset-pill" id="sim-btn-12" type="button" onclick="setSimN(12)">12 款大套 (均值37.2)</button>
+                            <button class="btn btn-quiet" type="button" onclick="runMonteCarloSim()" style="padding: 0.12rem 0.5rem; font-size: 0.72rem; margin-left: 0.2rem;">⚡ 重新模拟</button>
+                        </div>
+                        <div class="chart-legend">
+                            <span class="legend-item"><span class="legend-dot dot-god"></span> 欧皇区</span>
+                            <span class="legend-item"><span class="legend-dot dot-mid"></span> 凡人均值区</span>
+                            <span class="legend-item"><span class="legend-dot dot-bad"></span> 非酋长尾</span>
+                        </div>
+                    </div>
+
+                    <!-- 直方图画布 -->
+                    <div class="chart-container" id="chart-wrapper">
+                        <canvas id="sim-canvas"></canvas>
+                        <div id="chart-tooltip" class="chart-tooltip"></div>
+                    </div>
+
+                    <!-- 底部：拖动你的抽盒次数 + 人群排队切分互动区 -->
+                    <div class="crowd-interactive-card">
+                        <div class="crowd-slider-row">
+                            <label for="crowd-draws-slider" style="font-size: 0.82rem; font-weight: 700; color: var(--ink);">
+                                🎯 拖动抽盒次数：
+                                <strong id="crowd-draws-display" style="color: var(--coral); font-size: 1.15rem; font-family: 'Noto Serif SC', serif;">14 次</strong>
+                            </label>
+                            <input type="range" class="custom-range-slider" id="crowd-draws-slider" min="6" max="45" value="14" style="flex: 1; max-width: 260px;" oninput="updateCrowdVisual(this.value)">
+                            <div class="crowd-rank-pill mid" id="crowd-rank-badge">超越了模拟中 54.2% 的玩家</div>
+                        </div>
+
+                        <!-- 20个小人群体排队可视化 -->
+                        <div class="crowd-visual-wrap">
+                            <div class="crowd-people-line" id="crowd-people-line">
+                                <!-- 动态生成 20 个小人图标 -->
+                            </div>
+                            <div class="crowd-indicator" id="crowd-indicator">
+                                <span class="indicator-arrow">▲</span>
+                                <span class="indicator-tag" id="crowd-indicator-tag">你在这里 (第14次)</span>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </section>
+
+            <!-- 第 5 页：隐藏款 SSR 机制与众星拱月环形图 -->
+            <section class="lesson-page" data-page="6" aria-hidden="true">
+                <article class="lesson-card">
+                    <div class="section-kicker"><span aria-hidden="true">💎</span> 终极黑洞</div>
+                    <h2>如果还要追求隐藏款？大满贯的代价远超你的想象</h2>
+                    <p class="lead">上下拖动旋钮调节参数，下方实时计算抽中隐藏款所需购买的数量与总花费：</p>
+
+                    <!-- 顶部 3 个 FL Studio 风格拟真旋钮 -->
+                    <div class="ssr-knobs-console">
+                        <!-- 旋钮 1：基础款式数 -->
+                        <div class="fl-knob-unit" id="knob-unit-n">
+                            <div class="fl-knob-label">基础款式数</div>
+                            <div class="fl-knob-control-wrap">
+                                <span class="fl-knob-limit-label left">6款</span>
+                                <div class="fl-knob-dial" id="fl-dial-n" title="上下拖动或滚动调节">
+                                    <div class="fl-knob-notch"></div>
+                                </div>
+                                <span class="fl-knob-limit-label right">12款</span>
+                            </div>
+                            <div class="fl-knob-val-pill" id="knob-val-n">6 款一套</div>
+                        </div>
+
+                        <!-- 旋钮 2：隐藏款真实概率 -->
+                        <div class="fl-knob-unit" id="knob-unit-rate">
+                            <div class="fl-knob-label">隐藏款概率</div>
+                            <div class="fl-knob-control-wrap">
+                                <span class="fl-knob-limit-label left">1/24</span>
+                                <div class="fl-knob-dial" id="fl-dial-rate" title="上下拖动或滚动调节">
+                                    <div class="fl-knob-notch"></div>
+                                </div>
+                                <span class="fl-knob-limit-label right">1/288</span>
+                            </div>
+                            <div class="fl-knob-val-pill" id="knob-val-rate">1/72 (普通隐藏)</div>
+                        </div>
+
+                        <!-- 旋钮 3：你的欧气目标把握度 -->
+                        <div class="fl-knob-unit" id="knob-unit-prob">
+                            <div class="fl-knob-label">目标必中把握</div>
+                            <div class="fl-knob-control-wrap">
+                                <span class="fl-knob-limit-label left">5% 欧皇</span>
+                                <div class="fl-knob-dial" id="fl-dial-prob" title="上下拖动或滚动调节">
+                                    <div class="fl-knob-notch"></div>
+                                </div>
+                                <span class="fl-knob-limit-label right">99% 非酋</span>
+                            </div>
+                            <div class="fl-knob-val-pill" id="knob-val-prob">90% 把握</div>
+                        </div>
+                    </div>
+
+                    <!-- 下半部分：左侧环形图 + 右侧结论面板 -->
+                    <div class="ssr-stage-grid">
+                        <!-- 左侧：众星拱月环形轨道 -->
+                        <div class="ssr-ring-stage" id="ssr-ring-stage">
+                            <!-- 外围虚线轨道 -->
+                            <div class="ssr-orbit-track"></div>
+                            <!-- 环绕的普通款立牌蜂群 Canvas 高性能硬件加速绘制 -->
+                            <canvas class="ssr-swarm-canvas" id="ssr-swarm-canvas"></canvas>
+                            <!-- 中心中置的巨大黄金 SSR 隐藏款立牌 -->
+                            <div class="ssr-center-core">
+                                <div class="ssr-core-aura"></div>
+                                <div class="ssr-core-icon">👑</div>
+                                <div class="ssr-core-title">至尊金狐 (SSR)</div>
+                            </div>
+                        </div>
+
+                        <!-- 右侧：结论与花费卡片 -->
+                        <div class="ssr-verdict-panel">
+                            <div class="verdict-header">
+                                <span>🎯 全图鉴大满贯测算 (普通全套 + 隐藏款)</span>
+                            </div>
+                            <div class="verdict-stat-group">
+                                <div class="verdict-sub-label">达成目标需要购买：</div>
+                                <div class="verdict-big-num" id="verdict-draws-num">165 袋</div>
+                            </div>
+                            <div class="verdict-stat-group">
+                                <div class="verdict-sub-label">预计总开销：</div>
+                                <div class="verdict-cost-num" id="verdict-cost-num">¥ 4,785</div>
+                            </div>
+                            <div class="verdict-note-box" id="verdict-note-box">
+                                💡 此时普通 6 款早已全部集齐，桌上已产生 <strong>164 个</strong> 普通款重复立牌！
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </section>
+
+            <!-- 第 6 页：二手市场与理性混合策略 EV 计算器 -->
+            <section class="lesson-page" data-page="7" aria-hidden="true">
+                <article class="lesson-card">
+                    <div class="section-kicker"><span aria-hidden="true">💡</span> 理性破局</div>
+                    <h2>到底该盲抽还是买二手？算算混合策略的黄金平衡点</h2>
+                    <p class="lead">理性分析基于数学期望（大众 50% 期望视角，既不赌欧皇也不预设非酋），对比所有收集策略的真实平均开销：</p>
+
+                    <!-- 4 个参数控制卡片 -->
+                    <div class="ev-sliders-grid">
+                        <div class="ev-slider-card green-theme">
+                            <div class="slider-label-row">
+                                <span class="ev-slider-title">全套款式</span>
+                                <span class="slider-val-badge green" id="ev-n-badge">6 款一套</span>
+                            </div>
+                            <input type="range" class="custom-range-slider green" id="ev-n-slider" min="4" max="12" value="6" oninput="updateEVFromSliders()">
+                            <div class="slider-minmax-row"><span>4款</span><span>12款</span></div>
+                        </div>
+
+                        <div class="ev-slider-card blue-theme">
+                            <div class="slider-label-row">
+                                <span class="ev-slider-title">盲盒单抽</span>
+                                <span class="slider-val-badge blue" id="ev-price-badge">¥ 29 / 抽</span>
+                            </div>
+                            <input type="range" class="custom-range-slider blue" id="ev-price-slider" min="10" max="89" value="29" oninput="updateEVFromSliders()">
+                            <div class="slider-minmax-row"><span>¥10</span><span>¥89</span></div>
+                        </div>
+
+                        <div class="ev-slider-card orange-theme">
+                            <div class="slider-label-row">
+                                <span class="ev-slider-title">二手单买</span>
+                                <div class="ev-card-val-wrap">
+                                    <span class="slider-val-badge orange" id="ev-single-badge">¥ 45 / 只</span>
+                                    <button class="ev-rec-pill" id="ev-rec-single-btn" type="button" onclick="applyRecSinglePrice()" title="点击一键填入公允建议价 (原价 × 1.55)">建议 ¥45</button>
+                                </div>
+                            </div>
+                            <input type="range" class="custom-range-slider orange" id="ev-single-slider" min="15" max="80" value="45" oninput="updateEVFromSliders()">
+                            <div class="slider-minmax-row"><span id="ev-single-min-label">¥15</span><span id="ev-single-max-label">¥80</span></div>
+                        </div>
+
+                        <div class="ev-slider-card purple-theme">
+                            <div class="slider-label-row">
+                                <span class="ev-slider-title">二手打包</span>
+                                <div class="ev-card-val-wrap">
+                                    <span class="slider-val-badge purple" id="ev-full-badge">¥ 260 / 套</span>
+                                    <button class="ev-rec-pill" id="ev-rec-full-btn" type="button" onclick="applyRecFullPrice()" title="点击一键填入公允建议价 (原价 × 1.50)">建议 ¥260</button>
+                                </div>
+                            </div>
+                            <input type="range" class="custom-range-slider purple" id="ev-full-slider" min="100" max="600" step="5" value="260" oninput="updateEVFromSliders()">
+                            <div class="slider-minmax-row"><span id="ev-full-min-label">¥100</span><span id="ev-full-max-label">¥600</span></div>
+                        </div>
+                    </div>
+
+                    <!-- 柱状图图例 -->
+                    <div class="ev-chart-legend">
+                        <span class="legend-chip"><span class="legend-box blue"></span> 盲抽期望花费</span>
+                        <span class="legend-chip"><span class="legend-box orange"></span> 二手单买补齐花费</span>
+                        <span class="legend-chip"><span class="legend-box purple"></span> 二手全套一口价</span>
+                    </div>
+
+                    <!-- 横向双色堆叠柱状图容器 -->
+                    <div class="ev-stacked-chart" id="ev-stacked-chart">
+                        <!-- 动态渲染 N+2 行横向堆叠柱状条 -->
+                    </div>
+
+                    <!-- 底部理性结论卡片 -->
+                    <div class="ev-summary-callout" id="ev-summary-callout">
+                        <!-- 动态生成最优解点评 -->
+                    </div>
+                </article>
+            </section>
+
+            <!-- 第 7 页：大结局 · 理性通关图鉴与防坑锦囊 (Grand Finale) -->
+            <section class="lesson-page" data-page="8" aria-hidden="true">
+                <article class="lesson-card finale-card">
+                    <div class="section-kicker"><span aria-hidden="true">🎓</span> 全剧终</div>
+                    <h2>恭喜通关！理性玩家的防坑锦囊</h2>
+                    <p class="lead">回顾一路探索的核心数学规律，从此理性开箱，不再被概率收割：</p>
+
+                    <!-- 4 张散漫拍立得倾斜卡片网格 -->
+                    <div class="finale-polaroids-grid">
+                        <!-- 卡片 1：调和级数 -->
+                        <div class="polaroid-card tilt-left" onclick="jumpFromSummary(4)" title="点击直达：调和级数求和动画">
+                            <div class="polaroid-img-wrap harmonic-thumb">
+                                <div class="thumb-mini-chart harmonic">
+                                    <div class="mini-bar b1" style="height: 25%;"><span>1.0</span></div>
+                                    <div class="mini-bar b2" style="height: 30%;"><span>1.2</span></div>
+                                    <div class="mini-bar b3" style="height: 40%;"><span>1.5</span></div>
+                                    <div class="mini-bar b4" style="height: 55%;"><span>2.0</span></div>
+                                    <div class="mini-bar b5" style="height: 75%;"><span>3.0</span></div>
+                                    <div class="mini-bar b6" style="height: 100%;"><span>6.0</span></div>
+                                </div>
+                            </div>
+                            <div class="polaroid-body">
+                                <div class="polaroid-title">为什么最后一只那么难？</div>
+                                <div class="polaroid-desc">越到后面越难抽：最后一只独自消耗全套 41% 抽数，超过前 4 只的总和（调和级数陡增）。</div>
+                            </div>
+                        </div>
+
+                        <!-- 卡片 2：万人模拟 -->
+                        <div class="polaroid-card tilt-right" onclick="jumpFromSummary(5)" title="点击直达：万人模拟与排队小人">
+                            <div class="polaroid-img-wrap sim-thumb">
+                                <div class="thumb-mini-chart sim">
+                                    <div class="mini-sim-bars">
+                                        <span class="ms-bar god" style="height: 18%;" title="6抽"></span>
+                                        <span class="ms-bar god" style="height: 48%;" title="8抽"></span>
+                                        <span class="ms-bar god" style="height: 82%;" title="10抽"></span>
+                                        <span class="ms-bar mid" style="height: 100%;" title="12抽峰值"></span>
+                                        <span class="ms-bar mid" style="height: 90%;" title="14抽均值"></span>
+                                        <span class="ms-bar bad" style="height: 68%;" title="16抽"></span>
+                                        <span class="ms-bar bad" style="height: 50%;" title="18抽"></span>
+                                        <span class="ms-bar bad" style="height: 36%;" title="20抽"></span>
+                                        <span class="ms-bar bad" style="height: 26%;" title="22抽"></span>
+                                        <span class="ms-bar worst" style="height: 19%;" title="25抽"></span>
+                                        <span class="ms-bar worst" style="height: 14%;" title="28抽"></span>
+                                        <span class="ms-bar worst" style="height: 10%;" title="32抽"></span>
+                                        <span class="ms-bar worst" style="height: 7%;" title="36抽"></span>
+                                        <span class="ms-bar worst" style="height: 5%;" title="40+抽"></span>
+                                    </div>
+                                    <div class="mini-sim-label">🏃 40% 的人在长尾排队</div>
+                                </div>
+                            </div>
+                            <div class="polaroid-body">
+                                <div class="polaroid-title">别被平均数骗了！</div>
+                                <div class="polaroid-desc">平均 14.7 抽集齐，并不代表 15 抽能稳中，近 40% 的人都在长尾里挨刀。</div>
+                            </div>
+                        </div>
+
+                        <!-- 卡片 3：SSR 隐藏款 -->
+                        <div class="polaroid-card tilt-left-subtle" onclick="jumpFromSummary(6)" title="点击直达：SSR 隐藏款与 3 旋钮">
+                            <div class="polaroid-img-wrap ssr-thumb">
+                                <div class="thumb-mini-chart ssr">
+                                    <div class="mini-ssr-orbit">
+                                        <span class="orbit-dot d1">🦊</span>
+                                        <span class="orbit-dot d2">🐼</span>
+                                        <span class="orbit-dot d3">🐰</span>
+                                        <div class="mini-ssr-crown">👑</div>
+                                    </div>
+                                    <div class="mini-ssr-tag">1/72 黑洞 · 165+ 抽</div>
+                                </div>
+                            </div>
+                            <div class="polaroid-body">
+                                <div class="polaroid-title">隐藏款大满贯的代价！</div>
+                                <div class="polaroid-desc">要想把常规款与 1/72 隐藏款同时配齐，平均需要 160+ 抽与上百个重复废件。</div>
+                            </div>
+                        </div>
+
+                        <!-- 卡片 4：混合博弈最优解 -->
+                        <div class="polaroid-card tilt-right-subtle" onclick="jumpFromSummary(7)" title="点击直达：二手混合博弈计算器">
+                            <div class="polaroid-img-wrap ev-thumb">
+                                <div class="thumb-mini-chart ev">
+                                    <div class="mini-ev-row"><span class="m-blue" style="width: 15%;"></span><span class="m-orange" style="width: 80%;"></span></div>
+                                    <div class="mini-ev-row best"><span class="m-blue" style="width: 48%;"></span><span class="m-orange" style="width: 40%;"></span><span class="mini-trophy">🏆</span></div>
+                                    <div class="mini-ev-row"><span class="m-blue" style="width: 95%;"></span></div>
+                                    <div class="mini-ev-tag">抽 3 款 + 补 3 只 = 最优解？</div>
+                                </div>
+                            </div>
+                            <div class="polaroid-body">
+                                <div class="polaroid-title">性价比之王的终极策略！</div>
+                                <div class="polaroid-desc">前 2~3 只盲抽买快乐，后几只二手单买精准补齐，达成全场最低花费最优解。</div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </section>
+        </main>
+
+        <!-- 底部全局导航条 -->
+        <footer class="lesson-nav">
+            <button class="btn btn-quiet" id="btn-prev" type="button" onclick="prevPage()" disabled aria-label="上一页">
+                <span aria-hidden="true">←</span> 上一步
+            </button>
+            <div class="btn-group">
+                <button class="btn btn-primary" id="btn-next" type="button" onclick="nextPage()" aria-label="下一页">
+                    下一步 <span aria-hidden="true">→</span>
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 拟真撕袋 + 抽拉亚克力立牌浮层 Modal -->
+    <div class="unboxing-modal-overlay" id="unboxing-modal">
+        <div class="unboxing-stage" id="unboxing-stage">
+            <!-- 1. 铝箔袋背面内衬 (z: 5) -->
+            <div class="foil-bag-back"></div>
+
+            <!-- 2. 内部抽拉亚克力立牌 (z: 15) -->
+            <div class="acrylic-standee-plate" id="modal-standee" style="display: none;" onclick="triggerPullComplete()">
+                <div class="pull-hint" id="modal-pull-hint">⬆️ 向上提拉或点击立牌！</div>
+                <div class="standee-icon" id="modal-standee-icon">🦊</div>
+                <div class="standee-name" id="modal-standee-name">闪电小狐</div>
+            </div>
+
+            <!-- 3. 铝箔袋正面下半部口袋 (z: 20) -->
+            <div class="foil-bag-front">
+                <span class="foil-badge-text">POPMATH</span>
+            </div>
+
+            <!-- 4. 顶部折叠密封铝箔罩 (z: 30, 未撕开时100%遮挡密封) -->
+            <div class="foil-bag-top-sealed" id="modal-tear-strip" onclick="tearFoilStrip()">
+                <div class="foil-crimp-header"></div>
+                <div class="tear-guide-strip">
+                    ✂️ 沿着虚线撕开
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
