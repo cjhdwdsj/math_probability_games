@@ -31,8 +31,21 @@
     --shadow-soft: 2px 2px 0 rgba(0, 0, 0, 0.3);
 }
 
-@import url("https://cdn.jsdelivr.net/npm/ark-pixel-font@latest/dist/ark-pixel-12px-proportional-zh_cn.css");
-@import url("https://cdn.jsdelivr.net/npm/ark-pixel-font@latest/dist/ark-pixel-12px-monospaced-zh_cn.css");
+@font-face {
+    font-family: "Ark Pixel";
+    src: url("../fonts/ark-pixel-12px-proportional-zh_cn.woff2") format("woff2");
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Ark Pixel Mono";
+    src: url("../fonts/ark-pixel-12px-monospaced-zh_cn.woff2") format("woff2");
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
 
 * {
     box-sizing: border-box;
@@ -51,7 +64,7 @@ html, body {
     overflow: hidden;
     background-color: #0f1213;
     color: var(--c-ink);
-    font-family: "Ark Pixel 12px proportional zh_cn", "Ark Pixel 12px monospaced zh_cn", "Courier New", Courier, monospace;
+    font-family: "Ark Pixel", "Ark Pixel Mono", monospace, sans-serif;
     image-rendering: pixelated;
 }
 
