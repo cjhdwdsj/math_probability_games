@@ -15,8 +15,13 @@ function makeDraggable(el) {
 
         isDragging = true;
         el.classList.add("is-dragging");
-        highestZIndex += 1;
-        el.style.zIndex = highestZIndex;
+        
+        if (el.id === "stamp-box") {
+            el.style.zIndex = 6000;
+        } else {
+            highestZIndex += 1;
+            el.style.zIndex = highestZIndex;
+        }
 
         const rect = el.getBoundingClientRect();
         const surfaceRect = surface.getBoundingClientRect();
