@@ -42,10 +42,10 @@ function startTutorialPrologue() {
     canvas.classList.add("is-walking-in");
     drawMysteryPortrait(canvas);
     
-    typeDialogue(`[神秘人] "初次执勤，检票员。今晚有一项绝密指令：确保末位座位的【神秘 VIP】顺利入座。在接管大航班前，先用这架 2 人测试机熟悉操作。"`, () => {
+    typeDialogue(`[神秘人] "初次执勤，检票员。今晚有一项绝密指令：确保末位座位的【神秘 VIP】顺利入座。在接管正规大航班前，先用这架 2 人教学机熟悉标准检票流程。"`, () => {
         setTimeout(() => {
-            typeDialogue(`[神秘人] "规则很简单：查验左侧雷达，核实专属座位是否被占。准备好后，按红色喇叭呼叫 1 号乘客。"`);
-        }, 2800);
+            typeDialogue(`[神秘人] "教学关中两人均持有正规登机牌。请核对左侧雷达，盖 🔴【按序就座】放行入座。按红色喇叭开始！"`);
+        }, 3200);
     });
 }
 
@@ -128,18 +128,14 @@ function finalizeFlight() {
     document.getElementById("stat-vip-rate").textContent = `${rate}%`;
     
     if (gameState.isTutorial) {
-        const tutorialResult = vipSuccess ? 
-            "🎉 2 人测试通过！VIP 成功入座。" : 
-            "❌ 2 人测试结束：1号抢了 2号VIP的座位，VIP被迫坐了 1号。";
-        
-        typeDialogue(`${tutorialResult} 你已掌握基本规则！正在为你接入 5 人正规航班 MA-404...`, () => {
+        typeDialogue("🎉 教学关完成！全员按序就座。现在为你接入 5 人正规航班 MA-404。警惕：正规航班的 1 号乘客将丢失登机牌！", () => {
             setTimeout(() => {
                 gameState.isTutorial = false;
                 gameState.flightNumber = "MA-404";
                 gameState.totalSeats = 5;
                 initFlightState();
-                typeDialogue("航班 MA-404 已就绪！请按喇叭呼叫 1 号乘客登机。");
-            }, 3000);
+                typeDialogue("正规航班 MA-404 已就绪！请按喇叭呼叫 1 号乘客登机。");
+            }, 3200);
         });
     } else {
         const outcomeText = vipSuccess ? 

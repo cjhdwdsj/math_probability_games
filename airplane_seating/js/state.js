@@ -50,7 +50,8 @@ function initFlightState() {
     
     gameState.passengers = [];
     for (let i = 1; i <= gameState.totalSeats; i++) {
-        const isFirst = (i === 1);
+        // 第一关教学关全员持有正规有效登机牌；正规航班 (非教学关) 1号才丢失登机牌
+        const isLostTicket = (i === 1 && !gameState.isTutorial);
         const isVip = (i === gameState.totalSeats);
         
         const name = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)] + " " +
@@ -59,8 +60,8 @@ function initFlightState() {
         gameState.passengers.push({
             id: i,
             name: name,
-            assignedSeat: isFirst ? null : i,
-            isFirst: isFirst,
+            assignedSeat: isLostTicket ? null : i,
+            isFirst: isLostTicket,
             isVip: isVip,
             actualSeat: null,
             seed: Math.random() * 10000
