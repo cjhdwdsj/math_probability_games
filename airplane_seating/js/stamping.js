@@ -43,11 +43,17 @@ function pressStamp(stampType) {
     const stampSlot = document.getElementById("stamp-impression");
     const rot = (Math.random() * 6 - 3).toFixed(1);
     
+    const inkColor = (stampType === "ASSIGNED") ? "#ba2824" : "#23588d";
+    
     if (stampType === "ASSIGNED") {
         stampSlot.innerHTML = `<div class="stamped-mark stamped-assigned" style="--rot:${rot}">🔴 按序就座</div>`;
     } else {
         stampSlot.innerHTML = `<div class="stamped-mark stamped-random" style="--rot:${rot}">🔵 批准随意</div>`;
     }
+    
+    // Balatro 风格打击感反馈：微震屏 + 墨汁微粒飞溅
+    if (typeof triggerScreenShake === "function") triggerScreenShake();
+    if (typeof spawnInkParticles === "function") spawnInkParticles(stampSlot, inkColor);
     
     document.getElementById("btn-return-doc").disabled = false;
 }

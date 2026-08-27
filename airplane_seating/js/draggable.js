@@ -58,6 +58,10 @@ function makeDraggable(el) {
         document.addEventListener("mousemove", onMouseMove);
         document.addEventListener("mouseup", onMouseUp);
     });
+
+    if (typeof initCard3DTilt === "function") {
+        initCard3DTilt(el);
+    }
 }
 
 function initDraggableSystem() {
