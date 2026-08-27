@@ -31,11 +31,18 @@
     --shadow-soft: 2px 2px 0 rgba(0, 0, 0, 0.3);
 }
 
+@import url("https://cdn.jsdelivr.net/npm/ark-pixel-font@latest/dist/ark-pixel-12px-proportional-zh_cn.css");
+@import url("https://cdn.jsdelivr.net/npm/ark-pixel-font@latest/dist/ark-pixel-12px-monospaced-zh_cn.css");
+
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
     user-select: none;
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: unset;
+    font-smooth: never;
+    text-rendering: geometricPrecision;
 }
 
 html, body {
@@ -44,7 +51,7 @@ html, body {
     overflow: hidden;
     background-color: #0f1213;
     color: var(--c-ink);
-    font-family: "Noto Sans SC", "Courier New", Courier, monospace;
+    font-family: "Ark Pixel 12px proportional zh_cn", "Ark Pixel 12px monospaced zh_cn", "Courier New", Courier, monospace;
     image-rendering: pixelated;
 }
 

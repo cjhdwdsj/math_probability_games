@@ -319,9 +319,9 @@
 }
 
 .tape-dialogue {
-    font-family: "Noto Serif SC", serif;
-    font-size: 0.92rem;
-    line-height: 1.45;
+    font-family: "Ark Pixel 12px proportional zh_cn", "Ark Pixel 12px monospaced zh_cn", monospace;
+    font-size: 0.95rem;
+    line-height: 1.5;
     color: #1a1612;
 }
 
