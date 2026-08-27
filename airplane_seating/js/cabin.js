@@ -27,7 +27,25 @@ function renderQueue() {
 
 function renderCabinGrid() {
     const grid = document.getElementById("cabin-seats-grid");
+    const vipIndicator = document.getElementById("vip-status-indicator");
     grid.innerHTML = "";
+    
+    if (gameState.isRadarOffline) {
+        if (vipIndicator) {
+            vipIndicator.className = "vip-status-pill vip-stolen";
+            vipIndicator.textContent = "⚠️ 传感器离线 · 无法探测";
+        }
+        grid.innerHTML = `
+            <div class="radar-offline-screen" style="grid-column: 1 / -1; width: 100%;">
+                <div class="radar-offline-glitch">⚡ [ SENSOR OFFLINE · NO CARRIER ] ⚡</div>
+                <div class="radar-offline-hint">
+                    客舱实时雷达传感器硬件受损中断。<br>
+                    无法直接透视客舱座位！请根据乘客登机牌与当面陈述进行盲盒推演检票。
+                </div>
+            </div>
+        `;
+        return;
+    }
     
     for (let i = 1; i <= gameState.totalSeats; i++) {
         const occupantId = gameState.cabinSeats[i];

@@ -11,10 +11,14 @@ const gameState = {
     passengers: [],              // 本趟航班的所有乘客对象
     cabinSeats: {},              // 座位占用字典 { 1: passengerId, 2: passengerId ... }
     
-    // 今日排班与时间管理 (第一天总共 2 架飞机)
+    // 今日排班与时间管理
     currentFlightToday: 1,
     totalFlightsToday: 2,
     currentTime: "08:00",
+    
+    // 机制标记
+    isRadarOffline: false,       // Day 2 盲盒模式标志
+    isXrayActive: false,         // Day 3 特权金线透视标志
     
     // 执勤统计
     stats: {

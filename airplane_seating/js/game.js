@@ -148,31 +148,72 @@ function finalizeFlight() {
     const rate = ((gameState.stats.vipWins / gameState.stats.flightsCompleted) * 100).toFixed(1);
     document.getElementById("stat-vip-rate").textContent = `${rate}%`;
     
-    if (gameState.currentFlightToday === 1) {
-        // 第 1 趟教学机完成 -> 接入今日第 2 趟正规航班
-        typeDialogue("🎉 教学机测试完成！全员按序就座。正在为你接入今日第 2 趟航班 MA-404...", () => {
+    const outcomeText = vipSuccess ? 
+        `🎉 航班结算：第 ${gameState.totalSeats} 号神秘 VIP 顺利坐回专属宝座！` : 
+        `❌ 航班结算：第 ${gameState.totalSeats} 号神秘 VIP 座位遭挤占失败！`;
+
+    if (gameState.currentFlightToday < gameState.totalFlightsToday) {
+        // 今日还有下一趟航班
+        gameState.currentFlightToday += 1;
+        typeDialogue(`${outcomeText} 正在为你接入今日第 ${gameState.currentFlightToday} 趟航班...`, () => {
             setTimeout(() => {
-                gameState.isTutorial = false;
-                gameState.currentFlightToday = 2;
-                gameState.flightNumber = "MA-404";
-                gameState.totalSeats = 5;
+                if (gameState.day === 1) {
+                    gameState.isTutorial = false;
+                    gameState.flightNumber = "MA-404";
+                    gameState.totalSeats = 5;
+                } else if (gameState.day === 2) {
+                    gameState.flightNumber = "EX-1000";
+                    gameState.totalSeats = 10;
+                }
                 initFlightState();
-                typeDialogue("今日第 2 趟航班 MA-404 已就绪！请按红色喇叭呼叫 1 号乘客登机。");
-            }, 2200);
+                typeDialogue(`✈️ 今日第 ${gameState.currentFlightToday} 趟航班 (${gameState.flightNumber}) 已就绪！请按红色喇叭呼叫 1 号乘客登机。`);
+            }, 2000);
         });
     } else {
-        // 今日两趟航班全部执勤完毕 -> 第 1 天下班！
+        // 今日航班全部处理完毕 -> 触发夜幕过幕间与桌面大扫除！
         updateClockDisplay("18:00");
         const flightTagEl = document.getElementById("flights-left-tag");
-        if (flightTagEl) flightTagEl.textContent = "今日航班已全部处理完毕 (下班打卡)";
+        if (flightTagEl) flightTagEl.textContent = `DAY ${gameState.day} 航班已全部处理完毕 (下班打卡)`;
         
-        const outcomeText = vipSuccess ? 
-            `🎉 航班结算：第 ${gameState.totalSeats} 号神秘 VIP 顺利坐回专属宝座！` : 
-            `❌ 航班结算：第 ${gameState.totalSeats} 号神秘 VIP 座位遭挤占失败！`;
-        
-        typeDialogue(`${outcomeText} 🌇【DAY 1 执勤结束】今日共执勤 2 趟航班，VIP 成功率: ${rate}%。哨所今日工作已完成，请打卡下班！`, () => {
+        typeDialogue(`${outcomeText} 🌇【DAY ${gameState.day} 执勤结束】今日航班已全部处理完毕。哨所打卡下班！`, () => {
             document.getElementById("btn-next-entrant").disabled = true;
             document.getElementById("status-indicator").className = "indicator-light";
+            
+            // 2.2 秒后平滑拉起夜间过幕间，并大扫除清理台面
+            setTimeout(() => {
+                if (gameState.day === 1) {
+                    triggerNightIntermission(1, () => startDay2());
+                } else if (gameState.day === 2) {
+                    triggerNightIntermission(2, () => startDay3());
+                }
+            }, 2200);
         });
     }
+}
+
+function startDay2() {
+    gameState.day = 2;
+    gameState.currentFlightToday = 1;
+    gameState.totalFlightsToday = 2;
+    gameState.isTutorial = false;
+    gameState.isRadarOffline = true;
+    gameState.flightNumber = "FLIGHT-505";
+    gameState.totalSeats = 5;
+    
+    initFlightState();
+    typeDialogue("⚠️【DAY 2 · 08:00】第二日执勤开启！客舱雷达传感器硬件受损离线，请根据登机牌与乘客当面陈述进行盲盒检票。");
+}
+
+function startDay3() {
+    gameState.day = 3;
+    gameState.currentFlightToday = 1;
+    gameState.totalFlightsToday = 1;
+    gameState.isTutorial = false;
+    gameState.isRadarOffline = false;
+    gameState.isXrayActive = true;
+    gameState.flightNumber = "VIP-777";
+    gameState.totalSeats = 10;
+    
+    initFlightState();
+    typeDialogue("✨【DAY 3 · 08:00】高维芯片已启动！雷达已全面恢复并点亮金色特权接力线。请呼叫 1 号西装乘客登机！");
 }

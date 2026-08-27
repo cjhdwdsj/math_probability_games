@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="css/boarding-pass.css">
     <link rel="stylesheet" href="css/stamp-box.css">
     <link rel="stylesheet" href="css/crt-screen.css">
+    <link rel="stylesheet" href="css/intermission.css">
 
     <!-- 本地缝合像素体嵌入 (Fusion Pixel 12px 比例版，0ms 离线加载) -->
     <style>
@@ -197,6 +198,34 @@
                     </div>
                 </div>
 
+                <!-- 【深夜弹出】：绝密概率竞猜表 (可拖拽、盖章/选择下注) -->
+                <div class="wager-note draggable-item hidden" id="wager-note">
+                    <div class="wager-header" title="拖动竞猜表">
+                        <span class="wager-title">📊 概率悖论调查表</span>
+                        <span class="wager-badge">绝密思考</span>
+                    </div>
+                    <div class="wager-question">
+                        <b>神秘人质问</b>：若航班扩充至 <b>N = 100 人</b>，第 100 号末位 VIP 坐回专属座位的真实概率将是？
+                    </div>
+                    <div class="wager-options-list">
+                        <div class="wager-option-item" onclick="selectWagerOption('1/100', this)">
+                            <span>A. 衰减为 1% (1/N)</span>
+                            <span class="option-tag">直觉猜想</span>
+                        </div>
+                        <div class="wager-option-item" onclick="selectWagerOption('1/2', this)">
+                            <span>B. 恒定为 50.0% (1/2)</span>
+                            <span class="option-tag">数学等价</span>
+                        </div>
+                        <div class="wager-option-item" onclick="selectWagerOption('1/e', this)">
+                            <span>C. 衰减为 ≈36.8% (1/e)</span>
+                            <span class="option-tag">错排常数</span>
+                        </div>
+                    </div>
+                    <button class="btn-start-day2" id="btn-start-day2" type="button" onclick="confirmWagerAndStartDay2()" disabled>
+                        ➔ 提交下注并开启 DAY 2 (N=10)
+                    </button>
+                </div>
+
                 <!-- 【右边由上往下弹出】：乘客纸质登机牌 (可自由拖拽) -->
                 <div class="boarding-pass-card draggable-item hidden" id="boarding-pass">
                     <div class="pass-drag-handle">
@@ -266,12 +295,26 @@
 
     </div>
 
+    <!-- 夜间过幕间遮罩与叙事窗口 -->
+    <div class="intermission-overlay" id="night-intermission-overlay">
+        <div class="intermission-card">
+            <div class="intermission-title" id="intermission-title">🌙 第 1 夜 · 暴雨交加</div>
+            <div class="intermission-body" id="intermission-body">
+                <!-- 动态填充夜间剧情文案 -->
+            </div>
+            <button class="btn-intermission-next" id="btn-intermission-next" type="button">
+                ➔ 开启下一天执勤
+            </button>
+        </div>
+    </div>
+
     <!-- 模块化脚本加载 -->
     <script src="js/state.js"></script>
     <script src="js/pixel-art.js"></script>
     <script src="js/juice.js"></script>
     <script src="js/draggable.js"></script>
     <script src="js/dialogue.js"></script>
+    <script src="js/intermission.js"></script>
     <script src="js/cabin.js"></script>
     <script src="js/stamping.js"></script>
     <script src="js/game.js"></script>
