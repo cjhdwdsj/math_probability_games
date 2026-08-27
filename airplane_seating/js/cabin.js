@@ -95,10 +95,10 @@ function issueCitation(reason) {
     const paper = document.createElement("div");
     paper.className = "citation-paper draggable-item";
     
-    // 错落散落在桌面打印机下方
-    const offsetY = 16 + ((citationCount * 28) % 180);
-    const offsetX = 16 + ((citationCount * 12) % 60);
-    const rot = ((citationCount * 7) % 10 - 5);
+    // 从顶部中央出纸口垂直吐出，散落在右侧工作区桌面
+    const offsetX = 515 + ((citationCount * 14) % 80);
+    const offsetY = 14 + ((citationCount * 22) % 110);
+    const rot = ((citationCount * 7) % 8 - 4);
     
     paper.style.left = `${offsetX}px`;
     paper.style.top = `${offsetY}px`;

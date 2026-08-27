@@ -221,11 +221,11 @@
     margin-top: 6px;
 }
 
-/* 左侧：点阵罚单出纸口 */
+/* 顶部中央：点阵罚单出纸口 (自顶部缝隙垂直吐出，不遮挡手册) */
 .citation-printer-slot {
     position: absolute;
     top: 0;
-    left: 20px;
+    left: 515px;
     z-index: 80;
     pointer-events: none;
 }
