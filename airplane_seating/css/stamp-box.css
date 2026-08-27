@@ -6,24 +6,25 @@
     right: 28px;
     top: 110px;
     width: 225px;
-    background-color: #22272a;
-    border: 3px solid #101314;
+    background-color: rgba(30, 36, 40, 0.72); /* 半透明机身，方便透视下方登机牌 */
+    backdrop-filter: blur(3px);
+    border: 2.5px solid rgba(16, 20, 22, 0.88);
     border-radius: 6px;
-    box-shadow: 6px 6px 12px rgba(0,0,0,0.5);
+    box-shadow: 6px 6px 14px rgba(0, 0, 0, 0.45);
     z-index: 5000 !important; /* 保证印章盒始终在最上层，永远不被任何纸张、登机牌覆盖 */
     display: flex;
     flex-direction: column;
 }
 
 .stamp-box-frame {
-    background-color: #333a3e;
+    background-color: rgba(55, 64, 69, 0.85);
     color: #cfd8dc;
     font-size: 0.72rem;
     font-weight: 800;
     padding: 5px 8px;
     text-align: center;
     cursor: grab;
-    border-bottom: 2px solid #171a1c;
+    border-bottom: 2px solid rgba(23, 26, 28, 0.9);
     letter-spacing: 0.5px;
 }
 
@@ -31,7 +32,7 @@
     display: flex;
     gap: 10px;
     padding: 10px;
-    background-color: #1a1d1f;
+    background-color: rgba(20, 24, 26, 0.55);
     justify-content: space-around;
 }
 
