@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- 主工作台容器 (1:1 复刻经典上下分屏) -->
+    <!-- 主工作台容器 (1:1 经典上下分屏) -->
     <div class="booth-container" id="booth-container">
         
         <!-- ================= 上半屏：边境与哨所视角 (TOP VIEWPORT) ================= -->
@@ -21,46 +21,41 @@
                     <span class="queue-count" id="queue-count">等待登机: 5 人</span>
                 </div>
                 <div class="queue-track">
-                    <div class="guard-booth-wall"></div>
+                    <div class="corridor-bg-lines"></div>
                     <div class="queue-line" id="queue-line">
                         <!-- 动态生成的像素小人队列 -->
                     </div>
                 </div>
-                <div class="corridor-floor"></div>
+                <div class="corridor-floor">
+                    <div class="floor-yellow-line"></div>
+                </div>
             </div>
 
             <!-- 右上：检票窗口与室内对峙区 -->
             <div class="window-zone" aria-label="检票窗口">
                 <div class="window-frame">
-                    <!-- 卷帘门 (特殊剧情时拉下) -->
-                    <div class="shutter" id="shutter"></div>
-                    
-                    <!-- 窗口内部背景与身高刻度墙 -->
                     <div class="booth-interior">
-                        <div class="height-markings"></div>
-                        
-                        <!-- 乘客像素立绘展示区 (Canvas 实时点阵绘制) -->
+                        <!-- 乘客像素立绘 -->
                         <div class="portrait-container">
-                            <canvas id="portrait-canvas" width="96" height="120" class="portrait-canvas"></canvas>
-                            <div class="portrait-shadow"></div>
+                            <canvas id="portrait-canvas" width="100" height="125" class="portrait-canvas"></canvas>
                         </div>
 
-                        <!-- 窗口对话与录音带纸条 (Audio Transcript Tape) -->
+                        <!-- 录音带纸条 (Audio Transcript Tape) -->
                         <div class="transcript-tape-wrapper">
-                            <div class="tape-dispenser-top"></div>
                             <div class="transcript-tape" id="transcript-tape">
-                                <div class="tape-line tape-date" id="tape-time">[08:00 GRESTIN]</div>
-                                <div class="tape-line tape-dialogue" id="tape-dialogue">请按喇叭呼叫下一位乘客。</div>
+                                <div class="tape-header-tag">AUDIO LOG 📟 [08:00 GRESTIN]</div>
+                                <div class="tape-dialogue" id="tape-dialogue">航班已就绪。请按红色喇叭呼叫 1 号乘客。</div>
                             </div>
                         </div>
 
                         <!-- 喇叭对讲机按键 (NEXT!) -->
                         <div class="intercom-box">
-                            <button class="btn-intercom" id="btn-next-entrant" type="button" onclick="callNextEntrant()">
+                            <button class="btn-intercom" id="btn-next-entrant" type="button" onclick="callNextEntrant()" title="快捷键: 空格或 N">
                                 <span class="speaker-grill"></span>
-                                <span class="intercom-label">下一位！(NEXT)</span>
+                                <span class="intercom-label">下一位！</span>
+                                <span class="intercom-sub">(NEXT)</span>
                             </button>
-                            <div class="indicator-light" id="status-indicator"></div>
+                            <div class="indicator-light" id="status-indicator" title="指示灯: 绿色空闲 / 红色工作中"></div>
                         </div>
                     </div>
                 </div>
@@ -73,122 +68,136 @@
             
             <!-- 左侧：点阵罚单打印机 (CITATION PRINTER) -->
             <div class="citation-printer-slot" id="citation-slot">
-                <div class="printer-mouth"></div>
                 <div class="citation-paper hidden" id="citation-paper">
                     <div class="citation-header">⚠️ M.O.A. 违规警告 ⚠️</div>
                     <div class="citation-body" id="citation-reason">未依规核验机舱座位占用状态！</div>
-                    <div class="citation-fine">罚款: 5 CREDITS (扣除津贴)</div>
+                    <div class="citation-fine">罚单: 扣除今日执勤津贴 5 CREDITS</div>
                     <button class="citation-dismiss" type="button" onclick="dismissCitation()">[撕下收存]</button>
                 </div>
             </div>
 
-            <!-- 台面中央：自由拖拽/查验文档交互区 -->
-            <div class="counter-surface" id="counter-surface">
-                
-                <!-- 绝密 VIP 便签 (钉在桌角) -->
-                <div class="memo-sticky" id="vip-memo">
-                    <div class="memo-pin"></div>
-                    <div class="memo-title">📌 机密执勤令</div>
-                    <div class="memo-text">
-                        今晚航班 <b id="memo-flight">MA-404</b> 末位乘客是 <b class="gold-text">神秘 VIP</b>。<br>
-                        务必确保其坐上自己的专属座位！
-                    </div>
-                </div>
-
-                <!-- 待检通行证件：纸质登机牌 (可点击/盖章) -->
-                <div class="boarding-pass-card hidden" id="boarding-pass">
-                    <div class="pass-header">
-                        <span class="airline-name">ARSTOTZKA AIR ✈️</span>
-                        <span class="pass-type" id="pass-type-badge">ECONOMY</span>
-                    </div>
-                    <div class="pass-body">
-                        <div class="pass-photo-frame">
-                            <canvas id="pass-photo-canvas" width="48" height="60" class="pass-photo"></canvas>
-                        </div>
-                        <div class="pass-details">
-                            <div class="pass-row"><span class="lbl">NAME:</span> <strong id="pass-name">IVAN V.</strong></div>
-                            <div class="pass-row"><span class="lbl">SEAT:</span> <strong class="seat-num" id="pass-seat">03</strong></div>
-                            <div class="pass-row"><span class="lbl">FLIGHT:</span> <span>MA-404</span></div>
-                        </div>
-                    </div>
-                    <!-- 盖章印记区 (盖章后动态生成印痕) -->
-                    <div class="stamp-impression-slot" id="stamp-impression"></div>
-                    
-                    <div class="pass-footer">
-                        <span class="barcode-mock">||||||||||||||||||||||||</span>
-                        <button class="btn-return-doc" id="btn-return-doc" type="button" onclick="returnDocumentToPassenger()" disabled>
-                            ➔ 放行入座
-                        </button>
-                    </div>
-                </div>
-
-                <!-- 机舱座席实时手册 (Rulebook / Cabin Map) -->
-                <div class="cabin-manual-book" id="cabin-manual">
-                    <div class="manual-tab-bar">
-                        <button class="tab-btn active" type="button" onclick="switchManualTab('cabin')">💺 客舱实时雷达</button>
-                        <button class="tab-btn" type="button" onclick="switchManualTab('rules')">📜 检票准则</button>
-                        <button class="tab-btn" type="button" onclick="switchManualTab('stats')">📊 执勤统计</button>
-                    </div>
-                    
-                    <div class="manual-content">
-                        <!-- Tab 1: 客舱雷达 (实时展示谁坐了哪个座) -->
-                        <div class="tab-pane active" id="tab-cabin">
-                            <div class="cabin-grid-header">
-                                <span>客舱俯视图 (FLIGHT MA-404)</span>
-                                <span class="vip-status-pill" id="vip-status-indicator">👑 VIP 座位状态: 空闲</span>
-                            </div>
-                            <div class="cabin-seats-grid" id="cabin-seats-grid">
-                                <!-- 动态生成座位格子 -->
-                            </div>
-                        </div>
-
-                        <!-- Tab 2: 检票规程 -->
-                        <div class="tab-pane hidden" id="tab-rules">
-                            <h4 class="rule-title">《边检航空执勤条令 第 81-A 条》</h4>
-                            <ol class="rules-list">
-                                <li><strong>1 号乘客无票时</strong>：必须盖 🔵【批准随意就座】印章；</li>
-                                <li><strong>正常乘客专属座位未被占</strong>：必须盖 🔴【按序就座】印章；</li>
-                                <li><strong>正常乘客专属座位已被抢占</strong>：必须盖 🔵【批准随意就座】印章；</li>
-                                <li><strong>违规放行者</strong>：将立即予以罚款通报！</li>
-                            </ol>
-                        </div>
-
-                        <!-- Tab 3: 执勤战绩 -->
-                        <div class="tab-pane hidden" id="tab-stats">
-                            <div class="stats-box">
-                                <p>已处理航班: <strong id="stat-flights">0</strong> 班</p>
-                                <p>VIP 成功入座: <strong class="green-text" id="stat-vip-wins">0</strong> 次</p>
-                                <p>VIP 遭占出局: <strong class="red-text" id="stat-vip-losses">0</strong> 次</p>
-                                <p>当前 VIP 成功率: <strong class="gold-text" id="stat-vip-rate">0.0%</strong></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
             <!-- 右上角：滑动印章盒 (THE STAMP BAR) -->
             <div class="stamp-bar-drawer" id="stamp-drawer">
-                <div class="stamp-drawer-handle" onclick="toggleStampDrawer()">
+                <div class="stamp-drawer-handle" onclick="toggleStampDrawer()" title="点击或按 Tab 展开/收起印章">
                     <span>STAMPS 印章架 ▼</span>
                 </div>
                 <div class="stamp-rack">
-                    <button class="stamp-tool stamp-assigned" id="stamp-assigned-btn" type="button" onclick="applyStamp('ASSIGNED')">
+                    <button class="stamp-tool stamp-assigned" id="stamp-assigned-btn" type="button" onclick="applyStamp('ASSIGNED')" title="快捷键: 1">
                         <div class="stamp-handle"></div>
                         <div class="stamp-base">🔴 按序就座</div>
                     </button>
-                    <button class="stamp-tool stamp-random" id="stamp-random-btn" type="button" onclick="applyStamp('RANDOM')">
+                    <button class="stamp-tool stamp-random" id="stamp-random-btn" type="button" onclick="applyStamp('RANDOM')" title="快捷键: 2">
                         <div class="stamp-handle"></div>
                         <div class="stamp-base">🔵 批准随意</div>
                     </button>
                 </div>
             </div>
 
-            <!-- 底部信息条：时钟、金钱与版本 -->
+            <!-- 台面主工作区 (左侧证件，右侧大手册) -->
+            <div class="desk-main-layout">
+                
+                <!-- 左侧工作区：便签与登机牌 -->
+                <div class="desk-left-col">
+                    <!-- 绝密 VIP 便签 -->
+                    <div class="memo-sticky" id="vip-memo">
+                        <div class="memo-pin"></div>
+                        <div class="memo-title">📌 绝密执勤条令</div>
+                        <div class="memo-text">
+                            今晚航班 <b id="memo-flight">MA-404</b> 末位乘客是 <b class="gold-text">神秘 VIP</b>。<br>
+                            务必核查机舱座席，确保其坐回专属座位！
+                        </div>
+                    </div>
+
+                    <!-- 待检通行证件：纸质登机牌 (可点击/盖章) -->
+                    <div class="boarding-pass-card hidden" id="boarding-pass">
+                        <div class="pass-header">
+                            <span class="airline-name">ARSTOTZKA AIR ✈️</span>
+                            <span class="pass-type" id="pass-type-badge">ECONOMY</span>
+                        </div>
+                        <div class="pass-body">
+                            <div class="pass-photo-frame">
+                                <canvas id="pass-photo-canvas" width="48" height="60" class="pass-photo"></canvas>
+                            </div>
+                            <div class="pass-details">
+                                <div class="pass-row"><span class="lbl">NAME:</span> <strong id="pass-name">IVAN V.</strong></div>
+                                <div class="pass-row"><span class="lbl">SEAT:</span> <strong class="seat-num" id="pass-seat">03</strong></div>
+                                <div class="pass-row"><span class="lbl">FLIGHT:</span> <span>MA-404</span></div>
+                            </div>
+                        </div>
+                        
+                        <!-- 盖章印记区 (盖章后动态生成印痕) -->
+                        <div class="stamp-impression-slot" id="stamp-impression">
+                            <span class="stamp-placeholder-hint">← 请展开右上角印章盒盖印</span>
+                        </div>
+                        
+                        <div class="pass-footer">
+                            <span class="barcode-mock">||||||||||||||||||||</span>
+                            <button class="btn-return-doc" id="btn-return-doc" type="button" onclick="returnDocumentToPassenger()" disabled>
+                                ➔ 放行入座 (Enter)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧工作区：宽幅客舱座席手册 (Rulebook / Cabin Map) -->
+                <div class="desk-right-col">
+                    <div class="cabin-manual-book" id="cabin-manual">
+                        <div class="manual-tab-bar">
+                            <button class="tab-btn active" type="button" onclick="switchManualTab('cabin')">💺 客舱实时雷达</button>
+                            <button class="tab-btn" type="button" onclick="switchManualTab('rules')">📜 检票准则</button>
+                            <button class="tab-btn" type="button" onclick="switchManualTab('stats')">📊 执勤统计</button>
+                        </div>
+                        
+                        <div class="manual-content">
+                            <!-- Tab 1: 客舱雷达 (实时展示谁坐了哪个座) -->
+                            <div class="tab-pane active" id="tab-cabin">
+                                <div class="cabin-grid-header">
+                                    <span>✈️ 航班客舱俯视雷达 (BOEING MA-404)</span>
+                                    <span class="vip-status-pill" id="vip-status-indicator">👑 VIP 座位状态: 空闲</span>
+                                </div>
+                                <div class="cabin-seats-grid" id="cabin-seats-grid">
+                                    <!-- 动态生成座位格子 -->
+                                </div>
+                                <div class="cabin-legend">
+                                    <span class="leg-item"><i class="leg-box leg-empty"></i> 虚线: 空闲</span>
+                                    <span class="leg-item"><i class="leg-box leg-correct"></i> 绿色: 正确归位</span>
+                                    <span class="leg-item"><i class="leg-box leg-stolen"></i> 红色: 被抢占</span>
+                                    <span class="leg-item"><i class="leg-box leg-vip"></i> 金色: 神秘 VIP 宝座</span>
+                                </div>
+                            </div>
+
+                            <!-- Tab 2: 检票规程 -->
+                            <div class="tab-pane hidden" id="tab-rules">
+                                <h4 class="rule-title">《边检航空执勤条令 第 81-A 条》</h4>
+                                <ol class="rules-list">
+                                    <li><strong>1 号乘客无票或丢失时</strong>：必须盖 🔵【批准随意就座】印章；</li>
+                                    <li><strong>正常乘客专属座位未被占</strong>：必须核验无误后盖 🔴【按序就座】印章；</li>
+                                    <li><strong>正常乘客专属座位已被抢占</strong>：必须盖 🔵【批准随意就座】印章；</li>
+                                    <li><strong>违规放行者</strong>：将立即予以罚款扣津贴通报！</li>
+                                </ol>
+                            </div>
+
+                            <!-- Tab 3: 执勤战绩 -->
+                            <div class="tab-pane hidden" id="tab-stats">
+                                <div class="stats-box">
+                                    <div class="stat-item"><span>已处理航班总数:</span> <strong id="stat-flights">0</strong> 班</div>
+                                    <div class="stat-item"><span>神秘 VIP 成功入座:</span> <strong class="green-text" id="stat-vip-wins">0</strong> 次</div>
+                                    <div class="stat-item"><span>神秘 VIP 遭抢出局:</span> <strong class="red-text" id="stat-vip-losses">0</strong> 次</div>
+                                    <div class="stat-item stat-highlight"><span>当前 VIP 成功率:</span> <strong class="gold-text" id="stat-vip-rate">0.0%</strong></div>
+                                    <p class="stat-note">* 无论航班是 5 人还是 100 人，观察大数下 VIP 成功率的奇妙收敛。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 底部信息条：时钟、快捷键与司属 -->
             <div class="desk-bottom-bar">
-                <div class="bottom-clock" id="desk-clock">DAY 1 · 08:00</div>
-                <div class="bottom-hint">快捷键: [空格/N] 叫号 | [Tab] 展开印章盒 | [1/2] 盖章</div>
-                <div class="bottom-credit">帝国边防部航空检票司 · 教学互动实验版</div>
+                <div class="bottom-clock" id="desk-clock">DAY 1 · 08:00 GRESTIN</div>
+                <div class="bottom-hint">快捷键: [空格/N] 呼叫 | [Tab] 印章架 | [1] 按序 | [2] 随意 | [Enter] 放行</div>
+                <div class="bottom-credit">帝国边防航空检票司 · 教学互动实验版</div>
             </div>
 
         </div>

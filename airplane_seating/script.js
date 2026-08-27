@@ -240,13 +240,7 @@ function callNextEntrant() {
 // ===== 切换滑动印章架 =====
 function toggleStampDrawer() {
     const drawer = document.getElementById("stamp-drawer");
-    if (drawer.style.transform === "translateY(0px)" || drawer.classList.contains("is-open")) {
-        drawer.style.transform = "translateY(-85%)";
-        drawer.classList.remove("is-open");
-    } else {
-        drawer.style.transform = "translateY(0px)";
-        drawer.classList.add("is-open");
-    }
+    drawer.classList.toggle("is-open");
 }
 
 // ===== 盖章操作 =====
@@ -268,9 +262,8 @@ function applyStamp(stampType) {
     // 自动收起印章架
     setTimeout(() => {
         const drawer = document.getElementById("stamp-drawer");
-        drawer.style.transform = "translateY(-85%)";
         drawer.classList.remove("is-open");
-    }, 150);
+    }, 250);
 }
 
 // ===== 放行乘客走入客舱 =====
