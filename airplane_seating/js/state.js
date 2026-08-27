@@ -11,6 +11,11 @@ const gameState = {
     passengers: [],              // 本趟航班的所有乘客对象
     cabinSeats: {},              // 座位占用字典 { 1: passengerId, 2: passengerId ... }
     
+    // 今日排班与时间管理 (第一天总共 2 架飞机)
+    currentFlightToday: 1,
+    totalFlightsToday: 2,
+    currentTime: "08:00",
+    
     // 执勤统计
     stats: {
         flightsCompleted: 0,
@@ -32,6 +37,14 @@ const LAST_NAMES = ["V.", "K.", "P.", "S.", "M.", "N.", "B.", "G.", "T.", "Z."];
 
 let highestZIndex = 100;
 
+function updateClockDisplay(timeStr) {
+    if (timeStr) gameState.currentTime = timeStr;
+    const clockEl = document.getElementById("desk-clock");
+    const tapeTagEl = document.getElementById("tape-header-tag");
+    if (clockEl) clockEl.textContent = `DAY ${gameState.day} · ${gameState.currentTime} GRESTIN`;
+    if (tapeTagEl) tapeTagEl.textContent = `AUDIO LOG 📟 [${gameState.currentTime} GRESTIN]`;
+}
+
 // 初始化航班数据
 function initFlightState() {
     gameState.currentPassengerIndex = 0;
@@ -39,6 +52,25 @@ function initFlightState() {
     gameState.currentEntrant = null;
     gameState.currentStamp = null;
     gameState.cabinSeats = {};
+    
+    // 今日剩余航班显示
+    const remainingFlights = (gameState.totalFlightsToday - gameState.currentFlightToday + 1);
+    const flightTagEl = document.getElementById("flights-left-tag");
+    if (flightTagEl) {
+        if (remainingFlights <= 1) {
+            flightTagEl.textContent = "今日剩余航班: 1 架 (今日末班)";
+        } else {
+            flightTagEl.textContent = `今日剩余航班: ${remainingFlights} 架`;
+        }
+    }
+    
+    // 时间初始化
+    if (gameState.isTutorial) {
+        gameState.currentTime = "08:00";
+    } else {
+        gameState.currentTime = "12:30";
+    }
+    updateClockDisplay();
     
     document.getElementById("cabin-flight-title").textContent = `✈️ 航班客舱实时雷达 (${gameState.flightNumber})`;
     document.getElementById("memo-flight").textContent = gameState.flightNumber;

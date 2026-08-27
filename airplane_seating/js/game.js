@@ -95,6 +95,15 @@ function callNextEntrant() {
     
     document.getElementById("queue-count").textContent = `等待登机: ${gameState.totalSeats - gameState.currentPassengerIndex} 人`;
     
+    // 时间动态流逝
+    if (gameState.isTutorial) {
+        const times = ["08:10", "08:25"];
+        updateClockDisplay(times[gameState.currentPassengerIndex - 1] || "08:30");
+    } else {
+        const times = ["12:40", "13:00", "13:20", "13:40", "14:00"];
+        updateClockDisplay(times[gameState.currentPassengerIndex - 1] || "14:15");
+    }
+    
     // 窗口立绘走入
     const portraitCanvas = document.getElementById("portrait-canvas");
     portraitCanvas.classList.remove("is-walking-in");
@@ -109,14 +118,14 @@ function callNextEntrant() {
     setTimeout(() => {
         let dialogueText = "";
         if (passenger.isFirst) {
-            dialogueText = `[1号] ${passenger.name}: "呃……长官，我的登机牌好像找不到了，随便给我安排个位吧！"`;
+            dialogueText = `[1号] ${passenger.name}: "呃……检票员师傅，我的登机牌好像找不到了，随便给我安排个位吧！"`;
         } else {
             const isSeatTaken = (gameState.cabinSeats[passenger.assignedSeat] !== null);
             if (isSeatTaken) {
                 const usurperId = gameState.cabinSeats[passenger.assignedSeat];
-                dialogueText = `[${passenger.id}号] ${passenger.name}: "报告长官！我的 ${passenger.assignedSeat} 号座位好像被 ${usurperId} 号抢了！我该怎么办？"`;
+                dialogueText = `[${passenger.id}号] ${passenger.name}: "检票员师傅！我刚才看雷达，我的 ${passenger.assignedSeat} 号座位好像被 ${usurperId} 号占了！我该坐哪？"`;
             } else {
-                dialogueText = `[${passenger.id}号] ${passenger.name}: "长官好，这是我的登机牌，我被分配在 ${passenger.assignedSeat} 号座位。"`;
+                dialogueText = `[${passenger.id}号] ${passenger.name}: "检票员您好，这是我的登机牌，我被分配在 ${passenger.assignedSeat} 号座位。"`;
             }
         }
         
@@ -142,26 +151,31 @@ function finalizeFlight() {
     const rate = ((gameState.stats.vipWins / gameState.stats.flightsCompleted) * 100).toFixed(1);
     document.getElementById("stat-vip-rate").textContent = `${rate}%`;
     
-    if (gameState.isTutorial) {
-        typeDialogue("🎉 教学关完成！全员按序就座。现在为你接入 5 人正规航班 MA-404。警惕：正规航班的 1 号乘客将丢失登机牌！", () => {
+    if (gameState.currentFlightToday === 1) {
+        // 第 1 趟教学机完成 -> 接入今日第 2 趟正规航班
+        typeDialogue("🎉 教学机测试完成！全员按序就座。现在为你接入今日第 2 趟正规航班 MA-404。警惕：正规航班的 1 号乘客将丢失登机牌！", () => {
             setTimeout(() => {
                 gameState.isTutorial = false;
+                gameState.currentFlightToday = 2;
                 gameState.flightNumber = "MA-404";
                 gameState.totalSeats = 5;
                 initFlightState();
-                typeDialogue("正规航班 MA-404 已就绪！请按喇叭呼叫 1 号乘客登机。");
+                typeDialogue("今日末班航班 MA-404 已就绪！请按红色喇叭呼叫 1 号乘客登机。");
             }, 3200);
         });
     } else {
+        // 今日两趟航班全部执勤完毕 -> 第 1 天下班！
+        updateClockDisplay("18:00");
+        const flightTagEl = document.getElementById("flights-left-tag");
+        if (flightTagEl) flightTagEl.textContent = "今日航班已全部处理完毕 (下班打卡)";
+        
         const outcomeText = vipSuccess ? 
-            `🎉 航班结算：第 ${gameState.totalSeats} 号神秘 VIP 顺利坐回宝座！` : 
+            `🎉 航班结算：第 ${gameState.totalSeats} 号神秘 VIP 顺利坐回专属宝座！` : 
             `❌ 航班结算：第 ${gameState.totalSeats} 号神秘 VIP 座位遭挤占失败！`;
         
-        typeDialogue(`${outcomeText} (已完成 ${gameState.stats.flightsCompleted} 班，VIP 成功率: ${rate}%)。准备下一班...`);
-        
-        setTimeout(() => {
-            initFlightState();
-            typeDialogue("新航班已就绪，请继续呼叫 1 号乘客。");
-        }, 2800);
+        typeDialogue(`${outcomeText} 🌇【DAY 1 执勤结束】今日共执勤 2 趟航班，VIP 成功率: ${rate}%。哨所今日工作已完成，请打卡下班！`, () => {
+            document.getElementById("btn-next-entrant").disabled = true;
+            document.getElementById("status-indicator").className = "indicator-light";
+        });
     }
 }

@@ -186,8 +186,8 @@ function returnDocumentToPassenger() {
     renderQueue();
     
     if (finalSeat === passenger.assignedSeat) {
-        typeDialogue(`[${passenger.id}号] "谢谢长官！顺利坐回 ${finalSeat} 号位。"`);
+        typeDialogue(`[${passenger.id}号] "谢谢检票员！顺利坐回 ${finalSeat} 号位。"`);
     } else {
-        typeDialogue(`[${passenger.id}号] "好吧……我走向了 ${finalSeat} 号空座位入座。"`);
+        typeDialogue(`[${passenger.id}号] "好的，我这就去坐 ${finalSeat} 号空座位。"`);
     }
 }
