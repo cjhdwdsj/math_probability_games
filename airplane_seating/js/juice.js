@@ -2,9 +2,9 @@
 // JS 模块 8: Balatro 风格 3D 悬浮与打击反馈引擎 (JUICE.JS)
 // ==========================================================================
 
-// 初始化 3D 卡牌物理微倾斜
+// 初始化 3D 卡牌物理微倾斜 (仅对轻薄纸质单据生效，印章盒保持平稳放置)
 function initCard3DTilt(element) {
-    if (!element) return;
+    if (!element || element.id === "stamp-box" || element.classList.contains("stamp-box-draggable")) return;
     
     element.addEventListener("mousemove", (e) => {
         if (element.classList.contains("is-dragging")) return;
