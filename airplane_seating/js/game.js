@@ -36,16 +36,31 @@ function startTutorialPrologue() {
     
     initFlightState();
     
+    // 锁定呼叫按钮，亮起忙碌红灯
+    document.getElementById("btn-next-entrant").disabled = true;
+    document.getElementById("status-indicator").className = "indicator-light busy";
+    
     const canvas = document.getElementById("portrait-canvas");
     canvas.classList.remove("is-walking-in");
     void canvas.offsetWidth;
     canvas.classList.add("is-walking-in");
     drawMysteryPortrait(canvas);
     
+    // 神秘人开场第 1 句
     typeDialogue(`[神秘人] "初次执勤，检票员。今晚有一项绝密指令：确保末位座位的【神秘 VIP】顺利入座。在接管正规大航班前，先用这架 2 人教学机熟悉标准检票流程。"`, () => {
         setTimeout(() => {
-            typeDialogue(`[神秘人] "教学关中两人均持有正规登机牌。请核对左侧雷达，盖 🔴【按序就座】放行入座。按红色喇叭开始！"`);
-        }, 3200);
+            // 神秘人开场第 2 句
+            typeDialogue(`[神秘人] "教学关中两人均持有正规登机牌。核对左侧雷达空位后盖 🔴【按序就座】放行入座。去吧！"`, () => {
+                setTimeout(() => {
+                    // 神秘人说完离去，窗口清空，解锁按钮，亮起绿灯
+                    drawEmptyBooth(canvas);
+                    typeDialogue(`[系统提示] 神秘人已离开。请按红色喇叭呼叫 1 号乘客登机。`, () => {
+                        document.getElementById("btn-next-entrant").disabled = false;
+                        document.getElementById("status-indicator").className = "indicator-light";
+                    });
+                }, 1200);
+            });
+        }, 1200);
     });
 }
 

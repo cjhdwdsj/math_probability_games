@@ -79,3 +79,13 @@ function drawPixelPhoto(canvas, passenger) {
     ctx.fillRect(18, 18, 3, 3);
     ctx.fillRect(27, 18, 3, 3);
 }
+
+function drawEmptyBooth(canvas) {
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = "#1b2123";
+    ctx.fillRect(0, 0, w, h);
+}
