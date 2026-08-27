@@ -14,16 +14,32 @@
         <!-- ================= 上半屏：边境与哨所视角 (TOP VIEWPORT) ================= -->
         <div class="top-viewport">
             
-            <!-- 左上：候机长廊与像素排队小人 -->
+            <!-- 左上：候机长廊与铁丝网排队小人 (从左向右朝检票口排队) -->
             <div class="queue-zone" aria-label="候机长廊队列">
                 <div class="zone-header">
-                    <span class="corridor-sign" id="corridor-sign">GATE 404 · 候机长廊</span>
+                    <span class="corridor-sign" id="corridor-sign">GATE 404 · 候机长廊 (从右向左排入)</span>
                     <span class="queue-count" id="queue-count">等待登机: 2 人</span>
                 </div>
                 <div class="queue-track">
                     <div class="corridor-bg-lines"></div>
-                    <div class="queue-line" id="queue-line">
-                        <!-- 动态生成的像素小人队列 -->
+                    
+                    <!-- 边防铁丝网 / 拦网 (Entrants stand behind the security fence) -->
+                    <div class="security-fence">
+                        <div class="fence-mesh"></div>
+                        <div class="fence-post post-1"></div>
+                        <div class="fence-post post-2"></div>
+                        <div class="fence-post post-3"></div>
+                        <div class="fence-bar-top"></div>
+                        <div class="fence-bar-bottom"></div>
+                    </div>
+                    
+                    <!-- 动态生成的像素小人队列 (队列排在拦网后) -->
+                    <div class="queue-line" id="queue-line"></div>
+                    
+                    <!-- 右侧安检旋转闸门 / 入口指示牌 -->
+                    <div class="checkpoint-turnstile">
+                        <div class="turnstile-sign">➔ 检票口</div>
+                        <div class="turnstile-door" id="turnstile-door"></div>
                     </div>
                 </div>
                 <div class="corridor-floor">
@@ -35,7 +51,7 @@
             <div class="window-zone" aria-label="检票窗口">
                 <div class="window-frame">
                     <div class="booth-interior">
-                        <!-- 乘客像素立绘 -->
+                        <!-- 乘客像素立绘 (带走入动画) -->
                         <div class="portrait-container">
                             <canvas id="portrait-canvas" width="100" height="125" class="portrait-canvas"></canvas>
                         </div>
@@ -108,7 +124,7 @@
                             </div>
                         </div>
 
-                        <!-- Tab 2: 检票准则 -->
+                        <!-- Tab 2: 检票规程 -->
                         <div class="tab-pane hidden" id="tab-rules">
                             <h4 class="rule-title">《边检航空执勤条令 第 81-A 条》</h4>
                             <ol class="rules-list">

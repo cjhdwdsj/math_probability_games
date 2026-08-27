@@ -1,5 +1,5 @@
 // ==========================================================================
-// 《请出示证件：神秘 VIP 与篡位者航班》- 核心游戏引擎 (SCRIPT.JS V4)
+// 《请出示证件：神秘 VIP 与篡位者航班》- 核心游戏引擎与过场动画编排 (SCRIPT.JS V5)
 // ==========================================================================
 
 // ===== 全局游戏状态 =====
@@ -49,12 +49,16 @@ function startTutorialPrologue() {
     initFlightState();
     
     // 绘制神秘人黑风衣画像
-    drawMysteryPortrait(document.getElementById("portrait-canvas"));
+    const canvas = document.getElementById("portrait-canvas");
+    canvas.classList.remove("is-walking-in");
+    void canvas.offsetWidth; // 触发 reflow
+    canvas.classList.add("is-walking-in");
+    drawMysteryPortrait(canvas);
     
     typeDialogue(`[神秘人] "初次执勤，检票员。今晚有一项绝密指令：确保末位座位的【神秘 VIP】顺利入座。在接管大航班前，先用这架 2 人测试机熟悉操作。"`, () => {
         setTimeout(() => {
             typeDialogue(`[神秘人] "规则很简单：查验左侧雷达，核实专属座位是否被占。准备好后，按红色喇叭呼叫 1 号乘客。"`);
-        }, 3200);
+        }, 2800);
     });
 }
 
@@ -90,7 +94,6 @@ function initDraggableSystem() {
         let initialLeft = 0, initialTop = 0;
 
         el.addEventListener("mousedown", (e) => {
-            // 如果点在可点击的按钮或印章把手上，不触发整体拖动
             if (e.target.closest("button") || e.target.closest(".btn-return-doc")) {
                 return;
             }
@@ -108,7 +111,6 @@ function initDraggableSystem() {
             initialLeft = rect.left - surfaceRect.left;
             initialTop = rect.top - surfaceRect.top;
 
-            // 转化为绝对 left/top 定位
             el.style.left = `${initialLeft}px`;
             el.style.top = `${initialTop}px`;
             el.style.right = "auto";
@@ -122,7 +124,6 @@ function initDraggableSystem() {
                 let nextLeft = initialLeft + dx;
                 let nextTop = initialTop + dy;
 
-                // 边界保护
                 const maxLeft = surfaceRect.width - el.offsetWidth;
                 const maxTop = surfaceRect.height - el.offsetHeight;
                 nextLeft = Math.max(0, Math.min(nextLeft, maxLeft));
@@ -153,17 +154,14 @@ function initFlightState() {
     gameState.currentStamp = null;
     gameState.cabinSeats = {};
     
-    // 更新标题与便签
     document.getElementById("cabin-flight-title").textContent = `✈️ 航班客舱实时雷达 (${gameState.flightNumber})`;
     document.getElementById("memo-flight").textContent = gameState.flightNumber;
     document.getElementById("pass-flight-code").textContent = gameState.flightNumber;
     
-    // 初始化空座位
     for (let i = 1; i <= gameState.totalSeats; i++) {
         gameState.cabinSeats[i] = null;
     }
     
-    // 生成 N 位乘客数据
     gameState.passengers = [];
     for (let i = 1; i <= gameState.totalSeats; i++) {
         const isFirst = (i === 1);
@@ -175,7 +173,7 @@ function initFlightState() {
         gameState.passengers.push({
             id: i,
             name: name,
-            assignedSeat: isFirst ? null : i, // 1号无票/无固定座位
+            assignedSeat: isFirst ? null : i,
             isFirst: isFirst,
             isVip: isVip,
             actualSeat: null,
@@ -192,9 +190,10 @@ function initFlightState() {
     document.getElementById("stamp-impression").innerHTML = `<span class="stamp-placeholder-hint">← 拖动印章盒对准此处下压盖印</span>`;
     document.getElementById("queue-count").textContent = `等待登机: ${gameState.totalSeats} 人`;
     document.getElementById("status-indicator").className = "indicator-light";
+    document.getElementById("btn-next-entrant").disabled = false;
 }
 
-// ===== 渲染排队小人队列 =====
+// ===== 渲染排队小人队列 (在铁丝网后从左至右排入) =====
 function renderQueue() {
     const queueLine = document.getElementById("queue-line");
     queueLine.innerHTML = "";
@@ -202,6 +201,8 @@ function renderQueue() {
     for (let i = gameState.currentPassengerIndex + 1; i <= gameState.totalSeats; i++) {
         const sprite = document.createElement("div");
         sprite.className = "queue-sprite" + (i === gameState.totalSeats ? " is-vip-sprite" : "");
+        sprite.id = `queue-sprite-${i}`;
+        
         if (i === gameState.currentPassengerIndex + 1) {
             sprite.classList.add("active-entrant");
         }
@@ -247,7 +248,6 @@ function renderCabinGrid() {
         grid.appendChild(cell);
     }
     
-    // 更新 VIP 状态栏
     const vipSeatOccupant = gameState.cabinSeats[gameState.totalSeats];
     const vipIndicator = document.getElementById("vip-status-indicator");
     if (vipSeatOccupant === null) {
@@ -262,9 +262,9 @@ function renderCabinGrid() {
     }
 }
 
-// ===== 叫号：下一位乘客进屋 =====
+// ===== 叫号：下一位乘客入场动画编排 =====
 function callNextEntrant() {
-    if (gameState.isEntrantInBooth) return;
+    if (gameState.isEntrantInBooth || gameState.dialogueTyping) return;
     
     if (gameState.currentPassengerIndex >= gameState.totalSeats) {
         typeDialogue("本趟航班所有乘客已全部登机完成！正在结算报告...");
@@ -272,57 +272,96 @@ function callNextEntrant() {
         return;
     }
     
+    // 锁定呼叫按钮，亮起忙碌红灯
+    document.getElementById("btn-next-entrant").disabled = true;
+    document.getElementById("status-indicator").className = "indicator-light busy";
+    
     gameState.currentPassengerIndex += 1;
     const passenger = gameState.passengers[gameState.currentPassengerIndex - 1];
     gameState.currentEntrant = passenger;
     gameState.isEntrantInBooth = true;
     gameState.currentStamp = null;
     
-    document.getElementById("status-indicator").className = "indicator-light busy";
-    document.getElementById("queue-count").textContent = `等待登机: ${gameState.totalSeats - gameState.currentPassengerIndex} 人`;
-    renderQueue();
+    // 1. 队列小人穿过右侧闸门动画
+    const currentSprite = document.getElementById(`queue-sprite-${passenger.id}`);
+    const turnstileDoor = document.getElementById("turnstile-door");
+    if (turnstileDoor) {
+        turnstileDoor.classList.add("open");
+        setTimeout(() => turnstileDoor.classList.remove("open"), 500);
+    }
+    if (currentSprite) {
+        currentSprite.classList.add("is-leaving");
+    }
     
-    // 绘制窗口大像素头像与登机牌照片
-    drawPixelPortrait(document.getElementById("portrait-canvas"), passenger);
+    document.getElementById("queue-count").textContent = `等待登机: ${gameState.totalSeats - gameState.currentPassengerIndex} 人`;
+    
+    // 2. 窗口里小人缓缓走入窗口动画 (is-walking-in)
+    const portraitCanvas = document.getElementById("portrait-canvas");
+    portraitCanvas.classList.remove("is-walking-in");
+    void portraitCanvas.offsetWidth; // 重置 CSS 动画
+    portraitCanvas.classList.add("is-walking-in");
+    
+    drawPixelPortrait(portraitCanvas, passenger);
     drawPixelPhoto(document.getElementById("pass-photo-canvas"), passenger);
     
-    // 呈现登机牌并滑出
+    // 隐藏登机牌，等小人完全走入并说完话后再递出
+    document.getElementById("boarding-pass").classList.add("hidden");
+    
+    // 3. 等待小人走入就绪 (500ms 后)，开始显示对话并慢速跳字
+    setTimeout(() => {
+        let dialogueText = "";
+        if (passenger.isFirst) {
+            dialogueText = `[1号] ${passenger.name}: "呃……长官，我的登机牌好像找不到了，随便给我安排个位吧！"`;
+        } else {
+            const isSeatTaken = (gameState.cabinSeats[passenger.assignedSeat] !== null);
+            if (isSeatTaken) {
+                const usurperId = gameState.cabinSeats[passenger.assignedSeat];
+                dialogueText = `[${passenger.id}号] ${passenger.name}: "报告长官！我的 ${passenger.assignedSeat} 号座位好像被 ${usurperId} 号抢了！我该怎么办？"`;
+            } else {
+                dialogueText = `[${passenger.id}号] ${passenger.name}: "长官好，这是我的登机牌，我被分配在 ${passenger.assignedSeat} 号座位。"`;
+            }
+        }
+        
+        // 4. 对话打字机跳字 (慢速跳字 ~36ms/字)
+        typeDialogue(dialogueText, () => {
+            // 5. 对话全部跳完后，递出单子 (登机牌滑出)
+            presentBoardingPass(passenger);
+        });
+    }, 550);
+}
+
+// ===== 递出纸质登机牌 =====
+function presentBoardingPass(passenger) {
     const passCard = document.getElementById("boarding-pass");
     const stampSlot = document.getElementById("stamp-impression");
     stampSlot.innerHTML = `<span class="stamp-placeholder-hint">← 拖动印章盒对准此处下压盖印</span>`;
     document.getElementById("btn-return-doc").disabled = true;
     
+    if (passenger.isFirst) {
+        document.getElementById("pass-name").textContent = passenger.name;
+        document.getElementById("pass-seat").textContent = "无票 (LOST)";
+        document.getElementById("pass-type-badge").textContent = "UNASSIGNED";
+    } else {
+        document.getElementById("pass-name").textContent = passenger.name;
+        document.getElementById("pass-seat").textContent = passenger.assignedSeat < 10 ? "0" + passenger.assignedSeat : String(passenger.assignedSeat);
+        document.getElementById("pass-type-badge").textContent = passenger.isVip ? "👑 VIP GUEST" : "ECONOMY";
+    }
+    
+    // 从右上由上往下滑入
     passCard.style.left = "auto";
     passCard.style.right = "260px";
     passCard.style.top = "16px";
     passCard.classList.remove("hidden");
     highestZIndex += 1;
     passCard.style.zIndex = highestZIndex;
-    
-    if (passenger.isFirst) {
-        document.getElementById("pass-name").textContent = passenger.name;
-        document.getElementById("pass-seat").textContent = "无票 (LOST)";
-        document.getElementById("pass-type-badge").textContent = "UNASSIGNED";
-        typeDialogue(`[1号] ${passenger.name}: "呃……长官，我的登机牌好像找不到了，随便给我安排个位吧！"`);
-    } else {
-        document.getElementById("pass-name").textContent = passenger.name;
-        document.getElementById("pass-seat").textContent = passenger.assignedSeat < 10 ? "0" + passenger.assignedSeat : String(passenger.assignedSeat);
-        document.getElementById("pass-type-badge").textContent = passenger.isVip ? "👑 VIP GUEST" : "ECONOMY";
-        
-        // 检查专属座位是否被占
-        const isSeatTaken = (gameState.cabinSeats[passenger.assignedSeat] !== null);
-        if (isSeatTaken) {
-            const usurperId = gameState.cabinSeats[passenger.assignedSeat];
-            typeDialogue(`[${passenger.id}号] ${passenger.name}: "报告长官！我的 ${passenger.assignedSeat} 号座位好像被 ${usurperId} 号抢了！我该怎么办？"`);
-        } else {
-            typeDialogue(`[${passenger.id}号] ${passenger.name}: "长官好，这是我的登机牌，我被分配在 ${passenger.assignedSeat} 号座位。"`);
-        }
-    }
 }
 
 // ===== 实体下压盖章机制 (按压把手) =====
 function pressStamp(stampType) {
     if (!gameState.isEntrantInBooth || !gameState.currentEntrant) return;
+    
+    const passCard = document.getElementById("boarding-pass");
+    if (passCard.classList.contains("hidden")) return;
     
     const unitId = (stampType === "ASSIGNED") ? "stamp-unit-assigned" : "stamp-unit-random";
     const knob = document.querySelector(`#${unitId} .stamp-knob`);
@@ -379,7 +418,6 @@ function returnDocumentToPassenger() {
     if (stamp === "ASSIGNED") {
         finalSeat = passenger.assignedSeat;
     } else {
-        // 随机选择剩余空位
         const freeSeats = [];
         for (let i = 1; i <= gameState.totalSeats; i++) {
             if (gameState.cabinSeats[i] === null) {
@@ -397,6 +435,9 @@ function returnDocumentToPassenger() {
     gameState.isEntrantInBooth = false;
     gameState.currentEntrant = null;
     document.getElementById("status-indicator").className = "indicator-light";
+    document.getElementById("btn-next-entrant").disabled = false;
+    
+    renderQueue();
     
     if (finalSeat === passenger.assignedSeat) {
         typeDialogue(`[${passenger.id}号] "谢谢长官！顺利坐回 ${finalSeat} 号位。"`);
@@ -433,12 +474,11 @@ function finalizeFlight() {
     document.getElementById("stat-vip-rate").textContent = `${rate}%`;
     
     if (gameState.isTutorial) {
-        // 新手教程结算
         const tutorialResult = vipSuccess ? 
             "🎉 2 人测试通过！VIP 成功入座。" : 
             "❌ 2 人测试结束：1号抢了 2号VIP的座位，VIP被迫坐了 1号。";
         
-        typeDialogue(`${tutorialResult} 你已经掌握了基本规则！正在为你接入 5 人正规航班 MA-404...`, () => {
+        typeDialogue(`${tutorialResult} 你已掌握基本规则！正在为你接入 5 人正规航班 MA-404...`, () => {
             setTimeout(() => {
                 gameState.isTutorial = false;
                 gameState.flightNumber = "MA-404";
@@ -461,14 +501,14 @@ function finalizeFlight() {
     }
 }
 
-// ===== 打字机对话输出引擎 =====
+// ===== 打字机对话输出引擎 (慢速沉浸跳字 ~36ms/字) =====
 function typeDialogue(text, callback) {
     const el = document.getElementById("tape-dialogue");
     gameState.dialogueTyping = true;
     el.textContent = "";
     
     let i = 0;
-    const speed = 22;
+    const speed = 36; // 舒适温润的打字节奏
     
     const timer = setInterval(() => {
         if (i < text.length) {

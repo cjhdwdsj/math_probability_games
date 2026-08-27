@@ -1,5 +1,5 @@
 /* ==========================================================================
-   《请出示证件：神秘 VIP 与篡位者航班》- 像素级视觉样式表 (PAPERS, PLEASE THEME V3)
+   《请出示证件：神秘 VIP 与篡位者航班》- 像素级视觉样式表 (PAPERS, PLEASE THEME V4)
    ========================================================================== */
 
 :root {
@@ -8,8 +8,8 @@
     --c-desk-surface: #363d42;
     --c-desk-rim: #1a1e20;
     --c-booth-bg: #3f4741;
-    --c-corridor-wall: #303732;
-    --c-floor: #202622;
+    --c-corridor-wall: #2c332e;
+    --c-floor: #1e2420;
     
     /* 纸张与证件 */
     --c-pass-bg: #eae0c2;
@@ -84,68 +84,170 @@ button {
     overflow: hidden;
 }
 
-/* 左上：候机长廊 */
+/* 左上：候机长廊与铁丝网 */
 .queue-zone {
     background-color: var(--c-corridor-wall);
     border-right: 4px solid var(--c-desk-rim);
     display: flex;
     flex-direction: column;
     position: relative;
-    box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
+    box-shadow: inset 0 0 25px rgba(0,0,0,0.7);
 }
 
 .zone-header {
-    background: #202622;
+    background: #1c211e;
     color: #9cb09f;
     padding: 5px 12px;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     font-weight: 700;
     display: flex;
     justify-content: space-between;
-    border-bottom: 2px solid #141a15;
+    border-bottom: 2px solid #121613;
     letter-spacing: 1px;
 }
 
 .queue-track {
     flex: 1;
     position: relative;
-    background: radial-gradient(circle at 50% 20%, #3a443b, #1e241f);
+    background: radial-gradient(circle at 50% 20%, #343d35, #181d1a);
     overflow: hidden;
     display: flex;
     align-items: flex-end;
-    padding-bottom: 8px;
+    padding-bottom: 6px;
 }
 
 .corridor-bg-lines {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background-image: repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(255,255,255,0.03) 40px, rgba(255,255,255,0.03) 42px);
+    background-image: repeating-linear-gradient(90deg, transparent, transparent 36px, rgba(255,255,255,0.02) 36px, rgba(255,255,255,0.02) 38px);
 }
 
-.queue-line {
-    width: 100%;
-    padding: 0 16px;
+/* 铁丝拦网 (Security Fence) */
+.security-fence {
+    position: absolute;
+    left: 0;
+    right: 50px;
+    bottom: 2px;
+    height: 60px;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.fence-mesh {
+    position: absolute;
+    top: 6px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        repeating-linear-gradient(45deg, rgba(160, 175, 165, 0.25) 0, rgba(160, 175, 165, 0.25) 1px, transparent 0, transparent 8px),
+        repeating-linear-gradient(-45deg, rgba(160, 175, 165, 0.25) 0, rgba(160, 175, 165, 0.25) 1px, transparent 0, transparent 8px);
+    border-top: 2px solid #5a665e;
+}
+
+.fence-post {
+    position: absolute;
+    bottom: 0;
+    width: 6px;
+    height: 64px;
+    background: linear-gradient(90deg, #444e47, #718076, #363e38);
+    border: 1px solid #1a1e1b;
+}
+
+.post-1 { left: 20%; }
+.post-2 { left: 55%; }
+.post-3 { left: 88%; }
+
+.fence-bar-top {
+    position: absolute;
+    top: 4px;
+    left: 0; right: 0;
+    height: 3px;
+    background-color: #718076;
+    border-top: 1px solid #9fb3a6;
+    border-bottom: 1px solid #2e3530;
+}
+
+.fence-bar-bottom {
+    position: absolute;
+    bottom: 2px;
+    left: 0; right: 0;
+    height: 3px;
+    background-color: #556159;
+}
+
+/* 右侧旋转闸门 */
+.checkpoint-turnstile {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 48px;
+    height: 68px;
+    background-color: #202723;
+    border-left: 3px solid #111513;
     display: flex;
-    gap: 16px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    z-index: 12;
+}
+
+.turnstile-sign {
+    position: absolute;
+    top: 4px;
+    font-size: 0.6rem;
+    font-weight: 800;
+    color: #e5b324;
+    text-shadow: 1px 1px 0 #000;
+    background: #111;
+    padding: 1px 3px;
+    border-radius: 2px;
+    border: 1px solid #333;
+}
+
+.turnstile-door {
+    width: 8px;
+    height: 44px;
+    background: repeating-linear-gradient(0deg, #ba2824, #ba2824 4px, #f5eedb 4px, #f5eedb 8px);
+    border: 1px solid #000;
+    transition: transform 0.3s ease;
+}
+
+.turnstile-door.open {
+    transform: rotate(-70deg) translateY(-10px);
+}
+
+/* 队列小人 (排在拦网之后，由左向右朝闸门移动) */
+.queue-line {
+    width: calc(100% - 50px);
+    padding: 0 12px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 14px;
     align-items: flex-end;
-    z-index: 2;
+    z-index: 5;
 }
 
 .queue-sprite {
     width: 26px;
     height: 48px;
-    background-color: #55665a;
-    border: 2px solid #161e18;
+    background-color: #4e5e53;
+    border: 2px solid #141c16;
     border-radius: 4px 4px 0 0;
     position: relative;
-    transition: transform 0.25s ease;
+    transition: transform 0.35s ease, opacity 0.35s ease;
     box-shadow: 2px 2px 0 rgba(0,0,0,0.6);
 }
 
 .queue-sprite.active-entrant {
     background-color: var(--c-gold);
-    transform: scale(1.16) translateY(-4px);
-    box-shadow: 0 0 10px rgba(207, 161, 34, 0.8);
+    transform: scale(1.18) translateY(-4px);
+    box-shadow: 0 0 10px rgba(207, 161, 34, 0.85);
+}
+
+.queue-sprite.is-leaving {
+    transform: translateX(35px) scale(0.9);
+    opacity: 0;
 }
 
 .queue-sprite.is-vip-sprite {
@@ -160,7 +262,7 @@ button {
     width: 16px;
     height: 12px;
     background-color: #d1b58a;
-    border: 2px solid #161e18;
+    border: 2px solid #141c16;
     border-radius: 50% 50% 0 0;
 }
 
@@ -179,13 +281,13 @@ button {
 .corridor-floor {
     height: 16px;
     background-color: var(--c-floor);
-    border-top: 3px solid #141a16;
+    border-top: 3px solid #111512;
     position: relative;
 }
 
 .floor-yellow-line {
     height: 3px;
-    background: repeating-linear-gradient(90deg, #c4a000, #c4a000 12px, #202622 12px, #202622 20px);
+    background: repeating-linear-gradient(90deg, #c4a000, #c4a000 12px, #1e2420 12px, #1e2420 20px);
 }
 
 /* 右上：检票窗口 */
@@ -219,6 +321,7 @@ button {
 .portrait-container {
     position: relative;
     z-index: 2;
+    overflow: hidden;
 }
 
 .portrait-canvas {
@@ -229,6 +332,17 @@ button {
     border-radius: 4px;
     box-shadow: 4px 4px 0 rgba(0,0,0,0.6);
     display: block;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+/* 乘客缓缓走入窗口的入场动效 */
+.portrait-canvas.is-walking-in {
+    animation: entrantWalkIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes entrantWalkIn {
+    0% { transform: translateX(-70px); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
 }
 
 /* 录音带纸条 */
@@ -263,7 +377,7 @@ button {
 .tape-dialogue {
     font-family: "Noto Serif SC", serif;
     font-size: 0.92rem;
-    line-height: 1.4;
+    line-height: 1.45;
     color: #1a1612;
 }
 
@@ -299,6 +413,12 @@ button {
 .btn-intercom:active {
     transform: translateY(3px);
     box-shadow: 0 1px 0 #240505;
+}
+
+.btn-intercom:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(0.5);
 }
 
 .speaker-grill {
@@ -366,7 +486,7 @@ button {
     box-shadow: 10px 10px 20px rgba(0,0,0,0.5) !important;
 }
 
-/* 【左边】：工作手册 (检票准则、客舱实时雷达、执勤统计) */
+/* 【左边】：工作手册 (第一页：客舱实时雷达，第二页：检票准则，第三页：执勤统计) */
 .cabin-manual-book {
     position: absolute;
     left: 16px;
@@ -604,11 +724,11 @@ button {
     flex-direction: column;
     gap: 6px;
     z-index: 50;
-    animation: passSlideDown 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.15);
+    animation: passSlideDown 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.15) forwards;
 }
 
 @keyframes passSlideDown {
-    0% { transform: translateY(-40px); opacity: 0; }
+    0% { transform: translateY(-50px); opacity: 0; }
     100% { transform: translateY(0); opacity: 1; }
 }
 
