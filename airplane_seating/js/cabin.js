@@ -75,16 +75,17 @@ function renderCabinGrid() {
     }
     
     const vipSeatOccupant = gameState.cabinSeats[gameState.totalSeats];
-    const vipIndicator = document.getElementById("vip-status-indicator");
-    if (vipSeatOccupant === null) {
-        vipIndicator.textContent = `👑 VIP (No.${gameState.totalSeats}) 状态: 空闲`;
-        vipIndicator.style.backgroundColor = "#f7e2a3";
-    } else if (vipSeatOccupant === gameState.totalSeats) {
-        vipIndicator.textContent = `👑 VIP (No.${gameState.totalSeats}) 状态: 成功归位! 🎉`;
-        vipIndicator.style.backgroundColor = "#c6eac8";
-    } else {
-        vipIndicator.textContent = `👑 VIP (No.${gameState.totalSeats}) 状态: 被 ${vipSeatOccupant}号 抢占! ❌`;
-        vipIndicator.style.backgroundColor = "#f7c1be";
+    if (vipIndicator) {
+        if (vipSeatOccupant === null) {
+            vipIndicator.textContent = `👑 VIP (No.${gameState.totalSeats}) 状态: 空闲`;
+            vipIndicator.style.backgroundColor = "#f7e2a3";
+        } else if (vipSeatOccupant === gameState.totalSeats) {
+            vipIndicator.textContent = `👑 VIP (No.${gameState.totalSeats}) 状态: 成功归位! 🎉`;
+            vipIndicator.style.backgroundColor = "#c6eac8";
+        } else {
+            vipIndicator.textContent = `👑 VIP (No.${gameState.totalSeats}) 状态: 被 ${vipSeatOccupant}号 抢占! ❌`;
+            vipIndicator.style.backgroundColor = "#f7c1be";
+        }
     }
 }
 
