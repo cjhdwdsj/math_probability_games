@@ -3,311 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="通过逐页互动演示理解飞机座位错配问题为何恒为二分之一。">
-    <title>飞机座位错配问题 - 经典概率悖论</title>
+    <title>请出示证件：神秘 VIP 与篡位者航班 (Papers, Please - Flight Edition)</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="doodle doodle-1" aria-hidden="true"></div>
-    <div class="doodle doodle-2" aria-hidden="true"></div>
-    <div class="doodle doodle-3" aria-hidden="true"></div>
-    <div class="doodle doodle-4" aria-hidden="true"></div>
-
-    <div class="lesson-app">
-        <header class="lesson-topbar">
-            <a class="brand" href="#" onclick="goToPage(0); return false;" aria-label="回到课程开始">
-                <span aria-hidden="true">✈️</span>
-                <span>飞机座位错配</span>
-            </a>
-            <div class="progress-copy" aria-live="polite">
-                <span id="current-page">1</span><span class="progress-separator">/</span><span id="page-count">8</span>
-                <span class="progress-label">正在学习</span>
+    <!-- 主工作台容器 (1:1 复刻经典上下分屏) -->
+    <div class="booth-container" id="booth-container">
+        
+        <!-- ================= 上半屏：边境与哨所视角 (TOP VIEWPORT) ================= -->
+        <div class="top-viewport">
+            
+            <!-- 左上：候机长廊与像素排队小人 -->
+            <div class="queue-zone" aria-label="候机长廊队列">
+                <div class="zone-header">
+                    <span class="corridor-sign">GATE 404 · 候机长廊</span>
+                    <span class="queue-count" id="queue-count">等待登机: 5 人</span>
+                </div>
+                <div class="queue-track">
+                    <div class="guard-booth-wall"></div>
+                    <div class="queue-line" id="queue-line">
+                        <!-- 动态生成的像素小人队列 -->
+                    </div>
+                </div>
+                <div class="corridor-floor"></div>
             </div>
-        </header>
 
-        <main class="lesson-stage" aria-label="飞机座位错配互动课程">
-            <section class="lesson-page active" data-page="0" aria-hidden="false" aria-labelledby="page-title-1">
-                <article class="lesson-card cover-card">
-                    <span class="eyebrow">渐进式概率实验</span>
-                    <div class="cover-icon" aria-hidden="true">✈️</div>
-                    <h1 id="page-title-1" tabindex="-1">飞机座位错配问题</h1>
-                    <p class="cover-subtitle">一个从“坐错座位”开始的概率谜题。</p>
-                    <p class="cover-intro">先用一段小动画看懂所有人如何选座，再一步步探索最后会发生什么。</p>
-                    <button class="btn btn-primary start-btn" type="button" onclick="nextPage()">先了解规则 <span aria-hidden="true">→</span></button>
-                </article>
-            </section>
-
-            <section class="lesson-page" data-page="1" aria-hidden="true" aria-labelledby="page-title-2">
-                <article class="lesson-card card-rules">
-                    <div class="section-kicker"><span aria-hidden="true">🧭</span> 先看懂规则</div>
-                    <h2 id="page-title-2" tabindex="-1">五个座位，大家怎么坐？</h2>
-                    <p class="lead">每位乘客都有自己的编号座位。关键规则只有两条：先找自己的座位；若已被占，才在剩余座位中随机选择。</p>
-                    <div class="rule-flow" id="rule-flow" aria-label="横向选座决策图：高亮框表示动画当前所在规则">
-                        <div class="flow-node flow-start" data-rule-flow="first"><span class="flow-tag">乘客 1</span><strong>没有固定座位</strong><small>随机选一个</small></div>
-                        <div class="flow-arrow" aria-hidden="true">→</div>
-                        <div class="flow-node flow-check" data-rule-flow="check"><span class="flow-tag">其他乘客</span><strong>先看自己的座位</strong><small>空着还是被占？</small></div>
-                        <div class="flow-arrow" aria-hidden="true">→</div>
-                        <div class="flow-branches" aria-label="座位检查后的两个分支">
-                            <div class="flow-branch" data-rule-flow="direct"><span class="branch-label">座位空着</span><strong>直接坐下</strong></div>
-                            <div class="flow-branch" data-rule-flow="random"><span class="branch-label">座位被占</span><strong>随机选一个空座位</strong></div>
+            <!-- 右上：检票窗口与室内对峙区 -->
+            <div class="window-zone" aria-label="检票窗口">
+                <div class="window-frame">
+                    <!-- 卷帘门 (特殊剧情时拉下) -->
+                    <div class="shutter" id="shutter"></div>
+                    
+                    <!-- 窗口内部背景与身高刻度墙 -->
+                    <div class="booth-interior">
+                        <div class="height-markings"></div>
+                        
+                        <!-- 乘客像素立绘展示区 (Canvas 实时点阵绘制) -->
+                        <div class="portrait-container">
+                            <canvas id="portrait-canvas" width="96" height="120" class="portrait-canvas"></canvas>
+                            <div class="portrait-shadow"></div>
                         </div>
-                        <div class="flow-arrow" aria-hidden="true">→</div>
-                        <div class="flow-node flow-seat" data-rule-flow="seated"><strong>完成入座</strong><small>下一位</small></div>
-                    </div>
-                    <p class="rule-flow-hint">动画开始后，当前正在执行的规则和分支会高亮。</p>
-                    <div class="rules-seat-row" aria-label="五个按编号排列的座位">
-                        <div class="seat mini rule-seat" data-rule-seat="1">1</div>
-                        <div class="seat mini rule-seat" data-rule-seat="2">2</div>
-                        <div class="seat mini rule-seat" data-rule-seat="3">3</div>
-                        <div class="seat mini rule-seat" data-rule-seat="4">4</div>
-                        <div class="seat mini last rule-seat" data-rule-seat="5">5</div>
-                    </div>
-                    <div class="rules-animation-area" id="rules-animation" aria-live="polite" aria-atomic="true">
-                        <div class="animation-status is-idle"><div class="status-line"><span class="status-orb" aria-hidden="true"></span><strong>等待演示</strong></div><p class="animation-text">点击开始后，依次观察 1 至 5 号乘客如何选座。</p></div>
-                    </div>
-                    <div class="btn-group rules-controls">
-                        <button class="btn btn-secondary" id="play-rules" type="button" onclick="playRulesDemo()">▶ 开始规则演示</button>
-                        <button class="btn btn-quiet" id="reset-rules" type="button" onclick="resetRulesDemo()" disabled>↺ 重看</button>
-                    </div>
-                    <p class="rules-note">这是一条示例路径：随机选择可以不同，但“先坐自己的座位；被占才随机”的规则始终不变。</p>
-                </article>
-            </section>
 
-            <section class="lesson-page" data-page="2" aria-hidden="true" aria-labelledby="page-title-3">
-                <article class="lesson-card card-n2">
-                    <div class="section-kicker"><span aria-hidden="true">🔬</span> 最简单的情况</div>
-                    <h2 id="page-title-3" tabindex="-1">先从 N = 2 开始</h2>
-                    <p class="lead">第一位只有两种等可能选择；不需要模拟，直接列出全部结果即可。</p>
-                    <p class="n2-choice-guide" id="n2-choice-guide">请选择乘客 1 要坐的座位；系统将自动演示乘客 2 的入座结果。</p>
-                    <div class="seats-small n2-choice-seats" aria-describedby="n2-choice-guide">
-                        <button class="seat mini available n2-seat-choice" type="button" data-seat="1" onclick="playN2Scenario(1)" aria-label="让乘客 1 选择 1 号座位">1</button>
-                        <button class="seat mini last available n2-seat-choice" type="button" data-seat="2" onclick="playN2Scenario(2)" aria-label="让乘客 1 选择 2 号座位">2</button>
-                    </div>
-                    <div class="n2-animation-area" id="n2-animation" aria-live="polite" aria-atomic="true">
-                        <div class="animation-status is-idle"><div class="status-line"><span class="status-orb" aria-hidden="true"></span><strong>等待选择</strong></div><p class="animation-text">先让乘客 1 选择座位 1 或座位 2；随后会自动展示乘客 2 的入座。</p></div>
-                    </div>
-                    <div class="n2-scenarios">
-                        <div class="scenario"><span class="scenario-dot success-dot" aria-hidden="true"></span><span>乘客 1 选座位 1（概率 1/2）</span><strong class="success">乘客 2 坐座位 2，成功</strong></div>
-                        <div class="scenario"><span class="scenario-dot fail-dot" aria-hidden="true"></span><span>乘客 1 选座位 2（概率 1/2）</span><strong class="fail">乘客 2 坐座位 1，失败</strong></div>
-                    </div>
-                    <div class="result n2-result">两种情况各占一半，因此成功概率：<span class="highlight">1 / 2 = 50%</span></div>
-                    <p class="n2-explanation">这已经是完整证明：总共 2 种等可能结果，其中恰有 1 种会成功。</p>
-                </article>
-            </section>
+                        <!-- 窗口对话与录音带纸条 (Audio Transcript Tape) -->
+                        <div class="transcript-tape-wrapper">
+                            <div class="tape-dispenser-top"></div>
+                            <div class="transcript-tape" id="transcript-tape">
+                                <div class="tape-line tape-date" id="tape-time">[08:00 GRESTIN]</div>
+                                <div class="tape-line tape-dialogue" id="tape-dialogue">请按喇叭呼叫下一位乘客。</div>
+                            </div>
+                        </div>
 
-            <section class="lesson-page" data-page="3" aria-hidden="true" aria-labelledby="page-title-4">
-                <article class="lesson-card card-n3">
-                    <div class="section-kicker"><span aria-hidden="true">🎬</span> 观察连锁反应</div>
-                    <h2 id="page-title-4" tabindex="-1">再试试 N = 3</h2>
-                    <p class="lead">当有人发现自己的座位被占，他只能在剩余座位里随机选择。</p>
-                    <div class="seats-small" aria-label="1号、2号与3号座位">
-                        <div class="seat mini" data-seat="1">1</div>
-                        <div class="seat mini" data-seat="2">2</div>
-                        <div class="seat mini last" data-seat="3">3</div>
+                        <!-- 喇叭对讲机按键 (NEXT!) -->
+                        <div class="intercom-box">
+                            <button class="btn-intercom" id="btn-next-entrant" type="button" onclick="callNextEntrant()">
+                                <span class="speaker-grill"></span>
+                                <span class="intercom-label">下一位！(NEXT)</span>
+                            </button>
+                            <div class="indicator-light" id="status-indicator"></div>
+                        </div>
                     </div>
-                    <div class="animation-area" id="n3-animation" aria-live="polite" aria-atomic="true">
-                        <div class="animation-status is-idle">
-                            <div class="status-line"><span class="status-orb" aria-hidden="true"></span><strong>准备开始</strong></div>
-                            <p class="animation-text">观察每位乘客如何判断座位是否被占，以及连锁反应如何终结。</p>
-                            <ol class="animation-steps" aria-label="三位乘客的入座步骤">
-                                <li><b>1</b><span>乘客 1 随机选座</span></li>
-                                <li><b>2</b><span>乘客 2 判断并入座</span></li>
-                                <li><b>3</b><span>乘客 3 获得最后座位</span></li>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ================= 下半屏：深色铁皮检票工作台 (DESK WORKSPACE) ================= -->
+        <div class="desk-viewport" id="desk-viewport">
+            
+            <!-- 左侧：点阵罚单打印机 (CITATION PRINTER) -->
+            <div class="citation-printer-slot" id="citation-slot">
+                <div class="printer-mouth"></div>
+                <div class="citation-paper hidden" id="citation-paper">
+                    <div class="citation-header">⚠️ M.O.A. 违规警告 ⚠️</div>
+                    <div class="citation-body" id="citation-reason">未依规核验机舱座位占用状态！</div>
+                    <div class="citation-fine">罚款: 5 CREDITS (扣除津贴)</div>
+                    <button class="citation-dismiss" type="button" onclick="dismissCitation()">[撕下收存]</button>
+                </div>
+            </div>
+
+            <!-- 台面中央：自由拖拽/查验文档交互区 -->
+            <div class="counter-surface" id="counter-surface">
+                
+                <!-- 绝密 VIP 便签 (钉在桌角) -->
+                <div class="memo-sticky" id="vip-memo">
+                    <div class="memo-pin"></div>
+                    <div class="memo-title">📌 机密执勤令</div>
+                    <div class="memo-text">
+                        今晚航班 <b id="memo-flight">MA-404</b> 末位乘客是 <b class="gold-text">神秘 VIP</b>。<br>
+                        务必确保其坐上自己的专属座位！
+                    </div>
+                </div>
+
+                <!-- 待检通行证件：纸质登机牌 (可点击/盖章) -->
+                <div class="boarding-pass-card hidden" id="boarding-pass">
+                    <div class="pass-header">
+                        <span class="airline-name">ARSTOTZKA AIR ✈️</span>
+                        <span class="pass-type" id="pass-type-badge">ECONOMY</span>
+                    </div>
+                    <div class="pass-body">
+                        <div class="pass-photo-frame">
+                            <canvas id="pass-photo-canvas" width="48" height="60" class="pass-photo"></canvas>
+                        </div>
+                        <div class="pass-details">
+                            <div class="pass-row"><span class="lbl">NAME:</span> <strong id="pass-name">IVAN V.</strong></div>
+                            <div class="pass-row"><span class="lbl">SEAT:</span> <strong class="seat-num" id="pass-seat">03</strong></div>
+                            <div class="pass-row"><span class="lbl">FLIGHT:</span> <span>MA-404</span></div>
+                        </div>
+                    </div>
+                    <!-- 盖章印记区 (盖章后动态生成印痕) -->
+                    <div class="stamp-impression-slot" id="stamp-impression"></div>
+                    
+                    <div class="pass-footer">
+                        <span class="barcode-mock">||||||||||||||||||||||||</span>
+                        <button class="btn-return-doc" id="btn-return-doc" type="button" onclick="returnDocumentToPassenger()" disabled>
+                            ➔ 放行入座
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 机舱座席实时手册 (Rulebook / Cabin Map) -->
+                <div class="cabin-manual-book" id="cabin-manual">
+                    <div class="manual-tab-bar">
+                        <button class="tab-btn active" type="button" onclick="switchManualTab('cabin')">💺 客舱实时雷达</button>
+                        <button class="tab-btn" type="button" onclick="switchManualTab('rules')">📜 检票准则</button>
+                        <button class="tab-btn" type="button" onclick="switchManualTab('stats')">📊 执勤统计</button>
+                    </div>
+                    
+                    <div class="manual-content">
+                        <!-- Tab 1: 客舱雷达 (实时展示谁坐了哪个座) -->
+                        <div class="tab-pane active" id="tab-cabin">
+                            <div class="cabin-grid-header">
+                                <span>客舱俯视图 (FLIGHT MA-404)</span>
+                                <span class="vip-status-pill" id="vip-status-indicator">👑 VIP 座位状态: 空闲</span>
+                            </div>
+                            <div class="cabin-seats-grid" id="cabin-seats-grid">
+                                <!-- 动态生成座位格子 -->
+                            </div>
+                        </div>
+
+                        <!-- Tab 2: 检票规程 -->
+                        <div class="tab-pane hidden" id="tab-rules">
+                            <h4 class="rule-title">《边检航空执勤条令 第 81-A 条》</h4>
+                            <ol class="rules-list">
+                                <li><strong>1 号乘客无票时</strong>：必须盖 🔵【批准随意就座】印章；</li>
+                                <li><strong>正常乘客专属座位未被占</strong>：必须盖 🔴【按序就座】印章；</li>
+                                <li><strong>正常乘客专属座位已被抢占</strong>：必须盖 🔵【批准随意就座】印章；</li>
+                                <li><strong>违规放行者</strong>：将立即予以罚款通报！</li>
                             </ol>
                         </div>
-                    </div>
-                    <div class="btn-group n3-controls" aria-label="N 等于 3 演示控制">
-                        <button class="btn btn-secondary" id="start-n3" type="button" onclick="startN3Stepper()">🧭 开始步进</button>
-                        <button class="btn btn-primary" id="next-n3" type="button" onclick="nextN3Step()" disabled>下一步</button>
-                        <button class="btn btn-quiet" id="result-n3" type="button" onclick="showN3Result()" disabled>⏭ 查看结果</button>
-                        <button class="btn btn-outline" type="button" onclick="simulateN3()">📈 模拟 50 次</button>
-                    </div>
-                    <p class="result" id="n3-result"></p>
-                </article>
-            </section>
 
-            <section class="lesson-page" data-page="4" aria-hidden="true" aria-labelledby="page-title-5">
-                <article class="lesson-card card-handoff">
-                    <div class="section-kicker"><span aria-hidden="true">🏷️</span> 看见错位如何传递</div>
-                    <h2 id="page-title-5" tabindex="-1">谁拿着“随机选择权”？</h2>
-                    <p class="lead">中间座位不会决定成败；它只把下一次随机选择交给另一位乘客。</p>
-                    <div class="handoff-track" aria-label="五个座位与错位接力过程">
-                        <div class="handoff-seat endpoint" data-handoff-seat="1"><span>1</span></div>
-                        <div class="handoff-seat" data-handoff-seat="2"><span>2</span></div>
-                        <div class="handoff-seat" data-handoff-seat="3"><span>3</span></div>
-                        <div class="handoff-seat" data-handoff-seat="4"><span>4</span></div>
-                        <div class="handoff-seat endpoint" data-handoff-seat="5"><span>5</span></div>
-                    </div>
-                    <div class="handoff-panel" id="handoff-panel" aria-live="polite">
-                        <div class="handoff-status"><span class="baton-orb" aria-hidden="true"></span><strong>准备观察</strong></div>
-                        <p>点击开始后，观察“随机选择权”如何只在被占座位的乘客之间传递。</p>
-                    </div>
-                    <div class="handoff-story" id="handoff-story">普通乘客坐回自己的座位后，就不再影响最后一位的结果。</div>
-                    <div class="btn-group handoff-controls" aria-label="错位接力演示控制">
-                        <button class="btn btn-secondary" id="start-handoff" type="button" onclick="startHandoffDemo()">▶ 开始接力演示</button>
-                        <button class="btn btn-primary" id="next-handoff" type="button" onclick="nextHandoffStep()" disabled>下一步</button>
-                        <button class="btn btn-quiet" id="reset-handoff" type="button" onclick="resetHandoffDemo()" disabled>↺ 重看</button>
-                    </div>
-                    <div class="terminal-choice hidden" id="terminal-choice" aria-live="polite">
-                        <strong>现在只剩两个终点：接力棒要落到哪里？</strong>
-                        <div class="btn-group">
-                            <button class="btn btn-success" type="button" onclick="resolveHandoff(1)">选 1 号座位</button>
-                            <button class="btn btn-danger" type="button" onclick="resolveHandoff(5)">选 5 号座位</button>
+                        <!-- Tab 3: 执勤战绩 -->
+                        <div class="tab-pane hidden" id="tab-stats">
+                            <div class="stats-box">
+                                <p>已处理航班: <strong id="stat-flights">0</strong> 班</p>
+                                <p>VIP 成功入座: <strong class="green-text" id="stat-vip-wins">0</strong> 次</p>
+                                <p>VIP 遭占出局: <strong class="red-text" id="stat-vip-losses">0</strong> 次</p>
+                                <p>当前 VIP 成功率: <strong class="gold-text" id="stat-vip-rate">0.0%</strong></p>
+                            </div>
                         </div>
                     </div>
-                    <p class="handoff-insight" id="handoff-insight">先推进动画，最后会看到中间座位只是在传递接力棒。</p>
-                </article>
-            </section>
+                </div>
 
-            <section class="lesson-page" data-page="5" aria-hidden="true" aria-labelledby="page-title-6">
-                <article class="lesson-card card-recurrence">
-                    <div class="section-kicker"><span aria-hidden="true">∑</span> 把直觉变成证明</div>
-                    <h2 id="page-title-6" tabindex="-1">递推式为什么总是回到 1 / 2？</h2>
-                    <p class="lead">第一位的选择只有三类：立即成功、立即失败，或把问题缩小成同一种问题。</p>
-                    <div class="proof-map" id="proof-map" aria-label="第一位选择的三类结果">
-                        <div class="proof-choice proof-win"><span>选 1 号座位</span><strong>立即成功</strong><small>贡献 1</small></div>
-                        <div class="proof-choice proof-continue"><span>选中间座位</span><strong>缩成同类问题</strong><small>贡献 p(2) 到 p(n−1)</small></div>
-                        <div class="proof-choice proof-loss"><span>选最后座位</span><strong>立即失败</strong><small>贡献 0</small></div>
-                    </div>
-                    <div class="proof-workspace" id="proof-workspace" aria-live="polite">
-                        <p class="proof-prompt" id="proof-prompt">点击开始，再逐步把“接力棒”写成数学语言。</p>
-                        <div class="proof-line" data-proof-line="1"><span class="line-label">第 1 行</span><code>n · p(n) = 1 + p(2) + p(3) + ··· + p(n−1)</code></div>
-                        <div class="proof-line" data-proof-line="2"><span class="line-label">第 2 行</span><code>(n−1) · p(n−1) = 1 + p(2) + ··· + p(n−2)</code></div>
-                        <div class="proof-line proof-subtract" data-proof-line="3"><span class="line-label">相减</span><code>n · p(n) − (n−1) · p(n−1) = p(n−1)</code></div>
-                        <div class="proof-line proof-key" data-proof-line="4"><span class="line-label">得到</span><code>p(n) = p(n−1)</code></div>
-                        <div class="proof-line proof-final" data-proof-line="5"><span class="line-label">起点</span><code>p(2) = 1 / 2  →  p(n) = 1 / 2</code></div>
-                    </div>
-                    <div class="btn-group proof-controls" aria-label="递推证明控制">
-                        <button class="btn btn-secondary" id="start-proof" type="button" onclick="startProofDemo()">▶ 开始推导</button>
-                        <button class="btn btn-primary" id="next-proof" type="button" onclick="nextProofStep()" disabled>下一步</button>
-                        <button class="btn btn-quiet" id="reset-proof" type="button" onclick="resetProofDemo()" disabled>↺ 重看</button>
-                    </div>
-                    <p class="proof-insight" id="proof-insight">公式里的每一个 p(k)，都代表一次“中间座位继续传递接力棒”。</p>
-                </article>
-            </section>
-
-            <section class="lesson-page" data-page="6" aria-hidden="true" aria-labelledby="page-title-7">
-                <article class="lesson-card card-pattern">
-                    <div class="section-kicker"><span aria-hidden="true">💡</span> 先看数据，再问原因</div>
-                    <h2 id="page-title-7" tabindex="-1">人数变了，规律没变</h2>
-                    <p class="lead">多次随机模拟会有波动，但都会围绕 50% 聚集。</p>
-                    <div class="pattern-results" aria-label="不同乘客数量的模拟结果">
-                        <div class="result-item"><span>N = 2</span><span>51.2%</span><i style="--bar:51.2%"></i></div>
-                        <div class="result-item"><span>N = 3</span><span>49.8%</span><i style="--bar:49.8%"></i></div>
-                        <div class="result-item"><span>N = 5</span><span>50.3%</span><i style="--bar:50.3%"></i></div>
-                        <div class="result-item"><span>N = 10</span><span>49.5%</span><i style="--bar:49.5%"></i></div>
-                        <div class="result-item"><span>N = 20</span><span>50.1%</span><i style="--bar:50.1%"></i></div>
-                    </div>
-                    <aside class="insight"><span aria-hidden="true">✨</span> 无论 N 是多少，最后一位成功的概率始终趋近 <strong>50%</strong>。</aside>
-                </article>
-            </section>
-
-            <section class="lesson-page" data-page="7" aria-hidden="true" aria-labelledby="page-title-8">
-                <article class="lesson-card card-bulk">
-                    <div class="section-kicker"><span aria-hidden="true">🧮</span> 用更多样本验证</div>
-                    <h2 id="page-title-8" tabindex="-1">大规模验证：N = 100</h2>
-                    <p class="lead">每一次实验都独立；曲线会逐渐稳定在 50% 附近。</p>
-                    <div class="chart-container" role="img" aria-label="最后一位乘客成功概率的模拟曲线；虚线表示理论值百分之五十。"><svg id="probability-chart" viewBox="0 0 720 250" preserveAspectRatio="none" aria-hidden="true"></svg></div>
-                    <div class="simulation-process" aria-live="polite" aria-atomic="true">
-                        <div class="process-heading"><span class="process-orb" id="bulk-process-orb" aria-hidden="true"></span><strong id="bulk-process-status">等待开始</strong><span id="bulk-trial-outcome" class="trial-outcome">尚未进行试验</span></div>
-                        <div class="process-track" role="progressbar" aria-label="模拟进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="bulk-progress-fill"></span></div>
-                        <p id="bulk-process-detail">选择样本数量后，逐次观察成功、失败与曲线如何形成。</p>
-                    </div>
-                    <div class="bulk-controls">
-                        <div class="stats" aria-live="polite">
-                            <span>已模拟 <b id="total-simulations">0</b> 次</span>
-                            <span>成功 <b id="success-count">0</b> 次</span>
-                            <span>当前 <b id="current-probability">0%</b></span>
-                        </div>
-                        <div class="btn-group bulk-buttons">
-                            <button class="btn btn-secondary" id="start-bulk-100" type="button" onclick="runBulkSimulation(100)">▶ 播放 100 次</button>
-                            <button class="btn btn-outline" id="start-bulk-1000" type="button" onclick="runBulkSimulation(1000)">▶ 播放 1000 次</button>
-                            <button class="btn btn-primary" id="toggle-bulk" type="button" onclick="toggleBulkSimulation()" disabled>⏸ 暂停</button>
-                            <button class="btn btn-quiet" id="reset-bulk" type="button" onclick="resetBulkSimulation()">重置</button>
-                        </div>
-                    </div>
-                </article>
-            </section>
-
-            <section class="lesson-page" data-page="8" aria-hidden="true" aria-labelledby="page-title-9">
-                <article class="lesson-card card-theory">
-                    <div class="section-kicker"><span aria-hidden="true">🧠</span> 两个终点的对称性</div>
-                    <h2 id="page-title-9" tabindex="-1">为什么答案恒为 1 / 2？</h2>
-                    <p class="lead">连锁过程最终只会在 <strong>1 号座位</strong> 与 <strong>N 号座位</strong>之间结束。</p>
-                    <div class="cases">
-                        <div class="case"><div class="case-number">1</div><div><strong>第一位选中 1 号座位</strong><span>后面每个人都能坐回自己的座位，最后一位成功。</span></div><b class="success">成功</b></div>
-                        <div class="case"><div class="case-number">2</div><div><strong>第一位选中 N 号座位</strong><span>最后一位只剩 1 号座位，最后一位失败。</span></div><b class="fail">失败</b></div>
-                        <div class="case"><div class="case-number">…</div><div><strong>第一位选中其他座位</strong><span>座位被占的乘客继续随机选择；直到 1 与 N 两个终点之一被选中。</span></div><b class="neutral">继续</b></div>
-                    </div>
-                    <div class="symmetry"><span class="seat-badge">1 号座位</span><span class="arrow" aria-hidden="true">↔</span><span class="seat-badge">N 号座位</span></div>
-                    <div class="formula">两个终点完全对称，因此总概率 = <strong>1 / 2 = 50%</strong></div>
-                </article>
-            </section>
-
-            <section class="lesson-page" data-page="9" aria-hidden="true" aria-labelledby="page-title-10">
-                <article class="lesson-card card-interactive">
-                    <div class="section-kicker"><span aria-hidden="true">🕹️</span> 动手试一试</div>
-                    <h2 id="page-title-10" tabindex="-1">你来当第一位乘客</h2>
-                    <div class="game-controls">
-                        <label for="user-n-select">乘客人数</label>
-                        <select id="user-n-select" onchange="generateUserGameSeats()">
-                            <option value="3">3 人</option>
-                            <option value="5">5 人</option>
-                            <option value="10" selected>10 人</option>
-                            <option value="20">20 人</option>
-                            <option value="50">50 人</option>
-                        </select>
-                    </div>
-                    <p class="game-instructions">先点击一个座位，让乘客 1 坐下；之后由你点击“下一位乘客”逐个推进。</p>
-                    <div class="game-seats" id="game-seats" aria-label="可供第一位乘客选择的座位"></div>
-                    <div id="user-game-step" class="game-step-status" aria-live="polite">请选择乘客 1 的座位。</div>
-                    <div id="game-result" class="game-result hidden" aria-live="polite">
-                        <div class="result-indicator" id="result-indicator"></div>
-                        <p id="result-text"></p>
-                    </div>
-                    <div class="btn-group">
-                        <button class="btn btn-primary" id="next-user-passenger" type="button" onclick="nextUserGameStep()" disabled>下一位乘客</button>
-                        <button class="btn btn-secondary" type="button" onclick="resetGame()">🔁 再试一次</button>
-                        <button class="btn btn-outline" type="button" onclick="showUserStats()">📊 查看统计</button>
-                    </div>
-                    <div id="user-stats" class="user-stats hidden" aria-live="polite">你的统计：<span id="user-wins">0</span>/<span id="user-total">0</span> = <span id="user-rate">0%</span></div>
-                </article>
-            </section>
-
-            <section class="lesson-page" data-page="10" aria-hidden="true" aria-labelledby="page-title-11">
-                <article class="lesson-card card-summary">
-                    <span class="eyebrow">课程完成</span>
-                    <div class="summary-icon" aria-hidden="true">🎓</div>
-                    <h2 id="page-title-11" tabindex="-1">记住这个结论</h2>
-                    <p class="summary-answer">无论 N 是 2、100 还是 1000，<br>最后一位乘客成功的概率恒为 <strong>1 / 2</strong>。</p>
-                    <div class="summary-points">
-                        <div class="point"><span aria-hidden="true">💡</span><span>过程会很复杂，但终点只有 1 号座位与 N 号座位。</span></div>
-                        <div class="point"><span aria-hidden="true">⚖️</span><span>这两个终点的对称性，正是 50% 的来源。</span></div>
-                        <div class="point"><span aria-hidden="true">🔗</span><span>这类“追踪最终状态”的思路，可用于更多概率问题。</span></div>
-                    </div>
-                    <button class="btn btn-primary" type="button" onclick="goToPage(0)">↺ 从头学习</button>
-                </article>
-            </section>
-        </main>
-
-        <nav class="lesson-navigation" aria-label="课程翻页导航">
-            <button class="nav-button nav-prev" id="prev-page" type="button" onclick="previousPage()" aria-label="上一页">← <span>上一页</span></button>
-            <div class="page-dots" aria-label="课程进度">
-                <button class="page-dot active" type="button" data-page-index="0" onclick="goToPage(0)" aria-label="第 1 页：封面" aria-current="step"></button>
-                <button class="page-dot" type="button" data-page-index="1" onclick="goToPage(1)" aria-label="第 2 页：规则介绍"></button>
-                <button class="page-dot" type="button" data-page-index="2" onclick="goToPage(2)" aria-label="第 3 页：N 等于 2"></button>
-                <button class="page-dot" type="button" data-page-index="3" onclick="goToPage(3)" aria-label="第 4 页：N 等于 3"></button>
-                <button class="page-dot" type="button" data-page-index="4" onclick="goToPage(4)" aria-label="第 5 页：错位接力棒"></button>
-                <button class="page-dot" type="button" data-page-index="5" onclick="goToPage(5)" aria-label="第 6 页：递推证明"></button>
-                <button class="page-dot" type="button" data-page-index="6" onclick="goToPage(6)" aria-label="第 7 页：发现规律"></button>
-                <button class="page-dot" type="button" data-page-index="7" onclick="goToPage(7)" aria-label="第 8 页：大规模验证"></button>
-                <button class="page-dot" type="button" data-page-index="8" onclick="goToPage(8)" aria-label="第 9 页：两个终点"></button>
-                <button class="page-dot" type="button" data-page-index="9" onclick="goToPage(9)" aria-label="第 10 页：互动体验"></button>
-                <button class="page-dot" type="button" data-page-index="10" onclick="goToPage(10)" aria-label="第 11 页：总结"></button>
             </div>
-            <button class="nav-button nav-next" id="next-page" type="button" onclick="nextPage()"><span>下一页</span> →</button>
-        </nav>
+
+            <!-- 右上角：滑动印章盒 (THE STAMP BAR) -->
+            <div class="stamp-bar-drawer" id="stamp-drawer">
+                <div class="stamp-drawer-handle" onclick="toggleStampDrawer()">
+                    <span>STAMPS 印章架 ▼</span>
+                </div>
+                <div class="stamp-rack">
+                    <button class="stamp-tool stamp-assigned" id="stamp-assigned-btn" type="button" onclick="applyStamp('ASSIGNED')">
+                        <div class="stamp-handle"></div>
+                        <div class="stamp-base">🔴 按序就座</div>
+                    </button>
+                    <button class="stamp-tool stamp-random" id="stamp-random-btn" type="button" onclick="applyStamp('RANDOM')">
+                        <div class="stamp-handle"></div>
+                        <div class="stamp-base">🔵 批准随意</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 底部信息条：时钟、金钱与版本 -->
+            <div class="desk-bottom-bar">
+                <div class="bottom-clock" id="desk-clock">DAY 1 · 08:00</div>
+                <div class="bottom-hint">快捷键: [空格/N] 叫号 | [Tab] 展开印章盒 | [1/2] 盖章</div>
+                <div class="bottom-credit">帝国边防部航空检票司 · 教学互动实验版</div>
+            </div>
+
+        </div>
+
     </div>
 
     <script src="script.js"></script>

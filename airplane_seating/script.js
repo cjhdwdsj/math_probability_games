@@ -1,1243 +1,531 @@
-// ===== 全局状态 =====
-let probabilityChart = null;
-let bulkSimulationRunning = false;
-let bulkRun = null;
-let bulkRunId = 0;
-let bulkTimer = null;
-let userGameStats = { wins: 0, total: 0 };
-let userGameRun = null;
-let rulesDemoRunId = 0;
-let rulesDemoRunning = false;
-let n2AnimationRunId = 0;
-let n2AnimationRunning = false;
-let n3AnimationRunning = false;
-let n3AnimationRunId = 0;
-let n3ActiveRun = null;
-let handoffRun = null;
-let proofRun = null;
-let currentPageIndex = 0;
-let pageTransitionTimer = null;
+// ==========================================================================
+// 《请出示证件：神秘 VIP 与篡位者航班》- 核心游戏引擎与状态机 (SCRIPT.JS)
+// ==========================================================================
+
+// ===== 全局游戏状态 =====
+const gameState = {
+    day: 1,
+    flightNumber: "MA-404",
+    totalSeats: 5,               // 初始小班次 N = 5
+    currentPassengerIndex: 0,    // 当前窗口处理的乘客序号 (1 ~ N)
+    passengers: [],              // 本趟航班的所有乘客对象
+    cabinSeats: {},              // 座位占用字典 { 1: passengerId, 2: passengerId ... }
+    
+    // 执勤统计
+    stats: {
+        flightsCompleted: 0,
+        vipWins: 0,
+        vipLosses: 0
+    },
+    
+    // 状态标记
+    isEntrantInBooth: false,
+    currentEntrant: null,
+    currentStamp: null,
+    isMysteryEventTriggered: false,
+    dialogueTyping: false
+};
+
+// 预设名字库
+const FIRST_NAMES = ["IVAN", "SERGEI", "DIMITRI", "ELENA", "NATASHA", "BORIS", "ALEXEI", "SONIA", "YURI", "KATIA"];
+const LAST_NAMES = ["V.", "K.", "P.", "S.", "M.", "N.", "B.", "G.", "T.", "Z."];
 
 // ===== 页面初始化 =====
-document.addEventListener('DOMContentLoaded', () => {
-    initializePager();
-    initializeChart();
-    initializeUserGame();
-    lockWheelNavigation();
+document.addEventListener("DOMContentLoaded", () => {
+    initFlight();
+    bindKeyboardShortcuts();
 });
 
-// ===== 固定页翻页控制 =====
-function initializePager() {
-    const pages = getPages();
-    document.getElementById('page-count').textContent = String(pages.length);
-    updatePageUI(false);
-
-    document.addEventListener('keydown', (event) => {
-        const target = event.target;
-        const isFormControl = target instanceof HTMLInputElement || target instanceof HTMLSelectElement || target instanceof HTMLTextAreaElement;
-        if (isFormControl) return;
-
-        if (event.key === 'ArrowRight') {
-            event.preventDefault();
-            nextPage();
-        }
-        if (event.key === 'ArrowLeft') {
-            event.preventDefault();
-            previousPage();
-        }
-        if (event.key === 'Home') {
-            event.preventDefault();
-            goToPage(0);
-        }
-        if (event.key === 'End') {
-            event.preventDefault();
-            goToPage(getPages().length - 1);
+// ===== 键盘快捷键 =====
+function bindKeyboardShortcuts() {
+    document.addEventListener("keydown", (e) => {
+        if (gameState.dialogueTyping) return;
+        
+        if (e.code === "Space" || e.key === "n" || e.key === "N") {
+            e.preventDefault();
+            callNextEntrant();
+        } else if (e.code === "Tab") {
+            e.preventDefault();
+            toggleStampDrawer();
+        } else if (e.key === "1") {
+            applyStamp("ASSIGNED");
+        } else if (e.key === "2") {
+            applyStamp("RANDOM");
+        } else if (e.code === "Enter") {
+            const returnBtn = document.getElementById("btn-return-doc");
+            if (returnBtn && !returnBtn.disabled) {
+                returnDocumentToPassenger();
+            }
         }
     });
 }
 
-function lockWheelNavigation() {
-    // 页面不接收滚轮翻页，也不会因滚轮发生垂直滚动。
-    document.addEventListener('wheel', (event) => event.preventDefault(), { passive: false });
-}
-
-function getPages() {
-    return Array.from(document.querySelectorAll('.lesson-page'));
-}
-
-function goToPage(index, shouldFocus = true) {
-    const pages = getPages();
-    if (!pages.length) return;
-
-    const nextIndex = Math.min(Math.max(index, 0), pages.length - 1);
-    if (nextIndex === currentPageIndex && pages[currentPageIndex].classList.contains('active')) return;
-
-    const previousIndex = currentPageIndex;
-    const direction = nextIndex > previousIndex ? 1 : -1;
-    const oldPage = pages[previousIndex];
-    const newPage = pages[nextIndex];
-
-    document.querySelectorAll('.passenger').forEach((passenger) => passenger.remove());
-    if (previousIndex === 1 && nextIndex !== 1) resetRulesDemo();
-    if (previousIndex === 2 && nextIndex !== 2) resetN2Demo();
-    if (previousIndex === 4 && nextIndex !== 4) resetHandoffDemo();
-    if (previousIndex === 5 && nextIndex !== 5) resetProofDemo();
-    if (previousIndex === 7 && nextIndex !== 7) pauseBulkSimulation('已暂停：返回本页后可继续观看。');
-    n3AnimationRunId += 1;
-    n3AnimationRunning = false;
-    n3ActiveRun = null;
-    setN3Controls(false);
-
-    if (pageTransitionTimer) window.clearTimeout(pageTransitionTimer);
-
-    oldPage.classList.remove('active');
-    oldPage.classList.toggle('exit-left', direction > 0);
-    oldPage.setAttribute('aria-hidden', 'true');
-
-    newPage.classList.remove('exit-left');
-    newPage.classList.add('active');
-    newPage.setAttribute('aria-hidden', 'false');
-
-    currentPageIndex = nextIndex;
-    updatePageUI(shouldFocus);
-
-    pageTransitionTimer = window.setTimeout(() => {
-        pages.forEach((page, pageIndex) => {
-            if (pageIndex !== currentPageIndex) page.classList.remove('exit-left');
+// ===== 初始化新航班 =====
+function initFlight() {
+    gameState.currentPassengerIndex = 0;
+    gameState.isEntrantInBooth = false;
+    gameState.currentEntrant = null;
+    gameState.currentStamp = null;
+    gameState.cabinSeats = {};
+    
+    // 初始化空座位
+    for (let i = 1; i <= gameState.totalSeats; i++) {
+        gameState.cabinSeats[i] = null;
+    }
+    
+    // 生成 N 位乘客数据
+    gameState.passengers = [];
+    for (let i = 1; i <= gameState.totalSeats; i++) {
+        const isFirst = (i === 1);
+        const isVip = (i === gameState.totalSeats);
+        
+        const name = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)] + " " +
+                     LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)];
+        
+        gameState.passengers.push({
+            id: i,
+            name: name,
+            assignedSeat: isFirst ? null : i, // 1号无票/无固定座位
+            isFirst: isFirst,
+            isVip: isVip,
+            actualSeat: null,
+            seed: Math.random() * 10000 // 用于像素头像生成的固定随机种子
         });
-    }, 300);
+    }
+    
+    // 渲染客舱网格
+    renderCabinGrid();
+    renderQueue();
+    
+    // 重置桌面
+    document.getElementById("boarding-pass").classList.add("hidden");
+    document.getElementById("btn-return-doc").disabled = true;
+    document.getElementById("stamp-impression").innerHTML = "";
+    document.getElementById("queue-count").textContent = `等待登机: ${gameState.totalSeats} 人`;
+    document.getElementById("status-indicator").className = "indicator-light";
+    
+    typeDialogue("航班已就绪。请按红色按钮呼叫 1 号乘客。");
 }
 
-function nextPage() {
-    goToPage(currentPageIndex + 1);
+// ===== 渲染排队小人队列 =====
+function renderQueue() {
+    const queueLine = document.getElementById("queue-line");
+    queueLine.innerHTML = "";
+    
+    for (let i = gameState.currentPassengerIndex + 1; i <= gameState.totalSeats; i++) {
+        const sprite = document.createElement("div");
+        sprite.className = "queue-sprite" + (i === gameState.totalSeats ? " is-vip-sprite" : "");
+        if (i === gameState.currentPassengerIndex + 1) {
+            sprite.classList.add("active-entrant");
+        }
+        
+        const badge = document.createElement("span");
+        badge.className = "sprite-badge";
+        badge.textContent = i === gameState.totalSeats ? `👑${i}` : String(i);
+        sprite.appendChild(badge);
+        
+        queueLine.appendChild(sprite);
+    }
 }
 
-function previousPage() {
-    goToPage(currentPageIndex - 1);
-}
-
-function updatePageUI(shouldFocus) {
-    const pages = getPages();
-    const current = currentPageIndex + 1;
-    const previousButton = document.getElementById('prev-page');
-    const nextButton = document.getElementById('next-page');
-
-    document.getElementById('current-page').textContent = String(current);
-    previousButton.disabled = currentPageIndex === 0;
-    nextButton.disabled = currentPageIndex === pages.length - 1;
-    nextButton.setAttribute('aria-label', currentPageIndex === pages.length - 1 ? '已到最后一页' : '下一页');
-
-    document.querySelectorAll('.page-dot').forEach((dot, index) => {
-        const active = index === currentPageIndex;
-        dot.classList.toggle('active', active);
-        if (active) {
-            dot.setAttribute('aria-current', 'step');
+// ===== 渲染客舱座席雷达 =====
+function renderCabinGrid() {
+    const grid = document.getElementById("cabin-seats-grid");
+    grid.innerHTML = "";
+    
+    for (let i = 1; i <= gameState.totalSeats; i++) {
+        const occupantId = gameState.cabinSeats[i];
+        const cell = document.createElement("div");
+        cell.className = "seat-cell";
+        
+        if (i === gameState.totalSeats) {
+            cell.classList.add("is-vip");
+        }
+        
+        if (occupantId === null) {
+            cell.classList.add("is-empty");
+            cell.innerHTML = `
+                <div class="seat-num-tag">${i === gameState.totalSeats ? "👑 " + i : i}</div>
+                <div class="seat-status-desc">[空闲]</div>
+            `;
         } else {
-            dot.removeAttribute('aria-current');
+            const isCorrect = (occupantId === i);
+            cell.classList.add(isCorrect ? "is-assigned-correct" : "is-stolen");
+            cell.innerHTML = `
+                <div class="seat-num-tag">${i === gameState.totalSeats ? "👑 " + i : i}</div>
+                <div class="seat-status-desc">${occupantId}号占有</div>
+            `;
         }
-    });
-
-    if (shouldFocus) {
-        window.setTimeout(() => {
-            const title = pages[currentPageIndex].querySelector('h1, h2');
-            if (title instanceof HTMLElement) title.focus({ preventScroll: true });
-        }, 40);
+        
+        grid.appendChild(cell);
     }
-}
-
-// ===== 工具函数 =====
-function sleep(ms) {
-    return new Promise((resolve) => window.setTimeout(resolve, ms));
-}
-
-function randomAvailableSeat(seatsState) {
-    const available = seatsState
-        .map((seat, index) => seat === null ? index : null)
-        .filter((seat) => seat !== null);
-    return available[Math.floor(Math.random() * available.length)];
-}
-
-// ===== 五座位规则介绍演示 =====
-function setRulesControls({ running = false, complete = false } = {}) {
-    const play = document.getElementById('play-rules');
-    const reset = document.getElementById('reset-rules');
-    if (play) {
-        play.disabled = running;
-        play.textContent = running ? '▶ 正在演示…' : complete ? '▶ 再演示一次' : '▶ 开始规则演示';
-    }
-    if (reset) reset.disabled = running || !complete;
-}
-
-function renderRulesStatus({ state = 'idle', title, detail }) {
-    const area = document.getElementById('rules-animation');
-    if (!area) return;
-    area.innerHTML = `
-        <div class="animation-status is-${state}">
-            <div class="status-line"><span class="status-orb" aria-hidden="true"></span><strong>${title}</strong></div>
-            <p class="animation-text">${detail}</p>
-        </div>
-    `;
-}
-
-function updateRulesFlow(activeStates = []) {
-    const active = new Set(activeStates);
-    document.querySelectorAll('[data-rule-flow]').forEach((node) => {
-        node.classList.toggle('is-active', active.has(node.dataset.ruleFlow));
-    });
-}
-
-function resetRulesDemo() {
-    rulesDemoRunId += 1;
-    rulesDemoRunning = false;
-    document.querySelectorAll('.rules-passenger').forEach((passenger) => passenger.remove());
-    updateRulesFlow();
-    document.querySelectorAll('.rule-seat').forEach((seat) => {
-        seat.classList.remove('occupied', 'wrong', 'current', 'checking', 'target', 'rolling');
-        delete seat.dataset.passenger;
-    });
-    renderRulesStatus({
-        state: 'idle',
-        title: '等待演示',
-        detail: '点击开始后，依次观察 1 至 5 号乘客如何选座。'
-    });
-    setRulesControls();
-}
-
-async function moveRulesPassenger(passenger, position, runId) {
-    passenger.style.display = 'flex';
-    passenger.classList.add('is-flying');
-    passenger.style.left = `${window.innerWidth / 2 - 16}px`;
-    passenger.style.top = '4.6rem';
-    await sleep(160);
-    if (runId !== rulesDemoRunId || currentPageIndex !== 1) return false;
-    passenger.style.left = `${position.x}px`;
-    passenger.style.top = `${position.y}px`;
-    await sleep(560);
-    if (runId !== rulesDemoRunId || currentPageIndex !== 1) return false;
-    passenger.classList.remove('is-flying');
-    passenger.classList.add('is-arrived');
-    return true;
-}
-
-async function showRuleRoll(seats, options, finalSeat, runId) {
-    for (const seatIndex of options) {
-        seats.forEach((seat) => seat.classList.remove('rolling'));
-        seats[seatIndex].classList.add('rolling');
-        await sleep(150);
-        if (runId !== rulesDemoRunId || currentPageIndex !== 1) return false;
-    }
-    seats.forEach((seat) => seat.classList.remove('rolling'));
-    seats[finalSeat].classList.add('target');
-    return true;
-}
-
-async function playRulesDemo() {
-    if (rulesDemoRunning || currentPageIndex !== 1) return;
-    resetRulesDemo();
-    const seats = Array.from(document.querySelectorAll('.rule-seat'));
-    if (seats.length !== 5) return;
-
-    const runId = ++rulesDemoRunId;
-    rulesDemoRunning = true;
-    setRulesControls({ running: true });
-    const steps = [
-        { passenger: 1, seat: 2, kind: 'first-random', roll: [0, 4, 3, 1], detail: '乘客 1 没有自己的指定座位，因此在 5 个空座位中随机滚动选择。' },
-        { passenger: 2, seat: 3, kind: 'blocked-random', roll: [4, 0, 2], detail: '乘客 2 发现自己的 2 号座位已被乘客 1 占用，只能在剩下的空座位中随机滚动选择。' },
-        { passenger: 3, seat: 1, kind: 'blocked-random', roll: [3, 4, 0], detail: '乘客 3 发现自己的 3 号座位已被乘客 2 占用，只能在剩下的空座位中随机滚动选择。' },
-        { passenger: 4, seat: 4, kind: 'own', detail: '乘客 4 的 4 号座位空着，直接坐下。' },
-        { passenger: 5, seat: 5, kind: 'own', detail: '乘客 5 的 5 号座位空着，直接坐下。' }
-    ];
-
-    for (const step of steps) {
-        const targetIndex = step.seat - 1;
-        if (step.kind === 'blocked-random') {
-            updateRulesFlow(['check']);
-            seats[step.passenger - 1].classList.add('checking');
-            renderRulesStatus({ state: 'checking', title: `乘客 ${step.passenger} 检查自己的座位`, detail: `他发现 ${step.passenger} 号座位已经被占。${step.detail}` });
-            await sleep(520);
-            if (runId !== rulesDemoRunId || currentPageIndex !== 1) return;
-            seats[step.passenger - 1].classList.remove('checking');
-        }
-
-        if (step.kind === 'first-random' || step.kind === 'blocked-random') {
-            updateRulesFlow(step.kind === 'first-random' ? ['first'] : ['check', 'random']);
-            renderRulesStatus({ state: 'running', title: `乘客 ${step.passenger} 正在随机选择`, detail: step.detail });
-            const rolled = await showRuleRoll(seats, step.roll, targetIndex, runId);
-            if (!rolled) return;
-        } else {
-            updateRulesFlow(['check', 'direct']);
-            seats[targetIndex].classList.add('target');
-            renderRulesStatus({ state: 'running', title: `乘客 ${step.passenger} 直接坐自己的座位`, detail: step.detail });
-            await sleep(260);
-            if (runId !== rulesDemoRunId || currentPageIndex !== 1) return;
-        }
-
-        const passenger = document.createElement('div');
-        passenger.className = 'passenger rules-passenger';
-        passenger.dataset.passenger = String(step.passenger);
-        passenger.textContent = String(step.passenger);
-        passenger.style.display = 'none';
-        document.body.appendChild(passenger);
-        const rect = seats[targetIndex].getBoundingClientRect();
-        const moved = await moveRulesPassenger(passenger, { x: rect.left + rect.width / 2 - 16, y: rect.top + rect.height / 2 - 16 }, runId);
-        if (!moved) {
-            passenger.remove();
-            return;
-        }
-        passenger.remove();
-        seats[targetIndex].classList.remove('target');
-        seats[targetIndex].classList.add('occupied');
-        seats[targetIndex].dataset.passenger = String(step.passenger);
-        if (targetIndex !== step.passenger - 1) seats[targetIndex].classList.add('wrong');
-        if (step.passenger === 5) seats[targetIndex].classList.add('current');
-        updateRulesFlow(step.kind === 'first-random' ? ['first', 'seated'] : step.kind === 'blocked-random' ? ['check', 'random', 'seated'] : ['check', 'direct', 'seated']);
-        renderRulesStatus({
-            state: 'seated',
-            title: `乘客 ${step.passenger} 已入座`,
-            detail: step.passenger === 5 ? '五位乘客都已坐下。重点是：只有“没有指定座位”或“自己的座位被占”的乘客才需要随机选择。' : `现在 ${step.seat} 号座位由乘客 ${step.passenger} 占用，继续观察下一位。`
-        });
-        await sleep(step.passenger === 5 ? 280 : 360);
-        if (runId !== rulesDemoRunId || currentPageIndex !== 1) return;
-    }
-
-    rulesDemoRunning = false;
-    updateRulesFlow(['seated']);
-    setRulesControls({ complete: true });
-}
-
-// ===== 错位接力棒直觉演示 =====
-function setHandoffControls({ started = false, complete = false, terminal = false } = {}) {
-    const start = document.getElementById('start-handoff');
-    const next = document.getElementById('next-handoff');
-    const reset = document.getElementById('reset-handoff');
-    if (start) {
-        start.disabled = started && !complete;
-        start.textContent = complete ? '▶ 再演示一次' : '▶ 开始接力演示';
-    }
-    if (next) {
-        next.disabled = !started || complete || terminal;
-        next.textContent = terminal ? '请选择终点' : '下一步';
-    }
-    if (reset) reset.disabled = !started && !complete;
-}
-
-function setHandoffPanel(title, detail, story) {
-    const panel = document.getElementById('handoff-panel');
-    const storyArea = document.getElementById('handoff-story');
-    if (panel) panel.innerHTML = `<div class="handoff-status"><span class="baton-orb" aria-hidden="true"></span><strong>${title}</strong></div><p>${detail}</p>`;
-    if (storyArea) storyArea.textContent = story;
-}
-
-function resetHandoffDemo() {
-    handoffRun = null;
-    document.querySelectorAll('.handoff-seat').forEach((seat) => {
-        seat.classList.remove('occupied', 'direct', 'baton-target', 'endpoint-success', 'endpoint-fail', 'dimmed');
-        delete seat.dataset.owner;
-    });
-    const terminal = document.getElementById('terminal-choice');
-    const insight = document.getElementById('handoff-insight');
-    if (terminal) terminal.classList.add('hidden');
-    if (insight) insight.textContent = '先推进动画，最后会看到中间座位只是在传递接力棒。';
-    setHandoffPanel('准备观察', '点击开始后，观察“随机选择权”如何只在被占座位的乘客之间传递。', '普通乘客坐回自己的座位后，就不再影响最后一位的结果。');
-    setHandoffControls();
-}
-
-function updateHandoffSeats({ occupied = [], direct = [], baton = null, dim = false } = {}) {
-    document.querySelectorAll('.handoff-seat').forEach((seat) => {
-        const number = Number(seat.dataset.handoffSeat);
-        seat.classList.toggle('occupied', occupied.some((item) => item.seat === number));
-        seat.classList.toggle('direct', direct.includes(number));
-        seat.classList.toggle('baton-target', baton === number);
-        seat.classList.toggle('dimmed', dim && number !== 1 && number !== 5);
-        const owner = occupied.find((item) => item.seat === number);
-        if (owner) seat.dataset.owner = String(owner.passenger);
-        else if (direct.includes(number)) seat.dataset.owner = String(number);
-        else delete seat.dataset.owner;
-    });
-}
-
-function startHandoffDemo() {
-    if (currentPageIndex !== 4) return;
-    resetHandoffDemo();
-    handoffRun = { step: 0, terminal: false, complete: false };
-    setHandoffControls({ started: true });
-    setHandoffPanel('接力即将开始', '第一位乘客没有自己的固定座位；他第一次随机选择，会决定接力棒交给谁。', '每一步都只问一件事：谁的座位被占了？谁就拿到下一次随机选择权。');
-}
-
-function nextHandoffStep() {
-    if (!handoffRun || handoffRun.complete || handoffRun.terminal || currentPageIndex !== 4) return;
-    const steps = [
-        {
-            panel: ['乘客 1 把接力棒交给乘客 3', '乘客 1 随机坐到 3 号座位。于是 3 号乘客的座位被占，他将成为下一个需要随机选择的人。', '座位 3 的错位没有决定成败；它只是把接力棒交给乘客 3。'],
-            seats: { occupied: [{ seat: 3, passenger: 1 }], baton: 3 }
-        },
-        {
-            panel: ['乘客 2 直接坐下', '乘客 2 的座位仍然空着，所以他直接坐到 2 号座位。', '乘客 2 没有拿到接力棒；正常入座的人不会改变最终结果。'],
-            seats: { occupied: [{ seat: 3, passenger: 1 }], direct: [2], baton: 3 }
-        },
-        {
-            panel: ['接力棒从乘客 3 传给乘客 4', '乘客 3 发现自己的 3 号座位被占，只能随机坐到 4 号座位。现在轮到 4 号乘客面对被占的座位。', '又一个中间座位出现了：它仍然没有决定成败，只让接力继续。'],
-            seats: { occupied: [{ seat: 3, passenger: 1 }, { seat: 4, passenger: 3 }], direct: [2], baton: 4 }
-        },
-        {
-            panel: ['只剩两个终点', '乘客 4 的 4 号座位已被占。此刻只剩 1 号与 5 号座位可选。', '中间座位都已经退出；最后的成功或失败，只取决于接力棒落到两个终点中的哪一个。'],
-            seats: { occupied: [{ seat: 3, passenger: 1 }, { seat: 4, passenger: 3 }], direct: [2], baton: 4, dim: true },
-            terminal: true
-        }
-    ];
-    const step = steps[handoffRun.step];
-    if (!step) return;
-    updateHandoffSeats(step.seats);
-    setHandoffPanel(...step.panel);
-    handoffRun.step += 1;
-    if (step.terminal) {
-        handoffRun.terminal = true;
-        const terminal = document.getElementById('terminal-choice');
-        if (terminal) terminal.classList.remove('hidden');
-        setHandoffControls({ started: true, terminal: true });
-    }
-}
-
-function resolveHandoff(seat) {
-    if (!handoffRun || !handoffRun.terminal || currentPageIndex !== 4) return;
-    const success = seat === 1;
-    updateHandoffSeats({
-        occupied: [{ seat: 3, passenger: 1 }, { seat: 4, passenger: 3 }, { seat, passenger: 4 }, { seat: success ? 5 : 1, passenger: 5 }],
-        direct: [2]
-    });
-    const selected = document.querySelector(`[data-handoff-seat="${seat}"]`);
-    if (selected) selected.classList.add(success ? 'endpoint-success' : 'endpoint-fail');
-    const terminal = document.getElementById('terminal-choice');
-    const insight = document.getElementById('handoff-insight');
-    if (terminal) terminal.classList.add('hidden');
-    if (success) {
-        setHandoffPanel('接力棒落到 1 号座位', '乘客 4 坐到 1 号座位，最后的乘客 5 就能坐回 5 号座位。', '这条路径的终点是 1 号座位，所以最后一位成功。');
-        if (insight) insight.textContent = '选中 1 号座位 → 最后一位拿到 5 号座位 → 成功。';
+    
+    // 更新 VIP 状态栏
+    const vipSeatOccupant = gameState.cabinSeats[gameState.totalSeats];
+    const vipIndicator = document.getElementById("vip-status-indicator");
+    if (vipSeatOccupant === null) {
+        vipIndicator.textContent = `👑 VIP (No.${gameState.totalSeats}) 状态: 空闲`;
+        vipIndicator.style.backgroundColor = "#f7e2a3";
+    } else if (vipSeatOccupant === gameState.totalSeats) {
+        vipIndicator.textContent = `👑 VIP (No.${gameState.totalSeats}) 状态: 成功归位! 🎉`;
+        vipIndicator.style.backgroundColor = "#c6eac8";
     } else {
-        setHandoffPanel('接力棒落到 5 号座位', '乘客 4 坐到 5 号座位，最后的乘客 5 只剩 1 号座位。', '这条路径的终点是最后座位，所以最后一位失败。');
-        if (insight) insight.textContent = '选中 5 号座位 → 最后一位只剩 1 号座位 → 失败。';
-    }
-    handoffRun.complete = true;
-    handoffRun.terminal = false;
-    setHandoffControls({ started: true, complete: true });
-}
-
-// ===== 递推证明分步演示 =====
-function setProofControls({ started = false, complete = false } = {}) {
-    const start = document.getElementById('start-proof');
-    const next = document.getElementById('next-proof');
-    const reset = document.getElementById('reset-proof');
-    if (start) {
-        start.disabled = started && !complete;
-        start.textContent = complete ? '▶ 重新推导' : '▶ 开始推导';
-    }
-    if (next) next.disabled = !started || complete;
-    if (reset) reset.disabled = !started && !complete;
-}
-
-function resetProofDemo() {
-    proofRun = null;
-    document.querySelectorAll('.proof-line').forEach((line) => line.classList.remove('revealed', 'cancelled'));
-    document.querySelectorAll('.proof-choice').forEach((choice) => choice.classList.remove('is-active'));
-    const prompt = document.getElementById('proof-prompt');
-    const insight = document.getElementById('proof-insight');
-    if (prompt) prompt.textContent = '点击开始，再逐步把“接力棒”写成数学语言。';
-    if (insight) insight.textContent = '公式里的每一个 p(k)，都代表一次“中间座位继续传递接力棒”。';
-    setProofControls();
-}
-
-function startProofDemo() {
-    if (currentPageIndex !== 5) return;
-    resetProofDemo();
-    proofRun = { step: 0, complete: false };
-    const prompt = document.getElementById('proof-prompt');
-    if (prompt) prompt.textContent = '令 p(n) 表示：有 n 位乘客时，最后一位坐回自己座位的概率。';
-    setProofControls({ started: true });
-}
-
-function nextProofStep() {
-    if (!proofRun || proofRun.complete || currentPageIndex !== 5) return;
-    const prompt = document.getElementById('proof-prompt');
-    const insight = document.getElementById('proof-insight');
-    const steps = [
-        {
-            line: 1,
-            active: ['proof-win', 'proof-continue', 'proof-loss'],
-            prompt: '第一位有 n 种等可能选择：选 1 号座位贡献 1；选最后座位贡献 0；若选中间第 k 号座位，剩余局面重编号为 n−k+1 位乘客的同类问题。',
-            insight: '把所有中间 k 汇总后，正好得到 p(2) 到 p(n−1)，于是写成第一行递推式。'
-        },
-        {
-            line: 2,
-            active: ['proof-continue'],
-            prompt: '对规模小一格的同类问题，也能写出完全相同的公式。',
-            insight: '第二行与第一行绝大部分项相同，这正是下一步的关键。'
-        },
-        {
-            line: 3,
-            active: ['proof-continue'],
-            prompt: '两行相减时，重复出现的 1、p(2)、…、p(n−2) 全部抵消。',
-            insight: '留下的只有最右端的 p(n−1)，而不是一大串中间项。',
-            cancel: true
-        },
-        {
-            line: 4,
-            active: ['proof-win', 'proof-loss'],
-            prompt: '整理剩下的等式，得到 p(n) = p(n−1)。规模变大，并没有改变成功概率。',
-            insight: '这说明所有 p(n) 与 p(2) 相同。'
-        },
-        {
-            line: 5,
-            active: ['proof-win', 'proof-loss'],
-            prompt: '而 N = 2 时，我们已经枚举过两种等可能结果：p(2) = 1/2。',
-            insight: '因此 p(n) = p(n−1) = ··· = p(2) = 1/2。'
-        }
-    ];
-    const step = steps[proofRun.step];
-    if (!step) return;
-    document.querySelectorAll('.proof-choice').forEach((choice) => choice.classList.toggle('is-active', step.active.includes(choice.classList[1])));
-    const line = document.querySelector(`[data-proof-line="${step.line}"]`);
-    if (line) line.classList.add('revealed');
-    if (step.cancel) {
-        document.querySelector('[data-proof-line="1"]')?.classList.add('cancelled');
-        document.querySelector('[data-proof-line="2"]')?.classList.add('cancelled');
-    }
-    if (prompt) prompt.textContent = step.prompt;
-    if (insight) insight.textContent = step.insight;
-    proofRun.step += 1;
-    if (proofRun.step === steps.length) {
-        proofRun.complete = true;
-        setProofControls({ started: true, complete: true });
+        vipIndicator.textContent = `👑 VIP (No.${gameState.totalSeats}) 状态: 被 ${vipSeatOccupant}号 抢占! ❌`;
+        vipIndicator.style.backgroundColor = "#f7c1be";
     }
 }
 
-// ===== N = 2 情形演示 =====
-function setN2ChoiceControls(disabled) {
-    document.querySelectorAll('.n2-seat-choice').forEach((seat) => {
-        seat.disabled = disabled;
-    });
-}
-
-function renderN2Status({ state = 'idle', title, detail }) {
-    const area = document.getElementById('n2-animation');
-    if (!area) return;
-    area.innerHTML = `
-        <div class="animation-status is-${state}">
-            <div class="status-line"><span class="status-orb" aria-hidden="true"></span><strong>${title}</strong></div>
-            <p class="animation-text">${detail}</p>
-        </div>
-    `;
-}
-
-function resetN2Demo() {
-    n2AnimationRunId += 1;
-    n2AnimationRunning = false;
-    document.querySelectorAll('.card-n2 .seat.mini').forEach((seat) => {
-        seat.classList.remove('occupied', 'wrong', 'current', 'checking', 'target');
-        delete seat.dataset.passenger;
-    });
-    document.querySelectorAll('.card-n2 .scenario').forEach((scenario) => scenario.classList.remove('is-active'));
-    setN2ChoiceControls(false);
-    renderN2Status({
-        state: 'idle',
-        title: '等待选择',
-        detail: '先让乘客 1 选择座位 1 或座位 2；随后会自动展示乘客 2 的入座。'
-    });
-}
-
-async function moveN2Passenger(passenger, position, runId) {
-    passenger.style.display = 'flex';
-    passenger.classList.add('is-flying');
-    passenger.style.left = `${window.innerWidth / 2 - 16}px`;
-    passenger.style.top = '4.6rem';
-    await sleep(180);
-    if (runId !== n2AnimationRunId || currentPageIndex !== 2) return false;
-
-    passenger.style.left = `${position.x}px`;
-    passenger.style.top = `${position.y}px`;
-    await sleep(620);
-    if (runId !== n2AnimationRunId || currentPageIndex !== 2) return false;
-
-    passenger.classList.remove('is-flying');
-    passenger.classList.add('is-arrived');
-    return true;
-}
-
-async function playN2Scenario(selectedSeatNumber) {
-    if (n2AnimationRunning || currentPageIndex !== 2) return;
-    const seats = Array.from(document.querySelectorAll('.card-n2 .seat.mini'));
-    const scenarios = Array.from(document.querySelectorAll('.card-n2 .scenario'));
-    if (seats.length !== 2 || selectedSeatNumber < 1 || selectedSeatNumber > 2) return;
-
-    resetN2Demo();
-    const runId = ++n2AnimationRunId;
-    const selectedSeat = selectedSeatNumber - 1;
-    const remainingSeat = selectedSeat === 0 ? 1 : 0;
-    const isSuccess = selectedSeat === 0;
-    n2AnimationRunning = true;
-    setN2ChoiceControls(true);
-
-    seats[selectedSeat].classList.add('target');
-    renderN2Status({
-        state: 'running',
-        title: `乘客 1 选择 ${selectedSeatNumber} 号座位`,
-        detail: `第一位乘客的随机选择落在 ${selectedSeatNumber} 号座位。先看乘客 1 移动并坐下。`
-    });
-
-    const passengerOne = document.createElement('div');
-    passengerOne.className = 'passenger';
-    passengerOne.dataset.passenger = '1';
-    passengerOne.textContent = '1';
-    passengerOne.style.display = 'none';
-    document.body.appendChild(passengerOne);
-    const firstRect = seats[selectedSeat].getBoundingClientRect();
-    const firstMoved = await moveN2Passenger(passengerOne, { x: firstRect.left + firstRect.width / 2 - 16, y: firstRect.top + firstRect.height / 2 - 16 }, runId);
-    if (!firstMoved) {
-        passengerOne.remove();
+// ===== 叫号：下一位乘客进屋 =====
+function callNextEntrant() {
+    if (gameState.isEntrantInBooth) return;
+    
+    // 检查是否触发神秘人叩窗
+    if (!gameState.isMysteryEventTriggered && gameState.stats.flightsCompleted >= 2) {
+        triggerMysteryEncounter();
         return;
     }
-
-    seats[selectedSeat].classList.remove('target');
-    seats[selectedSeat].classList.add('occupied');
-    seats[selectedSeat].dataset.passenger = '1';
-    if (!isSuccess) seats[selectedSeat].classList.add('wrong');
-    passengerOne.remove();
-    renderN2Status({
-        state: 'seated',
-        title: `乘客 1 已坐到 ${selectedSeatNumber} 号座位`,
-        detail: '第一位乘客的入座动画已完成。接下来自动演示乘客 2 的入座。'
-    });
-    await sleep(360);
-    if (runId !== n2AnimationRunId || currentPageIndex !== 2) return;
-
-    seats[remainingSeat].classList.add('target');
-    renderN2Status({
-        state: 'running',
-        title: '乘客 2 自动入座',
-        detail: `乘客 2 的座位只剩 ${remainingSeat + 1} 号；动画现在将其带到该座位。`
-    });
-
-    const passengerTwo = document.createElement('div');
-    passengerTwo.className = 'passenger';
-    passengerTwo.dataset.passenger = '2';
-    passengerTwo.textContent = '2';
-    passengerTwo.style.display = 'none';
-    document.body.appendChild(passengerTwo);
-    const secondRect = seats[remainingSeat].getBoundingClientRect();
-    const secondMoved = await moveN2Passenger(passengerTwo, { x: secondRect.left + secondRect.width / 2 - 16, y: secondRect.top + secondRect.height / 2 - 16 }, runId);
-    if (!secondMoved) {
-        passengerTwo.remove();
+    
+    if (gameState.currentPassengerIndex >= gameState.totalSeats) {
+        typeDialogue("本趟航班所有乘客已全部登机完成！正在结算报告...");
+        setTimeout(() => finalizeFlight(), 1200);
         return;
     }
-
-    seats[remainingSeat].classList.remove('target');
-    seats[remainingSeat].classList.add('occupied', 'current');
-    seats[remainingSeat].dataset.passenger = '2';
-    scenarios[selectedSeat].classList.add('is-active');
-    renderN2Status({
-        state: isSuccess ? 'success' : 'fail',
-        title: isSuccess ? '这是成功情形' : '这是失败情形',
-        detail: isSuccess
-            ? '乘客 1 选中 1 号座位，乘客 2 自动坐到自己的 2 号座位；最后一位成功。'
-            : '乘客 1 选中 2 号座位，乘客 2 只能坐到 1 号座位；最后一位失败。'
-    });
-
-    await sleep(540);
-    passengerTwo.remove();
-    if (runId === n2AnimationRunId) {
-        n2AnimationRunning = false;
-        setN2ChoiceControls(false);
-    }
-}
-
-// ===== N = 3 动画演示 =====
-function createN3Plan() {
-    const seatsState = Array(3).fill(null);
-    const choices = [];
-
-    for (let passenger = 0; passenger < 3; passenger += 1) {
-        const choice = passenger === 0
-            ? Math.floor(Math.random() * 3)
-            : (seatsState[passenger] === null ? passenger : randomAvailableSeat(seatsState));
-        seatsState[choice] = passenger;
-        choices.push(choice);
-    }
-
-    return { choices, isSuccess: choices[2] === 2 };
-}
-
-function setN3Controls(state = {}) {
-    const normalized = typeof state === 'boolean' ? { hasRun: state, busy: state } : state;
-    const { hasRun = false, busy = false, complete = false, actionIndex = 0, totalActions = 0 } = normalized;
-    const startButton = document.getElementById('start-n3');
-    const nextButton = document.getElementById('next-n3');
-    const resultButton = document.getElementById('result-n3');
-
-    if (startButton) startButton.disabled = hasRun && !complete;
-    if (nextButton) {
-        nextButton.disabled = !hasRun || busy || complete;
-        nextButton.textContent = hasRun && !complete ? `下一步（${actionIndex + 1}/${totalActions}）` : '下一步';
-    }
-    if (resultButton) resultButton.disabled = !hasRun || busy || complete;
-}
-
-function renderN3Status({ stage = 'idle', activeStep = -1, title, detail, choices = [] }) {
-    const animationArea = document.getElementById('n3-animation');
-    if (!animationArea) return;
-
-    const stepNames = ['乘客 1 随机选座', '乘客 2 判断并入座', '乘客 3 获得最后座位'];
-    const steps = stepNames.map((name, index) => {
-        const isDone = index < activeStep;
-        const isActive = index === activeStep;
-        const choiceText = isDone && Number.isInteger(choices[index]) ? ` → ${choices[index] + 1} 号座位` : '';
-        return `<li class="${isDone ? 'is-done' : ''} ${isActive ? 'is-active' : ''}"><b>${index + 1}</b><span>${name}${choiceText}</span></li>`;
-    }).join('');
-
-    animationArea.innerHTML = `
-        <div class="animation-status is-${stage}">
-            <div class="status-line"><span class="status-orb" aria-hidden="true"></span><strong>${title}</strong></div>
-            <p class="animation-text">${detail}</p>
-            <ol class="animation-steps" aria-label="三位乘客的入座步骤">${steps}</ol>
-        </div>
-    `;
-}
-
-function describeN3Choice(passenger, choice, ownSeat) {
-    if (passenger === 0) return `第一位没有座位偏好，随机选中了 ${choice + 1} 号座位。`;
-    if (choice === ownSeat) return `自己的 ${ownSeat + 1} 号座位空着，可以直接坐下。`;
-    return `自己的 ${ownSeat + 1} 号座位已被占，只能在剩余座位中随机选中 ${choice + 1} 号座位。`;
-}
-
-function createN3Actions(plan) {
-    const actions = [];
-    plan.choices.forEach((choice, passenger) => {
-        if (passenger > 0 && choice !== passenger) actions.push({ type: 'inspect', passenger, choice });
-        actions.push({ type: 'seat', passenger, choice });
-    });
-    actions.push({ type: 'result' });
-    return actions;
-}
-
-async function movePassenger(passenger, position, runId) {
-    passenger.style.display = 'flex';
-    passenger.classList.add('is-flying');
-    passenger.style.left = `${window.innerWidth / 2 - 16}px`;
-    passenger.style.top = '4.6rem';
-    await sleep(180);
-    if (runId !== n3AnimationRunId || currentPageIndex !== 3) return false;
-
-    passenger.style.left = `${position.x}px`;
-    passenger.style.top = `${position.y}px`;
-    await sleep(620);
-    if (runId !== n3AnimationRunId || currentPageIndex !== 3) return false;
-
-    passenger.classList.remove('is-flying');
-    passenger.classList.add('is-arrived');
-    return true;
-}
-
-function completeN3Animation(plan, revealed = false) {
-    const seats = Array.from(document.querySelectorAll('.card-n3 .seat.mini'));
-    const resultEl = document.getElementById('n3-result');
-    if (!seats.length || !resultEl) return;
-
-    seats.forEach((seat) => seat.classList.remove('occupied', 'wrong', 'current', 'checking', 'target'));
-    plan.choices.forEach((choice, passenger) => {
-        seats[choice].classList.add('occupied');
-        if (choice !== passenger) seats[choice].classList.add('wrong');
-    });
-    seats[plan.choices[2]].classList.add('current');
-
-    renderN3Status({
-        stage: plan.isSuccess ? 'success' : 'fail',
-        activeStep: 3,
-        title: plan.isSuccess ? '终点：最后一位成功' : '终点：最后一位失败',
-        detail: revealed
-            ? `已查看结果：最后一位乘客坐到了 ${plan.choices[2] + 1} 号座位。`
-            : `三位乘客均已由你逐步安排入座，最后一位乘客坐到了 ${plan.choices[2] + 1} 号座位。`,
-        choices: plan.choices
-    });
-    resultEl.innerHTML = plan.isSuccess
-        ? '<span class="success">✅ 最后一位坐到了自己的座位。</span>'
-        : '<span class="fail">❌ 最后一位没有坐到自己的座位。</span>';
-}
-
-function startN3Stepper() {
-    if (currentPageIndex !== 3 || n3ActiveRun) return;
-
-    const seats = Array.from(document.querySelectorAll('.card-n3 .seat.mini'));
-    const resultEl = document.getElementById('n3-result');
-    if (!seats.length || !resultEl) return;
-
-    const runId = ++n3AnimationRunId;
-    const plan = createN3Plan();
-    const passengers = Array.from({ length: 3 }, (_, index) => {
-        const passenger = document.createElement('div');
-        passenger.className = 'passenger';
-        passenger.dataset.passenger = String(index + 1);
-        passenger.textContent = String(index + 1);
-        passenger.style.display = 'none';
-        document.body.appendChild(passenger);
-        return passenger;
-    });
-    const seatPositions = seats.map((seat) => {
-        const rect = seat.getBoundingClientRect();
-        return { x: rect.left + rect.width / 2 - 16, y: rect.top + rect.height / 2 - 16 };
-    });
-
-    n3ActiveRun = { runId, plan, passengers, seatPositions, actions: createN3Actions(plan), actionIndex: 0, busy: false, complete: false };
-    resultEl.textContent = '';
-    seats.forEach((seat) => seat.classList.remove('occupied', 'wrong', 'current', 'checking', 'target'));
-    renderN3Status({
-        stage: 'idle',
-        activeStep: -1,
-        title: '本轮路径已生成',
-        detail: '每次点击“下一步”只会触发一个动画元素：检查座位、移动一位乘客，或揭晓结论。',
-        choices: plan.choices
-    });
-    setN3Controls({ hasRun: true, actionIndex: 0, totalActions: n3ActiveRun.actions.length });
-}
-
-async function nextN3Step() {
-    const run = n3ActiveRun;
-    if (!run || run.busy || run.complete || currentPageIndex !== 3) return;
-
-    const action = run.actions[run.actionIndex];
-    if (!action) return;
-    run.busy = true;
-    n3AnimationRunning = true;
-    setN3Controls({ hasRun: true, busy: true, actionIndex: run.actionIndex, totalActions: run.actions.length });
-
-    const seats = Array.from(document.querySelectorAll('.card-n3 .seat.mini'));
-    try {
-        if (action.type === 'inspect') {
-            seats[action.passenger].classList.add('checking');
-            renderN3Status({
-                stage: 'checking',
-                activeStep: action.passenger,
-                title: `乘客 ${action.passenger + 1} 发现座位被占`,
-                detail: `自己的 ${action.passenger + 1} 号座位已被占。本次点击只展示“检查座位”这一步；再次点击才会移动该乘客。`,
-                choices: run.plan.choices
-            });
-        }
-
-        if (action.type === 'seat') {
-            const { passenger: passengerIndex, choice } = action;
-            seats[passengerIndex].classList.remove('checking');
-            seats[choice].classList.add('target');
-            renderN3Status({
-                stage: 'running',
-                activeStep: passengerIndex,
-                title: `轮到乘客 ${passengerIndex + 1}`,
-                detail: describeN3Choice(passengerIndex, choice, passengerIndex),
-                choices: run.plan.choices
-            });
-            const moved = await movePassenger(run.passengers[passengerIndex], run.seatPositions[choice], run.runId);
-            if (!moved) return;
-            seats[choice].classList.remove('target');
-            seats[choice].classList.add('occupied');
-            if (choice !== passengerIndex) seats[choice].classList.add('wrong');
-            if (passengerIndex === 2) seats[choice].classList.add('current');
-            renderN3Status({
-                stage: 'seated',
-                activeStep: passengerIndex + 1,
-                title: `乘客 ${passengerIndex + 1} 已入座`,
-                detail: `座位 ${choice + 1} 已被占用。下一步由你决定是否继续展示。`,
-                choices: run.plan.choices
-            });
-        }
-
-        if (action.type === 'result') {
-            completeN3Animation(run.plan);
-            run.complete = true;
-        }
-
-        run.actionIndex += 1;
-    } finally {
-        n3AnimationRunning = false;
-        if (n3ActiveRun !== run) return;
-        run.busy = false;
-        if (run.complete) {
-            run.passengers.forEach((passenger) => passenger.remove());
-            n3ActiveRun = null;
-            setN3Controls({ complete: true });
+    
+    gameState.currentPassengerIndex += 1;
+    const passenger = gameState.passengers[gameState.currentPassengerIndex - 1];
+    gameState.currentEntrant = passenger;
+    gameState.isEntrantInBooth = true;
+    gameState.currentStamp = null;
+    
+    document.getElementById("status-indicator").className = "indicator-light busy";
+    document.getElementById("queue-count").textContent = `等待登机: ${gameState.totalSeats - gameState.currentPassengerIndex} 人`;
+    renderQueue();
+    
+    // 绘制窗口大像素头像
+    drawPixelPortrait(document.getElementById("portrait-canvas"), passenger);
+    
+    // 绘制登机牌一寸照
+    drawPixelPhoto(document.getElementById("pass-photo-canvas"), passenger);
+    
+    // 呈现登机牌
+    const passCard = document.getElementById("boarding-pass");
+    const stampSlot = document.getElementById("stamp-impression");
+    stampSlot.innerHTML = "";
+    document.getElementById("btn-return-doc").disabled = true;
+    
+    if (passenger.isFirst) {
+        document.getElementById("pass-name").textContent = passenger.name;
+        document.getElementById("pass-seat").textContent = "无票 (LOST)";
+        document.getElementById("pass-type-badge").textContent = "UNASSIGNED";
+        passCard.classList.remove("hidden");
+        
+        typeDialogue(`[1号] ${passenger.name}: "呃……长官，我的登机牌好像找不到了，随便给我安排个位吧！"`);
+    } else {
+        document.getElementById("pass-name").textContent = passenger.name;
+        document.getElementById("pass-seat").textContent = passenger.assignedSeat < 10 ? "0" + passenger.assignedSeat : String(passenger.assignedSeat);
+        document.getElementById("pass-type-badge").textContent = passenger.isVip ? "👑 VIP GUEST" : "ECONOMY";
+        passCard.classList.remove("hidden");
+        
+        // 检查专属座位是否被占
+        const isSeatTaken = (gameState.cabinSeats[passenger.assignedSeat] !== null);
+        if (isSeatTaken) {
+            const usurperId = gameState.cabinSeats[passenger.assignedSeat];
+            typeDialogue(`[${passenger.id}号] ${passenger.name}: "报告长官！我的 ${passenger.assignedSeat} 号座位好像被 ${usurperId} 号抢了！我该怎么办？"`);
         } else {
-            setN3Controls({ hasRun: true, actionIndex: run.actionIndex, totalActions: run.actions.length });
+            typeDialogue(`[${passenger.id}号] ${passenger.name}: "长官好，这是我的登机牌，我被分配在 ${passenger.assignedSeat} 号座位。"`);
         }
     }
 }
 
-function showN3Result() {
-    const run = n3ActiveRun;
-    if (!run || run.busy || currentPageIndex !== 3) return;
-    n3AnimationRunId += 1;
-    run.passengers.forEach((passenger) => passenger.remove());
-    completeN3Animation(run.plan, true);
-    n3ActiveRun = null;
-    n3AnimationRunning = false;
-    setN3Controls({ complete: true });
-}
-
-function simulateN3() {
-    const simulations = 50;
-    let successCount = 0;
-    for (let i = 0; i < simulations; i += 1) {
-        if (simulateOnce(3)) successCount += 1;
-    }
-    const percentage = ((successCount / simulations) * 100).toFixed(1);
-    const resultEl = document.getElementById('n3-result');
-    if (resultEl) {
-        resultEl.innerHTML = `本次模拟：${successCount}/${simulations} = <span class="highlight">${percentage}%</span>`;
+// ===== 切换滑动印章架 =====
+function toggleStampDrawer() {
+    const drawer = document.getElementById("stamp-drawer");
+    if (drawer.style.transform === "translateY(0px)" || drawer.classList.contains("is-open")) {
+        drawer.style.transform = "translateY(-85%)";
+        drawer.classList.remove("is-open");
+    } else {
+        drawer.style.transform = "translateY(0px)";
+        drawer.classList.add("is-open");
     }
 }
 
-// ===== 大规模验证 =====
-function initializeChart() {
-    const svg = document.getElementById('probability-chart');
-    if (!(svg instanceof SVGElement)) return;
-    probabilityChart = { svg, samples: Array(100).fill(null) };
-    renderProbabilityChart();
-    resetBulkProcessUI();
+// ===== 盖章操作 =====
+function applyStamp(stampType) {
+    if (!gameState.isEntrantInBooth || !gameState.currentEntrant) return;
+    
+    gameState.currentStamp = stampType;
+    const stampSlot = document.getElementById("stamp-impression");
+    const rot = (Math.random() * 6 - 3).toFixed(1); // -3deg ~ +3deg 真实印泥倾角
+    
+    if (stampType === "ASSIGNED") {
+        stampSlot.innerHTML = `<div class="stamped-mark stamped-assigned" style="--rot:${rot}">🔴 按序就座</div>`;
+    } else {
+        stampSlot.innerHTML = `<div class="stamped-mark stamped-random" style="--rot:${rot}">🔵 批准随意</div>`;
+    }
+    
+    document.getElementById("btn-return-doc").disabled = false;
+    
+    // 自动收起印章架
+    setTimeout(() => {
+        const drawer = document.getElementById("stamp-drawer");
+        drawer.style.transform = "translateY(-85%)";
+        drawer.classList.remove("is-open");
+    }, 150);
 }
 
-function renderProbabilityChart() {
-    if (!probabilityChart) return;
+// ===== 放行乘客走入客舱 =====
+function returnDocumentToPassenger() {
+    if (!gameState.isEntrantInBooth || !gameState.currentEntrant || !gameState.currentStamp) return;
+    
+    const passenger = gameState.currentEntrant;
+    const stamp = gameState.currentStamp;
+    
+    // 规则校验
+    let isRuleViolated = false;
+    let violationReason = "";
+    
+    if (passenger.isFirst) {
+        if (stamp !== "RANDOM") {
+            isRuleViolated = true;
+            violationReason = "1号乘客无票，必须盖 🔵【批准随意就座】！";
+        }
+    } else {
+        const isSeatTaken = (gameState.cabinSeats[passenger.assignedSeat] !== null);
+        if (!isSeatTaken && stamp !== "ASSIGNED") {
+            isRuleViolated = true;
+            violationReason = `该乘客 ${passenger.assignedSeat} 号座位完好空闲，必须盖 🔴【按序就座】！`;
+        } else if (isSeatTaken && stamp !== "RANDOM") {
+            isRuleViolated = true;
+            violationReason = `该乘客 ${passenger.assignedSeat} 号已被占用，必须盖 🔵【批准随意就座】！`;
+        }
+    }
+    
+    if (isRuleViolated) {
+        issueCitation(violationReason);
+    }
+    
+    // 执行入座逻辑
+    let finalSeat = null;
+    if (stamp === "ASSIGNED") {
+        finalSeat = passenger.assignedSeat;
+    } else {
+        // 随机选择剩余空位
+        const freeSeats = [];
+        for (let i = 1; i <= gameState.totalSeats; i++) {
+            if (gameState.cabinSeats[i] === null) {
+                freeSeats.push(i);
+            }
+        }
+        finalSeat = freeSeats[Math.floor(Math.random() * freeSeats.length)];
+    }
+    
+    passenger.actualSeat = finalSeat;
+    gameState.cabinSeats[finalSeat] = passenger.id;
+    
+    // 更新界面
+    renderCabinGrid();
+    document.getElementById("boarding-pass").classList.add("hidden");
+    gameState.isEntrantInBooth = false;
+    gameState.currentEntrant = null;
+    document.getElementById("status-indicator").className = "indicator-light";
+    
+    // 对白反馈
+    if (finalSeat === passenger.assignedSeat) {
+        typeDialogue(`[${passenger.id}号] "谢谢长官！顺利坐回 ${finalSeat} 号位。"`);
+    } else {
+        typeDialogue(`[${passenger.id}号] "好吧……我走向了 ${finalSeat} 号空座位入座。"`);
+    }
+}
 
-    const { svg, samples } = probabilityChart;
-    const width = 720;
-    const height = 250;
-    const plot = { left: 47, right: 14, top: 18, bottom: 32 };
-    const plotWidth = width - plot.left - plot.right;
-    const plotHeight = height - plot.top - plot.bottom;
-    const x = (index) => plot.left + (index / (samples.length - 1)) * plotWidth;
-    const y = (value) => plot.top + ((100 - value) / 100) * plotHeight;
-    const esc = (value) => String(value).replace(/[&<>\"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[character]);
+// ===== 弹出违规罚单 =====
+function issueCitation(reason) {
+    document.getElementById("citation-reason").textContent = reason;
+    document.getElementById("citation-paper").classList.remove("hidden");
+}
 
-    const grid = [0, 25, 50, 75, 100].map((value) => {
-        const position = y(value).toFixed(1);
-        return `<line x1="${plot.left}" y1="${position}" x2="${width - plot.right}" y2="${position}" class="chart-grid"/><text x="${plot.left - 8}" y="${Number(position) + 4}" class="chart-label" text-anchor="end">${esc(value)}%</text>`;
-    }).join('');
-    const xLabels = [1, 25, 50, 75, 100].map((value) => {
-        const position = x(value - 1).toFixed(1);
-        return `<text x="${position}" y="${height - 9}" class="chart-label" text-anchor="middle">${esc(value)}</text>`;
-    }).join('');
+function dismissCitation() {
+    document.getElementById("citation-paper").classList.add("hidden");
+}
 
-    let path = '';
-    samples.forEach((value, index) => {
-        if (!Number.isFinite(value)) return;
-        const point = `${x(index).toFixed(1)} ${y(value).toFixed(1)}`;
-        path += path ? ` L ${point}` : `M ${point}`;
+// ===== 结算当前航班 =====
+function finalizeFlight() {
+    gameState.stats.flightsCompleted += 1;
+    const vipSuccess = (gameState.cabinSeats[gameState.totalSeats] === gameState.totalSeats);
+    
+    if (vipSuccess) {
+        gameState.stats.vipWins += 1;
+    } else {
+        gameState.stats.vipLosses += 1;
+    }
+    
+    // 更新统计
+    document.getElementById("stat-flights").textContent = String(gameState.stats.flightsCompleted);
+    document.getElementById("stat-vip-wins").textContent = String(gameState.stats.vipWins);
+    document.getElementById("stat-vip-losses").textContent = String(gameState.stats.vipLosses);
+    const rate = ((gameState.stats.vipWins / gameState.stats.flightsCompleted) * 100).toFixed(1);
+    document.getElementById("stat-vip-rate").textContent = `${rate}%`;
+    
+    const outcomeText = vipSuccess ? 
+        `🎉 航班结算：第 ${gameState.totalSeats} 号神秘 VIP 顺利坐回宝座！` : 
+        `❌ 航班结算：第 ${gameState.totalSeats} 号神秘 VIP 座位遭挤占失败！`;
+    
+    typeDialogue(`${outcomeText} (已完成 ${gameState.stats.flightsCompleted} 班，VIP 成功率: ${rate}%)。正在准备下一班...`);
+    
+    setTimeout(() => {
+        initFlight();
+    }, 2800);
+}
+
+// ===== 神秘人叩窗事件 (第二阶段转折) =====
+function triggerMysteryEncounter() {
+    gameState.isMysteryEventTriggered = true;
+    gameState.isEntrantInBooth = true;
+    
+    // 绘制神秘人黑风衣高领像
+    drawMysteryPortrait(document.getElementById("portrait-canvas"));
+    
+    typeDialogue(`[神秘人] "检票员先生……看起来你很沮丧。无论你多么严格地盖章，最后那位神秘 VIP 能否坐上宝座，难道真的只是一场不可控的混乱吗？"`, () => {
+        setTimeout(() => {
+            typeDialogue(`[神秘人] "你猜他能坐回自己座位的概率是多少？这和飞机座位数 N 有关系吗？……去看看最后一张座位的宿命吧。"`, () => {
+                setTimeout(() => {
+                    // 恢复
+                    gameState.isEntrantInBooth = false;
+                    typeDialogue("神秘人化作虚影离去了……请继续按喇叭呼叫乘客。");
+                }, 4000);
+            });
+        }, 3500);
     });
-
-    const theoryY = y(50).toFixed(1);
-    svg.innerHTML = `
-        <title>最后一位乘客成功概率的模拟曲线</title>
-        <desc>蓝色实线为模拟概率，橙色虚线表示理论值百分之五十。</desc>
-        ${grid}
-        <line x1="${plot.left}" y1="${theoryY}" x2="${width - plot.right}" y2="${theoryY}" class="chart-theory"/>
-        ${path ? `<path d="${path}" class="chart-line"/>` : ''}
-        <text x="${width - plot.right}" y="${Number(theoryY) - 7}" class="chart-theory-label" text-anchor="end">理论值 50%</text>
-        ${xLabels}
-    `;
 }
 
-function getBulkElements() {
-    return {
-        process: document.querySelector('.simulation-process'),
-        status: document.getElementById('bulk-process-status'),
-        outcome: document.getElementById('bulk-trial-outcome'),
-        detail: document.getElementById('bulk-process-detail'),
-        fill: document.getElementById('bulk-progress-fill'),
-        track: document.querySelector('.process-track'),
-        total: document.getElementById('total-simulations'),
-        success: document.getElementById('success-count'),
-        probability: document.getElementById('current-probability'),
-        start100: document.getElementById('start-bulk-100'),
-        start1000: document.getElementById('start-bulk-1000'),
-        toggle: document.getElementById('toggle-bulk')
-    };
+// ===== 打字机对话输出引擎 =====
+function typeDialogue(text, callback) {
+    const el = document.getElementById("tape-dialogue");
+    gameState.dialogueTyping = true;
+    el.textContent = "";
+    
+    let i = 0;
+    const speed = 25;
+    
+    const timer = setInterval(() => {
+        if (i < text.length) {
+            el.textContent += text.charAt(i);
+            i++;
+        } else {
+            clearInterval(timer);
+            gameState.dialogueTyping = false;
+            if (callback) callback();
+        }
+    }, speed);
 }
 
-function updateBulkControls() {
-    const { start100, start1000, toggle } = getBulkElements();
-    const paused = Boolean(bulkRun && bulkRun.paused && !bulkRun.complete);
-    if (start100) start100.disabled = Boolean(bulkRun);
-    if (start1000) start1000.disabled = Boolean(bulkRun);
-    if (toggle) {
-        toggle.disabled = !bulkRun || bulkRun.complete;
-        toggle.textContent = paused ? '▶ 继续' : '⏸ 暂停';
-        toggle.setAttribute('aria-label', paused ? '继续模拟动画' : '暂停模拟动画');
+// ===== 手册切换 Tab =====
+function switchManualTab(tabName) {
+    document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+    document.querySelectorAll(".tab-pane").forEach(pane => pane.classList.add("hidden"));
+    
+    if (tabName === "cabin") {
+        document.querySelector(".manual-tab-bar .tab-btn:nth-child(1)").classList.add("active");
+        document.getElementById("tab-cabin").classList.remove("hidden");
+    } else if (tabName === "rules") {
+        document.querySelector(".manual-tab-bar .tab-btn:nth-child(2)").classList.add("active");
+        document.getElementById("tab-rules").classList.remove("hidden");
+    } else if (tabName === "stats") {
+        document.querySelector(".manual-tab-bar .tab-btn:nth-child(3)").classList.add("active");
+        document.getElementById("tab-stats").classList.remove("hidden");
     }
 }
 
-function updateBulkProcessUI(run, state, detailOverride = '') {
-    const elements = getBulkElements();
-    const progress = run ? Math.round((run.total / run.target) * 100) : 0;
-    const probability = run && run.total ? ((run.successes / run.total) * 100).toFixed(1) : '0.0';
-    if (elements.process) elements.process.className = `simulation-process is-${state}`;
-    if (elements.status) elements.status.textContent = state === 'running' ? `模拟进行中 · ${run.target} 次` : state === 'paused' ? '模拟已暂停' : state === 'complete' ? '模拟完成' : '等待开始';
-    if (elements.outcome) {
-        elements.outcome.className = `trial-outcome ${run?.lastOutcome === true ? 'is-success' : run?.lastOutcome === false ? 'is-fail' : ''}`;
-        elements.outcome.textContent = run && run.total ? `第 ${run.total} 次：${run.lastOutcome ? '成功' : '失败'}` : '尚未进行试验';
+// ===== 过程式像素肖像绘制 (Canvas 8-Bit) =====
+function drawPixelPortrait(canvas, passenger) {
+    const ctx = canvas.getContext("2d");
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    
+    // 背景墙
+    ctx.fillStyle = "#272f33";
+    ctx.fillRect(0, 0, w, h);
+    
+    // 衣服大衣
+    ctx.fillStyle = passenger.isFirst ? "#524436" : (passenger.isVip ? "#705822" : "#38473c");
+    ctx.fillRect(16, 75, 64, 45);
+    
+    // 领口
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(40, 75, 16, 12);
+    
+    // 头部皮肤
+    ctx.fillStyle = passenger.isFirst ? "#cfa27c" : "#e0ba97";
+    ctx.fillRect(28, 25, 40, 48);
+    
+    // 眼睛
+    ctx.fillStyle = "#111";
+    ctx.fillRect(36, 42, 6, 6);
+    ctx.fillRect(54, 42, 6, 6);
+    
+    // 头发/帽子
+    ctx.fillStyle = passenger.isFirst ? "#2d1f15" : "#1a2124";
+    if (passenger.isFirst) {
+        // 凌乱鸡窝头
+        ctx.fillRect(24, 15, 48, 16);
+        ctx.fillRect(20, 22, 10, 15);
+        ctx.fillRect(66, 20, 10, 18);
+    } else {
+        // 顺从平头/便帽
+        ctx.fillRect(26, 18, 44, 14);
     }
-    if (elements.detail) {
-        elements.detail.textContent = detailOverride || (run && run.total
-            ? `已完成 ${run.total} / ${run.target} 次；累计成功 ${run.successes} 次，当前概率 ${probability}%。`
-            : '选择样本数量后，逐次观察成功、失败与曲线如何形成。');
-    }
-    if (elements.fill) elements.fill.style.width = `${progress}%`;
-    if (elements.track) elements.track.setAttribute('aria-valuenow', String(progress));
-    if (elements.total) elements.total.textContent = String(run?.total ?? 0);
-    if (elements.success) elements.success.textContent = String(run?.successes ?? 0);
-    if (elements.probability) elements.probability.textContent = `${probability}%`;
+    
+    // 胡须/嘴巴
+    ctx.fillStyle = "#8a5840";
+    ctx.fillRect(42, 58, 12, 4);
 }
 
-function resetBulkProcessUI() {
-    updateBulkProcessUI(null, 'idle');
-    updateBulkControls();
+function drawMysteryPortrait(canvas) {
+    const ctx = canvas.getContext("2d");
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    
+    // 黑暗剪影背景
+    ctx.fillStyle = "#15191b";
+    ctx.fillRect(0, 0, w, h);
+    
+    // 黑色大风衣高领
+    ctx.fillStyle = "#0d1012";
+    ctx.fillRect(10, 60, 76, 60);
+    
+    // 宽檐风衣帽
+    ctx.fillStyle = "#07090a";
+    ctx.fillRect(12, 28, 72, 12);
+    ctx.fillRect(24, 12, 48, 20);
+    
+    // 阴影中的面部
+    ctx.fillStyle = "#1b2024";
+    ctx.fillRect(28, 38, 40, 30);
+    
+    // 泛着金光的两只眼睛
+    ctx.fillStyle = "#f5d442";
+    ctx.fillRect(36, 46, 6, 4);
+    ctx.fillRect(54, 46, 6, 4);
 }
 
-function scheduleBulkTick(run, delay) {
-    if (bulkTimer) window.clearTimeout(bulkTimer);
-    bulkTimer = window.setTimeout(() => processBulkTick(run.id), delay);
-}
-
-function processBulkTick(runId) {
-    const run = bulkRun;
-    if (!run || run.id !== runId || run.paused || run.complete) return;
-
-    const trialsPerFrame = run.target === 100 ? 1 : 10;
-    let chartChanged = false;
-    for (let step = 0; step < trialsPerFrame && run.total < run.target; step += 1) {
-        run.lastOutcome = simulateOnce(100);
-        run.total += 1;
-        if (run.lastOutcome) run.successes += 1;
-        const sampleIndex = Math.min(99, Math.ceil((run.total / run.target) * 100) - 1);
-        run.samples[sampleIndex] = Number(((run.successes / run.total) * 100).toFixed(1));
-        chartChanged = true;
-    }
-
-    if (chartChanged && probabilityChart) {
-        probabilityChart.samples = run.samples;
-        renderProbabilityChart();
-    }
-    updateBulkProcessUI(run, 'running');
-
-    if (run.total >= run.target) {
-        run.complete = true;
-        bulkSimulationRunning = false;
-        updateBulkProcessUI(run, 'complete', `已完成 ${run.target} 次模拟；最终成功 ${run.successes} 次，概率 ${((run.successes / run.target) * 100).toFixed(1)}%。`);
-        bulkRun = null;
-        updateBulkControls();
-        return;
-    }
-    scheduleBulkTick(run, run.target === 100 ? 58 : 42);
-}
-
-function runBulkSimulation(times) {
-    if (bulkRun || currentPageIndex !== 7) return;
-    const run = {
-        id: ++bulkRunId,
-        target: times,
-        total: 0,
-        successes: 0,
-        samples: Array(100).fill(null),
-        lastOutcome: null,
-        paused: false,
-        complete: false
-    };
-    bulkRun = run;
-    bulkSimulationRunning = true;
-    if (probabilityChart) {
-        probabilityChart.samples = run.samples;
-        renderProbabilityChart();
-    }
-    updateBulkControls();
-    updateBulkProcessUI(run, 'running', `即将逐次运行 ${times} 次模拟；观察每一次成功或失败如何改变曲线。`);
-    scheduleBulkTick(run, 260);
-}
-
-function pauseBulkSimulation(detail = '') {
-    if (!bulkRun || bulkRun.paused || bulkRun.complete) return;
-    bulkRun.paused = true;
-    bulkSimulationRunning = false;
-    if (bulkTimer) window.clearTimeout(bulkTimer);
-    bulkTimer = null;
-    updateBulkProcessUI(bulkRun, 'paused', detail || `停在第 ${bulkRun.total} 次；点击“继续”后从这里接着播放。`);
-    updateBulkControls();
-}
-
-function toggleBulkSimulation() {
-    if (!bulkRun || bulkRun.complete) return;
-    if (!bulkRun.paused) {
-        pauseBulkSimulation();
-        return;
-    }
-    bulkRun.paused = false;
-    bulkSimulationRunning = true;
-    updateBulkProcessUI(bulkRun, 'running', `从第 ${bulkRun.total + 1} 次继续逐次模拟。`);
-    updateBulkControls();
-    scheduleBulkTick(bulkRun, 80);
-}
-
-function simulateOnce(n) {
-    const seatsState = Array(n).fill(null);
-    seatsState[Math.floor(Math.random() * n)] = 0;
-
-    for (let passenger = 1; passenger < n - 1; passenger += 1) {
-        const chosenSeat = seatsState[passenger] === null ? passenger : randomAvailableSeat(seatsState);
-        seatsState[chosenSeat] = passenger;
-    }
-    return seatsState.indexOf(null) === n - 1;
-}
-
-function resetBulkSimulation() {
-    bulkRunId += 1;
-    if (bulkTimer) window.clearTimeout(bulkTimer);
-    bulkTimer = null;
-    bulkRun = null;
-    bulkSimulationRunning = false;
-    if (probabilityChart) {
-        probabilityChart.samples = Array(100).fill(null);
-        renderProbabilityChart();
-    }
-    resetBulkProcessUI();
-}
-
-// ===== 互动游戏 =====
-function initializeUserGame() {
-    generateUserGameSeats();
-}
-
-function setUserGameStepControl({ enabled = false, label = '下一位乘客' } = {}) {
-    const button = document.getElementById('next-user-passenger');
-    if (!button) return;
-    button.disabled = !enabled;
-    button.textContent = label;
-}
-
-function updateUserGameStepStatus(text) {
-    const status = document.getElementById('user-game-step');
-    if (status) status.textContent = text;
-}
-
-function generateUserGameSeats() {
-    const select = document.getElementById('user-n-select');
-    const container = document.getElementById('game-seats');
-    if (!select || !container) return;
-
-    userGameRun = null;
-    const n = Number.parseInt(select.value, 10);
-    container.innerHTML = '';
-    for (let number = 1; number <= n; number += 1) {
-        const seat = document.createElement('button');
-        seat.type = 'button';
-        seat.className = 'seat mini available';
-        seat.dataset.seat = String(number);
-        seat.setAttribute('aria-label', `选择 ${number} 号座位`);
-        seat.textContent = String(number);
-        if (number === n) seat.classList.add('last');
-        seat.addEventListener('click', () => userSelectSeat(number, n));
-        container.appendChild(seat);
-    }
-    document.getElementById('game-result').classList.add('hidden');
-    setUserGameStepControl();
-    updateUserGameStepStatus('请选择乘客 1 的座位。');
-}
-
-function createUserGamePlan(selectedSeat, n) {
-    const seatsState = Array(n).fill(null);
-    const choices = Array(n).fill(null);
-    choices[0] = selectedSeat - 1;
-    seatsState[choices[0]] = 0;
-
-    for (let passenger = 1; passenger < n; passenger += 1) {
-        const choice = seatsState[passenger] === null ? passenger : randomAvailableSeat(seatsState);
-        choices[passenger] = choice;
-        seatsState[choice] = passenger;
-    }
-    return { n, choices, isSuccess: choices[n - 1] === n - 1 };
-}
-
-function markUserSeat(seat, passenger, choice, isLast) {
-    seat.classList.remove('available', 'target', 'checking');
-    seat.classList.add('occupied');
-    seat.dataset.passenger = String(passenger + 1);
-    seat.setAttribute('aria-label', `座位 ${choice + 1}，由乘客 ${passenger + 1} 入座`);
-    if (choice !== passenger) seat.classList.add('wrong');
-    if (isLast) seat.classList.add('current');
-}
-
-function userSelectSeat(selectedSeat, n) {
-    if (currentPageIndex !== 9 || userGameRun) return;
-    const seats = Array.from(document.querySelectorAll('#game-seats .seat.mini'));
-    if (!seats.some((seat) => seat.classList.contains('available'))) return;
-
-    const plan = createUserGamePlan(selectedSeat, n);
-    userGameRun = { plan, nextPassenger: 1 };
-    seats.forEach((seat) => seat.classList.remove('available'));
-    markUserSeat(seats[plan.choices[0]], 0, plan.choices[0], false);
-
-    if (n === 1) {
-        finishUserGame();
-        return;
-    }
-    updateUserGameStepStatus(`乘客 1 已坐到 ${selectedSeat} 号座位。请点击“下一位乘客”推进乘客 2。`);
-    setUserGameStepControl({ enabled: true, label: '乘客 2 入座' });
-}
-
-function nextUserGameStep() {
-    const run = userGameRun;
-    if (!run || currentPageIndex !== 9) return;
-
-    const seats = Array.from(document.querySelectorAll('#game-seats .seat.mini'));
-    const passenger = run.nextPassenger;
-    const choice = run.plan.choices[passenger];
-    const isLast = passenger === run.plan.n - 1;
-    markUserSeat(seats[choice], passenger, choice, isLast);
-
-    if (isLast) {
-        finishUserGame();
-        return;
-    }
-
-    run.nextPassenger += 1;
-    const ownSeatTaken = choice !== passenger;
-    updateUserGameStepStatus(
-        ownSeatTaken
-            ? `乘客 ${passenger + 1} 的座位被占，只能坐到 ${choice + 1} 号座位。请继续推进下一位乘客。`
-            : `乘客 ${passenger + 1} 坐回自己的 ${choice + 1} 号座位。请继续推进下一位乘客。`
-    );
-    setUserGameStepControl({ enabled: true, label: `乘客 ${run.nextPassenger + 1} 入座` });
-}
-
-function finishUserGame() {
-    const run = userGameRun;
-    if (!run) return;
-
-    const lastSeat = run.plan.choices[run.plan.n - 1];
-    const isSuccess = run.plan.isSuccess;
-    const indicator = document.getElementById('result-indicator');
-    const text = document.getElementById('result-text');
-    indicator.textContent = isSuccess ? '✅' : '❌';
-    indicator.className = `result-indicator ${isSuccess ? 'success' : 'fail'}`;
-    text.textContent = isSuccess ? '最后一位坐到了自己的座位。' : '最后一位没有坐到自己的座位。';
-    document.getElementById('game-result').classList.remove('hidden');
-    updateUserGameStepStatus(`已由你逐位推进完成：最后一位乘客坐到 ${lastSeat + 1} 号座位。`);
-    setUserGameStepControl({ enabled: false });
-
-    userGameStats.total += 1;
-    if (isSuccess) userGameStats.wins += 1;
-    userGameRun = null;
-}
-
-function resetGame() {
-    generateUserGameSeats();
-}
-
-function showUserStats() {
-    const rate = userGameStats.total > 0 ? ((userGameStats.wins / userGameStats.total) * 100).toFixed(1) : '0';
-    document.getElementById('user-wins').textContent = String(userGameStats.wins);
-    document.getElementById('user-total').textContent = String(userGameStats.total);
-    document.getElementById('user-rate').textContent = `${rate}%`;
-    document.getElementById('user-stats').classList.remove('hidden');
+function drawPixelPhoto(canvas, passenger) {
+    const ctx = canvas.getContext("2d");
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    
+    ctx.fillStyle = "#d8cdb4";
+    ctx.fillRect(0, 0, w, h);
+    
+    // 黑白寸照
+    ctx.fillStyle = "#4a4235";
+    ctx.fillRect(8, 35, 32, 25);
+    ctx.fillStyle = "#7a6e5b";
+    ctx.fillRect(14, 12, 20, 24);
+    
+    // 眼睛
+    ctx.fillStyle = "#111";
+    ctx.fillRect(18, 20, 3, 3);
+    ctx.fillRect(27, 20, 3, 3);
 }
