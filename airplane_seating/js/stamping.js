@@ -280,8 +280,8 @@ function returnDocumentToPassenger() {
     }
     
     const thankMsg = (finalSeat === passenger.assignedSeat) ?
-        `[${passenger.id}号] "谢谢检票员！顺利坐回 ${finalSeat} 号位。"` :
-        `[${passenger.id}号] "好的，我这就去坐 ${finalSeat} 号空座位。"`;
+        `[${passenger.id}号乘客] "谢谢检票员！我顺利坐回 ${finalSeat} 号位。"` :
+        `[${passenger.id}号乘客] "好的，我这就去坐 ${finalSeat} 号空座位了！"`;
         
     typeDialogue(thankMsg, () => {
         if (isLastPassenger && !gameState.isTransitioningFlight) {
