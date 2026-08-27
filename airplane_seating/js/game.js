@@ -46,21 +46,18 @@ function startTutorialPrologue() {
     canvas.classList.add("is-walking-in");
     drawMysteryPortrait(canvas);
     
-    // 神秘人开场第 1 句
-    typeDialogue(`[神秘人] "初次执勤，检票员。今晚有一项绝密指令：确保末位座位的【神秘 VIP】顺利入座。在接管正规大航班前，先用这架 2 人教学机熟悉标准检票流程。"`, () => {
-        setTimeout(() => {
-            // 神秘人开场第 2 句
-            typeDialogue(`[神秘人] "教学关中两人均持有正规登机牌。核对左侧雷达空位后盖 🔴【按序就座】放行入座。去吧！"`, () => {
-                setTimeout(() => {
-                    // 神秘人说完离去，窗口清空，解锁按钮，亮起绿灯
-                    drawEmptyBooth(canvas);
-                    typeDialogue(`[系统提示] 神秘人已离开。请按红色喇叭呼叫 1 号乘客登机。`, () => {
-                        document.getElementById("btn-next-entrant").disabled = false;
-                        document.getElementById("status-indicator").className = "indicator-light";
-                    });
-                }, 1200);
-            });
-        }, 1200);
+    // 启动神秘人步进式对话序列 (点击或按空格/回车推进)
+    runDialogueSequence([
+        `[神秘人] "初次执勤，检票员。今晚有一项绝密指令：确保末位座位的【神秘 VIP】顺利入座。"`,
+        `[神秘人] "在接管正式航班前，先用这架 2 人教学机熟悉标准检票流程。"`,
+        `[神秘人] "核对左侧雷达空位后盖 🔴【按序就座】放行入座。去吧！"`
+    ], () => {
+        // 神秘人说完离去，窗口清空，解锁按钮，亮起绿灯
+        drawEmptyBooth(canvas);
+        typeDialogue(`[系统提示] 神秘人已离开。请按红色喇叭呼叫 1 号乘客登机。`, () => {
+            document.getElementById("btn-next-entrant").disabled = false;
+            document.getElementById("status-indicator").className = "indicator-light";
+        });
     });
 }
 
@@ -153,15 +150,15 @@ function finalizeFlight() {
     
     if (gameState.currentFlightToday === 1) {
         // 第 1 趟教学机完成 -> 接入今日第 2 趟正规航班
-        typeDialogue("🎉 教学机测试完成！全员按序就座。现在为你接入今日第 2 趟正规航班 MA-404。警惕：正规航班的 1 号乘客将丢失登机牌！", () => {
+        typeDialogue("🎉 教学机测试完成！全员按序就座。正在为你接入今日第 2 趟航班 MA-404...", () => {
             setTimeout(() => {
                 gameState.isTutorial = false;
                 gameState.currentFlightToday = 2;
                 gameState.flightNumber = "MA-404";
                 gameState.totalSeats = 5;
                 initFlightState();
-                typeDialogue("今日末班航班 MA-404 已就绪！请按红色喇叭呼叫 1 号乘客登机。");
-            }, 3200);
+                typeDialogue("今日第 2 趟航班 MA-404 已就绪！请按红色喇叭呼叫 1 号乘客登机。");
+            }, 2200);
         });
     } else {
         // 今日两趟航班全部执勤完毕 -> 第 1 天下班！

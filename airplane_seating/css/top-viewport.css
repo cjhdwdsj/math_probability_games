@@ -304,6 +304,9 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    cursor: pointer;
+    position: relative;
+    user-select: none;
 }
 
 .tape-header-tag {
@@ -320,6 +323,21 @@
     font-size: 0.92rem;
     line-height: 1.45;
     color: #1a1612;
+}
+
+.tape-step-hint {
+    align-self: flex-end;
+    font-size: 0.68rem;
+    font-weight: 900;
+    color: #9c3b20;
+    margin-top: 4px;
+    letter-spacing: 0.5px;
+    animation: stepHintPulse 0.9s infinite alternate ease-in-out;
+}
+
+@keyframes stepHintPulse {
+    0% { opacity: 0.35; transform: translateY(0); }
+    100% { opacity: 1; transform: translateY(2px); }
 }
 
 /* 呼叫按键 */
