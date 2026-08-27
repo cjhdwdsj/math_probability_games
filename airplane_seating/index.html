@@ -17,8 +17,8 @@
             <!-- 左上：候机长廊与像素排队小人 -->
             <div class="queue-zone" aria-label="候机长廊队列">
                 <div class="zone-header">
-                    <span class="corridor-sign">GATE 404 · 候机长廊</span>
-                    <span class="queue-count" id="queue-count">等待登机: 5 人</span>
+                    <span class="corridor-sign" id="corridor-sign">GATE 404 · 候机长廊</span>
+                    <span class="queue-count" id="queue-count">等待登机: 2 人</span>
                 </div>
                 <div class="queue-track">
                     <div class="corridor-bg-lines"></div>
@@ -43,8 +43,8 @@
                         <!-- 录音带纸条 (Audio Transcript Tape) -->
                         <div class="transcript-tape-wrapper">
                             <div class="transcript-tape" id="transcript-tape">
-                                <div class="tape-header-tag">AUDIO LOG 📟 [08:00 GRESTIN]</div>
-                                <div class="tape-dialogue" id="tape-dialogue">航班已就绪。请按红色喇叭呼叫 1 号乘客。</div>
+                                <div class="tape-header-tag" id="tape-header-tag">AUDIO LOG 📟 [08:00 GRESTIN]</div>
+                                <div class="tape-dialogue" id="tape-dialogue">连接建立中...</div>
                             </div>
                         </div>
 
@@ -79,34 +79,22 @@
             <!-- 台面主自由交互区 (物理桌面可拖拽所有道具) -->
             <div class="counter-surface" id="counter-surface">
                 
-                <!-- 【左边】：工作手册 (检票准则、客舱实时雷达、执勤统计) -->
+                <!-- 【左边】：工作手册 (第一页：客舱实时雷达，第二页：检票准则，第三页：执勤统计) -->
                 <div class="cabin-manual-book" id="cabin-manual">
                     <div class="manual-tab-bar">
-                        <!-- 第一条：检票准则 (默认展开) -->
-                        <button class="tab-btn active" id="tab-btn-rules" type="button" onclick="switchManualTab('rules')">📜 检票准则</button>
-                        <!-- 第二条：客舱实时雷达 -->
-                        <button class="tab-btn" id="tab-btn-cabin" type="button" onclick="switchManualTab('cabin')">💺 客舱实时雷达</button>
-                        <!-- 第三条：执勤统计 -->
+                        <!-- 第一页：客舱实时雷达 (默认展开) -->
+                        <button class="tab-btn active" id="tab-btn-cabin" type="button" onclick="switchManualTab('cabin')">💺 客舱实时雷达</button>
+                        <!-- 第二页：检票准则 -->
+                        <button class="tab-btn" id="tab-btn-rules" type="button" onclick="switchManualTab('rules')">📜 检票准则</button>
+                        <!-- 第三页：执勤统计 -->
                         <button class="tab-btn" id="tab-btn-stats" type="button" onclick="switchManualTab('stats')">📊 执勤统计</button>
                     </div>
                     
                     <div class="manual-content">
-                        <!-- Tab 1: 检票准则 (默认显示) -->
-                        <div class="tab-pane active" id="tab-rules">
-                            <h4 class="rule-title">《边检航空执勤条令 第 81-A 条》</h4>
-                            <ol class="rules-list">
-                                <li><strong>1 号乘客无票或丢失时</strong>：必须盖 🔵【批准随意就座】印章；</li>
-                                <li><strong>正常乘客专属座位未被占</strong>：必须核验雷达无误后，盖 🔴【按序就座】印章；</li>
-                                <li><strong>正常乘客专属座位已被抢占</strong>：必须盖 🔵【批准随意就座】印章；</li>
-                                <li><strong>操作方法</strong>：拖动印章盒至登机牌上方，向下按压把手完成盖印！</li>
-                                <li><strong>违规放行者</strong>：将立即予以罚款扣津贴通报！</li>
-                            </ol>
-                        </div>
-
-                        <!-- Tab 2: 客舱雷达 (实时展示谁坐了哪个座) -->
-                        <div class="tab-pane hidden" id="tab-cabin">
+                        <!-- Tab 1: 客舱实时雷达 (默认显示) -->
+                        <div class="tab-pane active" id="tab-cabin">
                             <div class="cabin-grid-header">
-                                <span>✈️ 航班客舱实时雷达 (MA-404)</span>
+                                <span id="cabin-flight-title">✈️ 航班客舱实时雷达 (TRIAL-02)</span>
                                 <span class="vip-status-pill" id="vip-status-indicator">👑 VIP 座位状态: 空闲</span>
                             </div>
                             <div class="cabin-seats-grid" id="cabin-seats-grid">
@@ -120,6 +108,18 @@
                             </div>
                         </div>
 
+                        <!-- Tab 2: 检票准则 -->
+                        <div class="tab-pane hidden" id="tab-rules">
+                            <h4 class="rule-title">《边检航空执勤条令 第 81-A 条》</h4>
+                            <ol class="rules-list">
+                                <li><strong>1 号乘客无票或丢失时</strong>：必须盖 🔵【批准随意就座】印章；</li>
+                                <li><strong>正常乘客专属座位未被占</strong>：必须核验雷达无误后，盖 🔴【按序就座】印章；</li>
+                                <li><strong>正常乘客专属座位已被抢占</strong>：必须盖 🔵【批准随意就座】印章；</li>
+                                <li><strong>操作方法</strong>：拖动印章盒至登机牌上方，向下按压把手完成盖印！</li>
+                                <li><strong>违规放行者</strong>：将立即予以罚款扣津贴通报！</li>
+                            </ol>
+                        </div>
+
                         <!-- Tab 3: 执勤战绩 -->
                         <div class="tab-pane hidden" id="tab-stats">
                             <div class="stats-box">
@@ -127,7 +127,7 @@
                                 <div class="stat-item"><span>神秘 VIP 成功入座:</span> <strong class="green-text" id="stat-vip-wins">0</strong> 次</div>
                                 <div class="stat-item"><span>神秘 VIP 遭抢出局:</span> <strong class="red-text" id="stat-vip-losses">0</strong> 次</div>
                                 <div class="stat-item stat-highlight"><span>当前 VIP 成功率:</span> <strong class="gold-text" id="stat-vip-rate">0.0%</strong></div>
-                                <p class="stat-note">* 无论航班是 5 人还是 100 人，观察大数下 VIP 成功率的奇妙收敛。</p>
+                                <p class="stat-note">* 无论航班是 2 人、5 人还是 100 人，观察大数下 VIP 成功率的奇妙收敛。</p>
                             </div>
                         </div>
                     </div>
@@ -136,10 +136,10 @@
                 <!-- 【右边】：绝密 VIP 执勤便签 (可拖拽/固定在右上) -->
                 <div class="memo-sticky draggable-item" id="vip-memo">
                     <div class="memo-pin"></div>
-                    <div class="memo-title">📌 绝密执勤令 (点击拖拽)</div>
+                    <div class="memo-title">📌 绝密执勤令 (可拖动)</div>
                     <div class="memo-text">
-                        今晚航班 <b id="memo-flight">MA-404</b> 末位乘客是 <b class="gold-text">神秘 VIP</b>。<br>
-                        务必核查机舱座席，确保其坐回专属座位！
+                        今晚航班 <b id="memo-flight">TRIAL-02</b> 末位乘客是 <b class="gold-text">神秘 VIP</b>。<br>
+                        务必核查机舱雷达，确保其坐回专属宝座！
                     </div>
                 </div>
 
@@ -156,7 +156,7 @@
                         <div class="pass-details">
                             <div class="pass-row"><span class="lbl">NAME:</span> <strong id="pass-name">IVAN V.</strong></div>
                             <div class="pass-row"><span class="lbl">SEAT:</span> <strong class="seat-num" id="pass-seat">03</strong></div>
-                            <div class="pass-row"><span class="lbl">FLIGHT:</span> <span>MA-404</span></div>
+                            <div class="pass-row"><span class="lbl">FLIGHT:</span> <span id="pass-flight-code">TRIAL-02</span></div>
                         </div>
                     </div>
                     
@@ -181,7 +181,7 @@
                     <div class="stamp-plungers-row">
                         <!-- 红色印章柱：按序就座 -->
                         <div class="stamp-plunger-unit stamp-red-unit" id="stamp-unit-assigned">
-                            <button class="stamp-knob" type="button" onclick="pressStamp('ASSIGNED')" title="往下按压此把手盖印">
+                            <button class="stamp-knob" type="button" onclick="pressStamp('ASSIGNED')" title="往下按压此把手盖印 (快捷键: 1)">
                                 <div class="knob-cap"></div>
                                 <div class="knob-stem"></div>
                             </button>
@@ -190,7 +190,7 @@
 
                         <!-- 蓝色印章柱：批准随意 -->
                         <div class="stamp-plunger-unit stamp-blue-unit" id="stamp-unit-random">
-                            <button class="stamp-knob" type="button" onclick="pressStamp('RANDOM')" title="往下按压此把手盖印">
+                            <button class="stamp-knob" type="button" onclick="pressStamp('RANDOM')" title="往下按压此把手盖印 (快捷键: 2)">
                                 <div class="knob-cap"></div>
                                 <div class="knob-stem"></div>
                             </button>
