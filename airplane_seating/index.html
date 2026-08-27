@@ -89,13 +89,10 @@
         <!-- ================= 下半屏：深色铁皮检票工作台 (DESK WORKSPACE) ================= -->
         <div class="desk-viewport" id="desk-viewport">
             
-            <!-- 左侧：点阵罚单打印机 (CITATION PRINTER) -->
+            <!-- 左侧：点阵罚单出纸槽 (CITATION PRINTER SLOT) -->
             <div class="citation-printer-slot" id="citation-slot">
-                <div class="citation-paper hidden" id="citation-paper">
-                    <div class="citation-header">⚠️ M.O.A. 违规警告 ⚠️</div>
-                    <div class="citation-body" id="citation-reason">未依规核验机舱座位占用状态！</div>
-                    <div class="citation-fine">罚单: 扣除今日执勤津贴 5 CREDITS</div>
-                    <button class="citation-dismiss" type="button" onclick="dismissCitation()">[撕下收存]</button>
+                <div class="printer-feed-mouth">
+                    <span class="printer-feed-label">M.O.A. CITATION 🖨️</span>
                 </div>
             </div>
 

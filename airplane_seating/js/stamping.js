@@ -83,7 +83,18 @@ function returnDocumentToPassenger() {
     
     let finalSeat = null;
     if (stamp === "ASSIGNED") {
-        finalSeat = passenger.assignedSeat;
+        if (passenger.assignedSeat !== null && gameState.cabinSeats[passenger.assignedSeat] === null) {
+            finalSeat = passenger.assignedSeat;
+        } else if (passenger.isFirst && gameState.cabinSeats[1] === null) {
+            finalSeat = 1; // 1号虽无票但被盖了按序就座，则默认坐回属于他的1号位
+        } else {
+            // 被占用或异常状态，回退到随机可用座位
+            const freeSeats = [];
+            for (let i = 1; i <= gameState.totalSeats; i++) {
+                if (gameState.cabinSeats[i] === null) freeSeats.push(i);
+            }
+            finalSeat = freeSeats[Math.floor(Math.random() * freeSeats.length)];
+        }
     } else {
         const freeSeats = [];
         for (let i = 1; i <= gameState.totalSeats; i++) {
@@ -93,7 +104,7 @@ function returnDocumentToPassenger() {
         }
         finalSeat = freeSeats[Math.floor(Math.random() * freeSeats.length)];
     }
-    
+
     passenger.actualSeat = finalSeat;
     gameState.cabinSeats[finalSeat] = passenger.id;
     

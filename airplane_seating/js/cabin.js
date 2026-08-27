@@ -6,7 +6,8 @@ function renderQueue() {
     const queueLine = document.getElementById("queue-line");
     queueLine.innerHTML = "";
     
-    for (let i = gameState.currentPassengerIndex + 1; i <= gameState.totalSeats; i++) {
+    // 从左至右：末位 VIP 在最左，紧接着进门的下一位乘客在最右 (靠近检票闸门)
+    for (let i = gameState.totalSeats; i >= gameState.currentPassengerIndex + 1; i--) {
         const sprite = document.createElement("div");
         sprite.className = "queue-sprite" + (i === gameState.totalSeats ? " is-vip-sprite" : "");
         sprite.id = `queue-sprite-${i}`;
@@ -85,11 +86,32 @@ function switchManualTab(tabName) {
     }
 }
 
-function issueCitation(reason) {
-    document.getElementById("citation-reason").textContent = reason;
-    document.getElementById("citation-paper").classList.remove("hidden");
-}
+let citationCount = 0;
 
-function dismissCitation() {
-    document.getElementById("citation-paper").classList.add("hidden");
+// 真实点阵罚单吐纸（实体纸片，堆叠在桌面上，无法虚空删除，可随意拖拽）
+function issueCitation(reason) {
+    citationCount++;
+    const surface = document.getElementById("counter-surface");
+    const paper = document.createElement("div");
+    paper.className = "citation-paper draggable-item";
+    
+    // 错落散落在桌面打印机下方
+    const offsetY = 16 + ((citationCount * 28) % 180);
+    const offsetX = 16 + ((citationCount * 12) % 60);
+    const rot = ((citationCount * 7) % 10 - 5);
+    
+    paper.style.left = `${offsetX}px`;
+    paper.style.top = `${offsetY}px`;
+    paper.style.transform = `rotate(${rot}deg)`;
+    highestZIndex += 2;
+    paper.style.zIndex = highestZIndex;
+    
+    paper.innerHTML = `
+        <div class="citation-header">⚠️ M.O.A. 违规警告 #${citationCount} ⚠️</div>
+        <div class="citation-body">${reason}</div>
+        <div class="citation-fine">罚款: 扣除津贴 5 CREDITS (违规记录已存档)</div>
+    `;
+    
+    surface.appendChild(paper);
+    makeDraggable(paper);
 }

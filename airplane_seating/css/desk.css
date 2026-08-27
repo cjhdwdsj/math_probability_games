@@ -221,40 +221,70 @@
     margin-top: 6px;
 }
 
-/* 左侧：点阵罚单插槽 */
+/* 左侧：点阵罚单出纸口 */
 .citation-printer-slot {
     position: absolute;
     top: 0;
     left: 20px;
-    z-index: 160;
+    z-index: 80;
+    pointer-events: none;
 }
 
+.printer-feed-mouth {
+    background-color: #171b1d;
+    border: 2px solid #0b0d0e;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    padding: 3px 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.6);
+}
+
+.printer-feed-label {
+    font-size: 0.62rem;
+    font-weight: 800;
+    color: #e57373;
+    letter-spacing: 0.5px;
+    font-family: monospace;
+}
+
+/* 实体点阵罚单 (可自由拖拽、堆叠在桌面上) */
 .citation-paper {
+    width: 210px;
     background-color: var(--c-citation);
     border: 2px dashed #992323;
-    padding: 8px 12px;
+    padding: 8px 10px;
     font-family: monospace;
-    font-size: 0.78rem;
+    font-size: 0.75rem;
     color: #6d1414;
-    box-shadow: 0 6px 12px rgba(0,0,0,0.5);
-    animation: citationPrint 0.35s ease-out;
+    box-shadow: 4px 4px 0 rgba(0,0,0,0.4);
+    animation: citationEject 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 70;
 }
 
-@keyframes citationPrint {
-    0% { transform: translateY(-100%); opacity: 0; }
-    100% { transform: translateY(0); opacity: 1; }
+@keyframes citationEject {
+    0% { transform: translateY(-60px) scale(0.9); opacity: 0; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
 }
 
-.citation-header { font-weight: 900; font-size: 0.85rem; margin-bottom: 3px; text-align: center; }
-.citation-dismiss {
-    margin-top: 4px;
-    width: 100%;
-    background: #6d1414;
-    color: #fff;
-    border: none;
-    padding: 2px;
-    font-size: 0.7rem;
+.citation-header {
+    font-weight: 900;
+    font-size: 0.8rem;
+    margin-bottom: 4px;
+    text-align: center;
+    border-bottom: 1px dashed #992323;
+    padding-bottom: 2px;
+}
+
+.citation-body {
+    line-height: 1.35;
+    margin-bottom: 4px;
     font-weight: 700;
+}
+
+.citation-fine {
+    font-size: 0.68rem;
+    color: #901010;
+    font-weight: 800;
 }
 
 /* 底部状态栏 */
