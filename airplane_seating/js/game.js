@@ -4,6 +4,7 @@
 
 document.addEventListener("DOMContentLoaded", () => {
     initDraggableSystem();
+    initStampKnobPullPhysics();
     bindKeyboardShortcuts();
     startTutorialPrologue();
 });

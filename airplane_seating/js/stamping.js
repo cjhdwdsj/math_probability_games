@@ -27,7 +27,67 @@ function presentBoardingPass(passenger) {
     passCard.style.zIndex = highestZIndex;
 }
 
-function pressStamp(stampType) {
+function initStampKnobPullPhysics() {
+    const units = [
+        { id: "stamp-unit-assigned", type: "ASSIGNED" },
+        { id: "stamp-unit-random", type: "RANDOM" }
+    ];
+
+    units.forEach(({ id, type }) => {
+        const knob = document.querySelector(`#${id} .stamp-knob`);
+        if (!knob) return;
+
+        let isPulling = false;
+        let startY = 0;
+        let hasStamped = false;
+        const MAX_STROKE = 22; // 最大机械物理行程
+        const TRIGGER_STROKE = 15; // 触底盖印行程阈值 (拉到 15px 时咔哒盖印)
+
+        knob.addEventListener("mousedown", (e) => {
+            e.stopPropagation();
+            isPulling = true;
+            startY = e.clientY;
+            hasStamped = false;
+            knob.style.transition = "none";
+
+            const onMouseMove = (moveEvent) => {
+                if (!isPulling) return;
+                const deltaY = Math.max(0, moveEvent.clientY - startY);
+                const currentY = Math.min(deltaY, MAX_STROKE);
+                knob.style.transform = `translateY(${currentY}px)`;
+
+                // 物理拉到底部 (>= 15px) 瞬间触发盖章打击！
+                if (currentY >= TRIGGER_STROKE && !hasStamped) {
+                    hasStamped = true;
+                    pressStamp(type, false);
+                }
+            };
+
+            const onMouseUp = (upEvent) => {
+                if (!isPulling) return;
+                isPulling = false;
+                
+                const deltaY = Math.max(0, upEvent.clientY - startY);
+                // 如果只是快速点击（位移 < 4px）且还没盖过章，触发点击盖章
+                if (deltaY < 4 && !hasStamped) {
+                    pressStamp(type, true);
+                }
+
+                // 弹簧阻尼回弹
+                knob.style.transition = "transform 0.16s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+                knob.style.transform = "translateY(0px)";
+
+                document.removeEventListener("mousemove", onMouseMove);
+                document.removeEventListener("mouseup", onMouseUp);
+            };
+
+            document.addEventListener("mousemove", onMouseMove);
+            document.addEventListener("mouseup", onMouseUp);
+        });
+    });
+}
+
+function pressStamp(stampType, playAnimate = true) {
     if (!gameState.isEntrantInBooth || !gameState.currentEntrant) return;
     
     const passCard = document.getElementById("boarding-pass");
@@ -36,8 +96,10 @@ function pressStamp(stampType) {
     const unitId = (stampType === "ASSIGNED") ? "stamp-unit-assigned" : "stamp-unit-random";
     const knob = document.querySelector(`#${unitId} .stamp-knob`);
     
-    knob.classList.add("is-pressing");
-    setTimeout(() => knob.classList.remove("is-pressing"), 180);
+    if (playAnimate && knob) {
+        knob.classList.add("is-pressing");
+        setTimeout(() => knob.classList.remove("is-pressing"), 180);
+    }
     
     gameState.currentStamp = stampType;
     const stampSlot = document.getElementById("stamp-impression");
