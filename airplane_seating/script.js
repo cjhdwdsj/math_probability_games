@@ -1,5 +1,5 @@
 // ==========================================================================
-// 《请出示证件：神秘 VIP 与篡位者航班》- 核心游戏引擎与状态机 (SCRIPT.JS)
+// 《请出示证件：神秘 VIP 与篡位者航班》- 核心游戏引擎与物理拖拽系统 (SCRIPT.JS V3)
 // ==========================================================================
 
 // ===== 全局游戏状态 =====
@@ -30,9 +30,12 @@ const gameState = {
 const FIRST_NAMES = ["IVAN", "SERGEI", "DIMITRI", "ELENA", "NATASHA", "BORIS", "ALEXEI", "SONIA", "YURI", "KATIA"];
 const LAST_NAMES = ["V.", "K.", "P.", "S.", "M.", "N.", "B.", "G.", "T.", "Z."];
 
+let highestZIndex = 100;
+
 // ===== 页面初始化 =====
 document.addEventListener("DOMContentLoaded", () => {
     initFlight();
+    initDraggableSystem();
     bindKeyboardShortcuts();
 });
 
@@ -44,19 +47,82 @@ function bindKeyboardShortcuts() {
         if (e.code === "Space" || e.key === "n" || e.key === "N") {
             e.preventDefault();
             callNextEntrant();
-        } else if (e.code === "Tab") {
-            e.preventDefault();
-            toggleStampDrawer();
         } else if (e.key === "1") {
-            applyStamp("ASSIGNED");
+            pressStamp("ASSIGNED");
         } else if (e.key === "2") {
-            applyStamp("RANDOM");
+            pressStamp("RANDOM");
         } else if (e.code === "Enter") {
             const returnBtn = document.getElementById("btn-return-doc");
             if (returnBtn && !returnBtn.disabled) {
                 returnDocumentToPassenger();
             }
         }
+    });
+}
+
+// ===== 物理桌面拖拽引擎 (支持登机牌、便签、印章盒) =====
+function initDraggableSystem() {
+    const draggables = document.querySelectorAll(".draggable-item");
+    const surface = document.getElementById("counter-surface");
+
+    draggables.forEach(el => {
+        let isDragging = false;
+        let startX = 0, startY = 0;
+        let initialLeft = 0, initialTop = 0;
+
+        el.addEventListener("mousedown", (e) => {
+            // 如果点在可点击的按钮或印章把手上，不触发整体拖动
+            if (e.target.closest("button") || e.target.closest(".btn-return-doc")) {
+                return;
+            }
+
+            isDragging = true;
+            el.classList.add("is-dragging");
+            highestZIndex += 1;
+            el.style.zIndex = highestZIndex;
+
+            const rect = el.getBoundingClientRect();
+            const surfaceRect = surface.getBoundingClientRect();
+
+            startX = e.clientX;
+            startY = e.clientY;
+            initialLeft = rect.left - surfaceRect.left;
+            initialTop = rect.top - surfaceRect.top;
+
+            // 转化为绝对 left/top 定位
+            el.style.left = `${initialLeft}px`;
+            el.style.top = `${initialTop}px`;
+            el.style.right = "auto";
+            el.style.bottom = "auto";
+
+            const onMouseMove = (moveEvent) => {
+                if (!isDragging) return;
+                const dx = moveEvent.clientX - startX;
+                const dy = moveEvent.clientY - startY;
+
+                let nextLeft = initialLeft + dx;
+                let nextTop = initialTop + dy;
+
+                // 边界保护
+                const maxLeft = surfaceRect.width - el.offsetWidth;
+                const maxTop = surfaceRect.height - el.offsetHeight;
+                nextLeft = Math.max(0, Math.min(nextLeft, maxLeft));
+                nextTop = Math.max(0, Math.min(nextTop, maxTop));
+
+                el.style.left = `${nextLeft}px`;
+                el.style.top = `${nextTop}px`;
+            };
+
+            const onMouseUp = () => {
+                isDragging = false;
+                el.classList.remove("is-dragging");
+                document.removeEventListener("mousemove", onMouseMove);
+                document.removeEventListener("mouseup", onMouseUp);
+            };
+
+            document.addEventListener("mousemove", onMouseMove);
+            document.addEventListener("mouseup", onMouseUp);
+        });
     });
 }
 
@@ -93,18 +159,19 @@ function initFlight() {
         });
     }
     
-    // 渲染客舱网格
+    // 渲染客舱网格与队列
     renderCabinGrid();
     renderQueue();
     
-    // 重置桌面
-    document.getElementById("boarding-pass").classList.add("hidden");
+    // 重置登机牌与状态
+    const passCard = document.getElementById("boarding-pass");
+    passCard.classList.add("hidden");
     document.getElementById("btn-return-doc").disabled = true;
-    document.getElementById("stamp-impression").innerHTML = "";
+    document.getElementById("stamp-impression").innerHTML = `<span class="stamp-placeholder-hint">← 拖动印章盒对准此处下压盖印</span>`;
     document.getElementById("queue-count").textContent = `等待登机: ${gameState.totalSeats} 人`;
     document.getElementById("status-indicator").className = "indicator-light";
     
-    typeDialogue("航班已就绪。请按红色按钮呼叫 1 号乘客。");
+    typeDialogue("航班已就绪。请按红色喇叭呼叫 1 号乘客。");
 }
 
 // ===== 渲染排队小人队列 =====
@@ -153,7 +220,7 @@ function renderCabinGrid() {
             cell.classList.add(isCorrect ? "is-assigned-correct" : "is-stolen");
             cell.innerHTML = `
                 <div class="seat-num-tag">${i === gameState.totalSeats ? "👑 " + i : i}</div>
-                <div class="seat-status-desc">${occupantId}号占有</div>
+                <div class="seat-status-desc">${occupantId}号就座</div>
             `;
         }
         
@@ -207,24 +274,29 @@ function callNextEntrant() {
     // 绘制登机牌一寸照
     drawPixelPhoto(document.getElementById("pass-photo-canvas"), passenger);
     
-    // 呈现登机牌
+    // 呈现登机牌并由上往下弹出至工作台
     const passCard = document.getElementById("boarding-pass");
     const stampSlot = document.getElementById("stamp-impression");
-    stampSlot.innerHTML = "";
+    stampSlot.innerHTML = `<span class="stamp-placeholder-hint">← 拖动印章盒对准此处下压盖印</span>`;
     document.getElementById("btn-return-doc").disabled = true;
+    
+    // 默认弹出的位置 (台面右侧区域)
+    passCard.style.left = "auto";
+    passCard.style.right = "260px";
+    passCard.style.top = "16px";
+    passCard.classList.remove("hidden");
+    highestZIndex += 1;
+    passCard.style.zIndex = highestZIndex;
     
     if (passenger.isFirst) {
         document.getElementById("pass-name").textContent = passenger.name;
         document.getElementById("pass-seat").textContent = "无票 (LOST)";
         document.getElementById("pass-type-badge").textContent = "UNASSIGNED";
-        passCard.classList.remove("hidden");
-        
         typeDialogue(`[1号] ${passenger.name}: "呃……长官，我的登机牌好像找不到了，随便给我安排个位吧！"`);
     } else {
         document.getElementById("pass-name").textContent = passenger.name;
         document.getElementById("pass-seat").textContent = passenger.assignedSeat < 10 ? "0" + passenger.assignedSeat : String(passenger.assignedSeat);
         document.getElementById("pass-type-badge").textContent = passenger.isVip ? "👑 VIP GUEST" : "ECONOMY";
-        passCard.classList.remove("hidden");
         
         // 检查专属座位是否被占
         const isSeatTaken = (gameState.cabinSeats[passenger.assignedSeat] !== null);
@@ -237,19 +309,20 @@ function callNextEntrant() {
     }
 }
 
-// ===== 切换滑动印章架 =====
-function toggleStampDrawer() {
-    const drawer = document.getElementById("stamp-drawer");
-    drawer.classList.toggle("is-open");
-}
-
-// ===== 盖章操作 =====
-function applyStamp(stampType) {
+// ===== 实体下压盖章机制 (按压把手) =====
+function pressStamp(stampType) {
     if (!gameState.isEntrantInBooth || !gameState.currentEntrant) return;
+    
+    const unitId = (stampType === "ASSIGNED") ? "stamp-unit-assigned" : "stamp-unit-random";
+    const knob = document.querySelector(`#${unitId} .stamp-knob`);
+    
+    // 下压物理动效
+    knob.classList.add("is-pressing");
+    setTimeout(() => knob.classList.remove("is-pressing"), 180);
     
     gameState.currentStamp = stampType;
     const stampSlot = document.getElementById("stamp-impression");
-    const rot = (Math.random() * 6 - 3).toFixed(1); // -3deg ~ +3deg 真实印泥倾角
+    const rot = (Math.random() * 6 - 3).toFixed(1); // -3deg ~ +3deg 真实印泥轻微倾角
     
     if (stampType === "ASSIGNED") {
         stampSlot.innerHTML = `<div class="stamped-mark stamped-assigned" style="--rot:${rot}">🔴 按序就座</div>`;
@@ -258,12 +331,6 @@ function applyStamp(stampType) {
     }
     
     document.getElementById("btn-return-doc").disabled = false;
-    
-    // 自动收起印章架
-    setTimeout(() => {
-        const drawer = document.getElementById("stamp-drawer");
-        drawer.classList.remove("is-open");
-    }, 250);
 }
 
 // ===== 放行乘客走入客舱 =====
@@ -416,14 +483,14 @@ function switchManualTab(tabName) {
     document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
     document.querySelectorAll(".tab-pane").forEach(pane => pane.classList.add("hidden"));
     
-    if (tabName === "cabin") {
-        document.querySelector(".manual-tab-bar .tab-btn:nth-child(1)").classList.add("active");
-        document.getElementById("tab-cabin").classList.remove("hidden");
-    } else if (tabName === "rules") {
-        document.querySelector(".manual-tab-bar .tab-btn:nth-child(2)").classList.add("active");
+    if (tabName === "rules") {
+        document.getElementById("tab-btn-rules").classList.add("active");
         document.getElementById("tab-rules").classList.remove("hidden");
+    } else if (tabName === "cabin") {
+        document.getElementById("tab-btn-cabin").classList.add("active");
+        document.getElementById("tab-cabin").classList.remove("hidden");
     } else if (tabName === "stats") {
-        document.querySelector(".manual-tab-bar .tab-btn:nth-child(3)").classList.add("active");
+        document.getElementById("tab-btn-stats").classList.add("active");
         document.getElementById("tab-stats").classList.remove("hidden");
     }
 }
@@ -436,41 +503,41 @@ function drawPixelPortrait(canvas, passenger) {
     ctx.clearRect(0, 0, w, h);
     
     // 背景墙
-    ctx.fillStyle = "#272f33";
+    ctx.fillStyle = "#21282b";
     ctx.fillRect(0, 0, w, h);
     
     // 衣服大衣
     ctx.fillStyle = passenger.isFirst ? "#524436" : (passenger.isVip ? "#705822" : "#38473c");
-    ctx.fillRect(16, 75, 64, 45);
+    ctx.fillRect(16, 75, 68, 50);
     
     // 领口
     ctx.fillStyle = "#fff";
-    ctx.fillRect(40, 75, 16, 12);
+    ctx.fillRect(42, 75, 16, 12);
     
     // 头部皮肤
     ctx.fillStyle = passenger.isFirst ? "#cfa27c" : "#e0ba97";
-    ctx.fillRect(28, 25, 40, 48);
+    ctx.fillRect(30, 25, 40, 50);
     
     // 眼睛
     ctx.fillStyle = "#111";
-    ctx.fillRect(36, 42, 6, 6);
-    ctx.fillRect(54, 42, 6, 6);
+    ctx.fillRect(38, 44, 6, 6);
+    ctx.fillRect(56, 44, 6, 6);
     
     // 头发/帽子
     ctx.fillStyle = passenger.isFirst ? "#2d1f15" : "#1a2124";
     if (passenger.isFirst) {
         // 凌乱鸡窝头
-        ctx.fillRect(24, 15, 48, 16);
-        ctx.fillRect(20, 22, 10, 15);
-        ctx.fillRect(66, 20, 10, 18);
+        ctx.fillRect(24, 15, 52, 16);
+        ctx.fillRect(20, 22, 12, 15);
+        ctx.fillRect(68, 20, 12, 18);
     } else {
         // 顺从平头/便帽
-        ctx.fillRect(26, 18, 44, 14);
+        ctx.fillRect(28, 18, 44, 14);
     }
     
     // 胡须/嘴巴
     ctx.fillStyle = "#8a5840";
-    ctx.fillRect(42, 58, 12, 4);
+    ctx.fillRect(44, 60, 12, 4);
 }
 
 function drawMysteryPortrait(canvas) {
@@ -485,21 +552,21 @@ function drawMysteryPortrait(canvas) {
     
     // 黑色大风衣高领
     ctx.fillStyle = "#0d1012";
-    ctx.fillRect(10, 60, 76, 60);
+    ctx.fillRect(10, 60, 80, 65);
     
     // 宽檐风衣帽
     ctx.fillStyle = "#07090a";
-    ctx.fillRect(12, 28, 72, 12);
-    ctx.fillRect(24, 12, 48, 20);
+    ctx.fillRect(12, 28, 76, 12);
+    ctx.fillRect(24, 12, 52, 20);
     
     // 阴影中的面部
     ctx.fillStyle = "#1b2024";
-    ctx.fillRect(28, 38, 40, 30);
+    ctx.fillRect(30, 38, 40, 30);
     
     // 泛着金光的两只眼睛
     ctx.fillStyle = "#f5d442";
-    ctx.fillRect(36, 46, 6, 4);
-    ctx.fillRect(54, 46, 6, 4);
+    ctx.fillRect(38, 46, 6, 4);
+    ctx.fillRect(56, 46, 6, 4);
 }
 
 function drawPixelPhoto(canvas, passenger) {
@@ -513,12 +580,12 @@ function drawPixelPhoto(canvas, passenger) {
     
     // 黑白寸照
     ctx.fillStyle = "#4a4235";
-    ctx.fillRect(8, 35, 32, 25);
+    ctx.fillRect(8, 32, 32, 28);
     ctx.fillStyle = "#7a6e5b";
-    ctx.fillRect(14, 12, 20, 24);
+    ctx.fillRect(14, 10, 20, 24);
     
     // 眼睛
     ctx.fillStyle = "#111";
-    ctx.fillRect(18, 20, 3, 3);
-    ctx.fillRect(27, 20, 3, 3);
+    ctx.fillRect(18, 18, 3, 3);
+    ctx.fillRect(27, 18, 3, 3);
 }

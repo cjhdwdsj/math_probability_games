@@ -1,5 +1,5 @@
 /* ==========================================================================
-   《请出示证件：神秘 VIP 与篡位者航班》- 像素级视觉样式表 (PAPERS, PLEASE THEME V2)
+   《请出示证件：神秘 VIP 与篡位者航班》- 像素级视觉样式表 (PAPERS, PLEASE THEME V3)
    ========================================================================== */
 
 :root {
@@ -58,7 +58,7 @@ button {
     width: 100vw;
     height: 100vh;
     display: grid;
-    grid-template-rows: 40vh 60vh;
+    grid-template-rows: 38vh 62vh;
     border: 4px solid #111415;
     position: relative;
 }
@@ -97,7 +97,7 @@ button {
 .zone-header {
     background: #202622;
     color: #9cb09f;
-    padding: 6px 12px;
+    padding: 5px 12px;
     font-size: 0.8rem;
     font-weight: 700;
     display: flex;
@@ -113,7 +113,7 @@ button {
     overflow: hidden;
     display: flex;
     align-items: flex-end;
-    padding-bottom: 12px;
+    padding-bottom: 8px;
 }
 
 .corridor-bg-lines {
@@ -132,8 +132,8 @@ button {
 }
 
 .queue-sprite {
-    width: 28px;
-    height: 52px;
+    width: 26px;
+    height: 48px;
     background-color: #55665a;
     border: 2px solid #161e18;
     border-radius: 4px 4px 0 0;
@@ -144,7 +144,7 @@ button {
 
 .queue-sprite.active-entrant {
     background-color: var(--c-gold);
-    transform: scale(1.18) translateY(-6px);
+    transform: scale(1.16) translateY(-4px);
     box-shadow: 0 0 10px rgba(207, 161, 34, 0.8);
 }
 
@@ -155,10 +155,10 @@ button {
 .queue-sprite::before {
     content: "";
     position: absolute;
-    top: -14px;
-    left: 4px;
+    top: -12px;
+    left: 3px;
     width: 16px;
-    height: 14px;
+    height: 12px;
     background-color: #d1b58a;
     border: 2px solid #161e18;
     border-radius: 50% 50% 0 0;
@@ -166,10 +166,10 @@ button {
 
 .queue-sprite .sprite-badge {
     position: absolute;
-    bottom: -18px;
+    bottom: -16px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     color: #e2ebd8;
     font-weight: 800;
     font-family: monospace;
@@ -177,7 +177,7 @@ button {
 }
 
 .corridor-floor {
-    height: 18px;
+    height: 16px;
     background-color: var(--c-floor);
     border-top: 3px solid #141a16;
     position: relative;
@@ -201,7 +201,7 @@ button {
     position: relative;
     background: #181d20;
     border: 6px solid #0f1315;
-    margin: 6px 8px;
+    margin: 4px 6px;
     box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
     display: flex;
 }
@@ -209,10 +209,10 @@ button {
 .booth-interior {
     flex: 1;
     display: grid;
-    grid-template-columns: 110px 1fr 90px;
-    padding: 8px 12px;
+    grid-template-columns: 105px 1fr 85px;
+    padding: 6px 10px;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     position: relative;
 }
 
@@ -222,8 +222,8 @@ button {
 }
 
 .portrait-canvas {
-    width: 100px;
-    height: 125px;
+    width: 96px;
+    height: 120px;
     background-color: #21282b;
     border: 3px solid #0e1214;
     border-radius: 4px;
@@ -243,27 +243,27 @@ button {
     background-color: var(--c-tape-bg);
     border: 2px solid #5a4f3b;
     border-radius: 2px;
-    padding: 8px 12px;
+    padding: 6px 10px;
     box-shadow: 3px 3px 0 rgba(0,0,0,0.4);
-    min-height: 90px;
+    min-height: 85px;
     display: flex;
     flex-direction: column;
     justify-content: center;
 }
 
 .tape-header-tag {
-    font-size: 0.68rem;
+    font-size: 0.65rem;
     font-weight: 800;
     color: #796c56;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
     letter-spacing: 0.5px;
     font-family: monospace;
 }
 
 .tape-dialogue {
     font-family: "Noto Serif SC", serif;
-    font-size: 0.95rem;
-    line-height: 1.45;
+    font-size: 0.92rem;
+    line-height: 1.4;
     color: #1a1612;
 }
 
@@ -272,16 +272,16 @@ button {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .btn-intercom {
-    width: 76px;
-    height: 76px;
+    width: 72px;
+    height: 72px;
     background: radial-gradient(circle at 35% 35%, #b93b3b, #6e1515);
     border: 3px solid #380808;
     border-radius: 12px;
-    box-shadow: 0 5px 0 #240505, 0 8px 10px rgba(0,0,0,0.6);
+    box-shadow: 0 4px 0 #240505, 0 6px 8px rgba(0,0,0,0.6);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -293,35 +293,35 @@ button {
 
 .btn-intercom:hover {
     transform: translateY(-2px);
-    box-shadow: 0 7px 0 #240505, 0 10px 12px rgba(0,0,0,0.7);
+    box-shadow: 0 6px 0 #240505, 0 8px 10px rgba(0,0,0,0.7);
 }
 
 .btn-intercom:active {
-    transform: translateY(4px);
+    transform: translateY(3px);
     box-shadow: 0 1px 0 #240505;
 }
 
 .speaker-grill {
-    width: 24px;
-    height: 14px;
+    width: 22px;
+    height: 12px;
     background: repeating-linear-gradient(0deg, #300, #300 2px, #fff 2px, #fff 4px);
     opacity: 0.6;
 }
 
 .intercom-label {
-    font-size: 0.78rem;
+    font-size: 0.75rem;
     font-weight: 900;
     text-shadow: 1px 1px 0 #000;
 }
 
 .intercom-sub {
-    font-size: 0.62rem;
+    font-size: 0.6rem;
     opacity: 0.8;
 }
 
 .indicator-light {
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
     background-color: #387d39;
     border: 2px solid #163618;
     border-radius: 50%;
@@ -344,43 +344,240 @@ button {
     overflow: hidden;
 }
 
-/* 桌面主布局：左右两列 */
-.desk-main-layout {
+/* 物理桌面自由交互区 */
+.counter-surface {
     flex: 1;
-    padding: 14px 18px;
-    display: grid;
-    grid-template-columns: 310px 1fr;
-    gap: 18px;
-    height: calc(100% - 32px);
     position: relative;
+    width: 100%;
+    height: calc(100% - 30px);
+    overflow: hidden;
 }
 
-/* 左列：便签与登机牌 */
-.desk-left-col {
+/* 所有可拖拽物体的通用样式 */
+.draggable-item {
+    position: absolute;
+    cursor: grab;
+    touch-action: none;
+}
+
+.draggable-item.is-dragging {
+    cursor: grabbing !important;
+    z-index: 1000 !important;
+    box-shadow: 10px 10px 20px rgba(0,0,0,0.5) !important;
+}
+
+/* 【左边】：工作手册 (检票准则、客舱实时雷达、执勤统计) */
+.cabin-manual-book {
+    position: absolute;
+    left: 16px;
+    top: 12px;
+    bottom: 12px;
+    width: 480px;
+    background-color: var(--c-manual-bg);
+    border: 3.5px solid #2e261a;
+    border-radius: 4px;
+    box-shadow: 5px 5px 0 rgba(0,0,0,0.4);
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    position: relative;
+    z-index: 10;
+    overflow: hidden;
 }
 
-/* 绝密便签 */
+.manual-tab-bar {
+    background-color: #2e261a;
+    display: flex;
+    gap: 4px;
+    padding: 6px 8px 0;
+}
+
+.tab-btn {
+    background-color: #4d402d;
+    color: #cfc2a9;
+    border: 2px solid #2e261a;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    transition: background-color 0.15s ease;
+}
+
+.tab-btn.active {
+    background-color: var(--c-manual-bg);
+    color: var(--c-ink);
+}
+
+.manual-content {
+    flex: 1;
+    padding: 12px 16px;
+    overflow-y: auto;
+}
+
+.rule-title {
+    font-size: 0.92rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+    color: #2b2318;
+    border-bottom: 2px solid #6b5c43;
+    padding-bottom: 4px;
+}
+
+.rules-list {
+    padding-left: 20px;
+    line-height: 1.6;
+    font-size: 0.82rem;
+}
+
+.cabin-grid-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #6b5c43;
+    padding-bottom: 6px;
+    margin-bottom: 10px;
+    font-weight: 800;
+    font-size: 0.88rem;
+}
+
+.vip-status-pill {
+    background-color: #f7e2a3;
+    color: #634b07;
+    border: 1.5px solid #8f6e12;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.cabin-seats-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.seat-cell {
+    background-color: #fff;
+    border: 2px solid #4a3e2b;
+    border-radius: 5px;
+    padding: 8px 4px;
+    text-align: center;
+    box-shadow: 2px 2px 0 rgba(0,0,0,0.15);
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.seat-cell .seat-num-tag {
+    font-size: 1.15rem;
+    font-family: monospace;
+    font-weight: 900;
+    color: #2b2318;
+}
+
+.seat-cell .seat-status-desc {
+    font-size: 0.68rem;
+    color: #72644e;
+    margin-top: 2px;
+    font-weight: 700;
+}
+
+.seat-cell.is-empty {
+    border-style: dashed;
+    background-color: #faf6ed;
+}
+
+.seat-cell.is-assigned-correct {
+    background-color: #e0f2e1;
+    border-color: #256627;
+}
+.seat-cell.is-assigned-correct .seat-num-tag { color: #174f19; }
+
+.seat-cell.is-stolen {
+    background-color: #fae1e1;
+    border-color: #b82622;
+}
+.seat-cell.is-stolen .seat-num-tag { color: #8a1512; }
+
+.seat-cell.is-vip {
+    border-color: #cfa122;
+    box-shadow: 0 0 10px rgba(207, 161, 34, 0.45);
+}
+
+.cabin-legend {
+    display: flex;
+    gap: 12px;
+    font-size: 0.72rem;
+    color: #5c503b;
+    border-top: 1.5px dashed rgba(68, 60, 44, 0.25);
+    padding-top: 8px;
+    align-items: center;
+}
+
+.leg-item { display: flex; align-items: center; gap: 4px; }
+.leg-box {
+    width: 10px;
+    height: 10px;
+    border: 1.5px solid #4a3e2b;
+    border-radius: 2px;
+    display: inline-block;
+}
+.leg-empty { background: #faf6ed; border-style: dashed; }
+.leg-correct { background: #e0f2e1; border-color: #256627; }
+.leg-stolen { background: #fae1e1; border-color: #b82622; }
+.leg-vip { background: #fff; border-color: #cfa122; }
+
+.stats-box {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.85rem;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px dashed rgba(0,0,0,0.15);
+    padding-bottom: 4px;
+}
+
+.stat-highlight {
+    font-size: 1rem;
+    font-weight: 800;
+    border-bottom: 2px solid #5a4e39;
+    padding-top: 4px;
+}
+
+.stat-note {
+    font-size: 0.72rem;
+    color: #72644e;
+    margin-top: 6px;
+}
+
+.gold-text { color: #876204; font-weight: 800; }
+.green-text { color: var(--c-green); font-weight: 700; }
+.red-text { color: var(--c-stamp-red); font-weight: 700; }
+
+/* 【右边】：绝密便签 */
 .memo-sticky {
+    right: 28px;
+    top: 12px;
+    width: 220px;
     background-color: #f7ebb8;
-    border: 2.5px solid #6b5c3b;
+    border: 2px solid #6b5c3b;
     padding: 8px 12px;
     transform: rotate(-1.5deg);
     box-shadow: 3px 3px 0 rgba(0,0,0,0.3);
-    font-size: 0.82rem;
-    line-height: 1.38;
-    position: relative;
+    font-size: 0.8rem;
+    line-height: 1.35;
+    z-index: 20;
 }
 
 .memo-pin {
     position: absolute;
-    top: -6px;
-    left: 16px;
-    width: 12px;
-    height: 12px;
+    top: -5px;
+    left: 14px;
+    width: 10px;
+    height: 10px;
     background-color: #ba2824;
     border-radius: 50%;
     border: 1px solid #500;
@@ -390,58 +587,64 @@ button {
     font-weight: 800;
     color: #4a3e20;
     margin-bottom: 2px;
-    font-size: 0.82rem;
+    font-size: 0.8rem;
 }
 
-.gold-text { color: #876204; font-weight: 800; }
-.green-text { color: var(--c-green); font-weight: 700; }
-.red-text { color: var(--c-stamp-red); font-weight: 700; }
-
-/* 登机牌卡片 */
+/* 【右边由上往下弹出】：乘客纸质登机牌 (可自由拖拽) */
 .boarding-pass-card {
+    right: 270px;
+    top: 14px;
+    width: 260px;
     background-color: var(--c-pass-bg);
     border: 3px solid var(--c-pass-border);
     border-radius: 4px;
-    padding: 10px 12px;
-    box-shadow: 5px 5px 0 rgba(0,0,0,0.35);
+    padding: 8px 10px;
+    box-shadow: 6px 6px 0 rgba(0,0,0,0.35);
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    transition: transform 0.15s ease;
+    gap: 6px;
+    z-index: 50;
+    animation: passSlideDown 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.15);
 }
 
-.pass-header {
+@keyframes passSlideDown {
+    0% { transform: translateY(-40px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+.pass-drag-handle {
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-bottom: 2px solid #5a4e39;
     padding-bottom: 4px;
+    cursor: grab;
 }
 
-.airline-name {
+.pass-drag-title {
     font-weight: 900;
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     letter-spacing: 0.5px;
 }
 
 .pass-type {
     background: #252a2d;
     color: #fff;
-    font-size: 0.65rem;
-    padding: 2px 6px;
+    font-size: 0.62rem;
+    padding: 1px 5px;
     border-radius: 2px;
     font-weight: 700;
 }
 
 .pass-body {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     align-items: center;
 }
 
 .pass-photo-frame {
-    width: 48px;
-    height: 60px;
+    width: 44px;
+    height: 55px;
     background: #222;
     border: 2px solid #443c2c;
     flex-shrink: 0;
@@ -449,18 +652,18 @@ button {
 
 .pass-details {
     flex: 1;
-    font-size: 0.82rem;
-    line-height: 1.45;
+    font-size: 0.78rem;
+    line-height: 1.4;
 }
 
 .pass-details .lbl {
     color: #6e5f49;
-    font-size: 0.7rem;
-    margin-right: 4px;
+    font-size: 0.68rem;
+    margin-right: 3px;
 }
 
 .seat-num {
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     color: #8c251d;
     font-family: monospace;
     font-weight: 900;
@@ -468,7 +671,7 @@ button {
 
 /* 印章印记痕迹 */
 .stamp-impression-slot {
-    min-height: 44px;
+    min-height: 42px;
     border: 2px dashed rgba(68, 60, 44, 0.4);
     border-radius: 4px;
     display: flex;
@@ -480,16 +683,16 @@ button {
 }
 
 .stamp-placeholder-hint {
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     color: #796a52;
     font-style: italic;
 }
 
 .stamped-mark {
     font-family: "Noto Serif SC", serif;
-    font-size: 1.12rem;
+    font-size: 1.05rem;
     font-weight: 900;
-    padding: 3px 10px;
+    padding: 3px 8px;
     border: 3px solid;
     border-radius: 4px;
     letter-spacing: 2px;
@@ -525,7 +728,7 @@ button {
 .barcode-mock {
     font-family: monospace;
     letter-spacing: -2px;
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     color: #554733;
 }
 
@@ -533,8 +736,8 @@ button {
     background-color: #2b4c2c;
     color: #fff;
     border: 2px solid #162917;
-    padding: 5px 12px;
-    font-size: 0.8rem;
+    padding: 4px 10px;
+    font-size: 0.78rem;
     font-weight: 800;
     box-shadow: 2px 2px 0 #000;
 }
@@ -548,271 +751,96 @@ button {
     cursor: not-allowed;
 }
 
-/* 右列：客舱座席手册 (整块展开) */
-.desk-right-col {
-    height: 100%;
-    display: flex;
-}
-
-.cabin-manual-book {
-    flex: 1;
-    background-color: var(--c-manual-bg);
-    border: 3.5px solid #2e261a;
-    border-radius: 4px;
-    box-shadow: 5px 5px 0 rgba(0,0,0,0.4);
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    overflow: hidden;
-}
-
-.manual-tab-bar {
-    background-color: #2e261a;
-    display: flex;
-    gap: 4px;
-    padding: 6px 10px 0;
-}
-
-.tab-btn {
-    background-color: #4d402d;
-    color: #cfc2a9;
-    border: 2px solid #2e261a;
-    border-bottom: none;
-    border-radius: 4px 4px 0 0;
-    padding: 6px 14px;
-    font-size: 0.82rem;
-    font-weight: 700;
-    transition: background-color 0.15s ease;
-}
-
-.tab-btn.active {
-    background-color: var(--c-manual-bg);
-    color: var(--c-ink);
-}
-
-.manual-content {
-    flex: 1;
-    padding: 14px 18px;
-    overflow-y: auto;
-}
-
-.cabin-grid-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 2px solid #6b5c43;
-    padding-bottom: 8px;
-    margin-bottom: 12px;
-    font-weight: 800;
-    font-size: 0.9rem;
-}
-
-.vip-status-pill {
-    background-color: #f7e2a3;
-    color: #634b07;
-    border: 1.5px solid #8f6e12;
-    padding: 3px 10px;
-    border-radius: 4px;
-    font-size: 0.8rem;
-    font-weight: 800;
-}
-
-.cabin-seats-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 12px;
-    margin-bottom: 16px;
-}
-
-.seat-cell {
-    background-color: #fff;
-    border: 2.5px solid #4a3e2b;
-    border-radius: 6px;
-    padding: 10px 6px;
-    text-align: center;
-    box-shadow: 2px 2px 0 rgba(0,0,0,0.15);
-    position: relative;
-    transition: all 0.2s ease;
-}
-
-.seat-cell .seat-num-tag {
-    font-size: 1.25rem;
-    font-family: monospace;
-    font-weight: 900;
-    color: #2b2318;
-}
-
-.seat-cell .seat-status-desc {
-    font-size: 0.72rem;
-    color: #72644e;
-    margin-top: 4px;
-    font-weight: 700;
-}
-
-.seat-cell.is-empty {
-    border-style: dashed;
-    background-color: #faf6ed;
-}
-
-.seat-cell.is-assigned-correct {
-    background-color: #e0f2e1;
-    border-color: #256627;
-}
-.seat-cell.is-assigned-correct .seat-num-tag { color: #174f19; }
-
-.seat-cell.is-stolen {
-    background-color: #fae1e1;
-    border-color: #b82622;
-}
-.seat-cell.is-stolen .seat-num-tag { color: #8a1512; }
-
-.seat-cell.is-vip {
-    border-color: #cfa122;
-    box-shadow: 0 0 12px rgba(207, 161, 34, 0.45);
-}
-
-.cabin-legend {
-    display: flex;
-    gap: 16px;
-    font-size: 0.75rem;
-    color: #5c503b;
-    border-top: 1.5px dashed rgba(68, 60, 44, 0.25);
-    padding-top: 10px;
-    align-items: center;
-}
-
-.leg-item { display: flex; align-items: center; gap: 4px; }
-.leg-box {
-    width: 12px;
-    height: 12px;
-    border: 1.5px solid #4a3e2b;
-    border-radius: 2px;
-    display: inline-block;
-}
-.leg-empty { background: #faf6ed; border-style: dashed; }
-.leg-correct { background: #e0f2e1; border-color: #256627; }
-.leg-stolen { background: #fae1e1; border-color: #b82622; }
-.leg-vip { background: #fff; border-color: #cfa122; }
-
-/* 规章与统计 Tab 内容 */
-.rule-title {
-    font-size: 0.95rem;
-    font-weight: 800;
-    margin-bottom: 10px;
-    color: #2b2318;
-}
-
-.rules-list {
-    padding-left: 20px;
-    line-height: 1.6;
-    font-size: 0.85rem;
-}
-
-.stats-box {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    font-size: 0.9rem;
-}
-
-.stat-item {
-    display: flex;
-    justify-content: space-between;
-    border-bottom: 1px dashed rgba(0,0,0,0.15);
-    padding-bottom: 4px;
-}
-
-.stat-highlight {
-    font-size: 1.05rem;
-    font-weight: 800;
-    border-bottom: 2px solid #5a4e39;
-    padding-top: 4px;
-}
-
-.stat-note {
-    font-size: 0.75rem;
-    color: #72644e;
-    margin-top: 8px;
-}
-
-/* 右上角：滑动印章盒 (THE STAMP BAR) */
-.stamp-bar-drawer {
-    position: absolute;
-    top: 0;
+/* 【可随意拖动与下压的真实印章架盒】(THE MOVABLE STAMP BOX) */
+.stamp-box-draggable {
     right: 28px;
-    background-color: #252a2d;
-    border: 3px solid #141718;
-    border-top: none;
-    border-radius: 0 0 6px 6px;
-    box-shadow: 0 6px 14px rgba(0,0,0,0.6);
-    z-index: 150;
-    transform: translateY(-84%);
-    transition: transform 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.15);
-}
-
-.stamp-bar-drawer.is-open {
-    transform: translateY(0px) !important;
-}
-
-.stamp-drawer-handle {
-    background-color: #3b4247;
-    color: #e0e6eb;
-    font-size: 0.78rem;
-    font-weight: 800;
-    padding: 6px 18px;
-    text-align: center;
-    cursor: pointer;
-    border-bottom: 2px solid #1d2022;
-    letter-spacing: 1px;
-}
-
-.stamp-drawer-handle:hover {
-    background-color: #4a5359;
-}
-
-.stamp-rack {
+    top: 110px;
+    width: 225px;
+    background-color: #22272a;
+    border: 3px solid #101314;
+    border-radius: 6px;
+    box-shadow: 6px 6px 12px rgba(0,0,0,0.5);
+    z-index: 60;
     display: flex;
-    gap: 14px;
-    padding: 12px 14px;
-    background-color: #1b1e20;
+    flex-direction: column;
 }
 
-.stamp-tool {
+.stamp-box-frame {
+    background-color: #333a3e;
+    color: #cfd8dc;
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 5px 8px;
+    text-align: center;
+    cursor: grab;
+    border-bottom: 2px solid #171a1c;
+    letter-spacing: 0.5px;
+}
+
+.stamp-plungers-row {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    background-color: #1a1d1f;
+    justify-content: space-around;
+}
+
+.stamp-plunger-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.stamp-knob {
     background: none;
     border: none;
     display: flex;
     flex-direction: column;
     align-items: center;
     cursor: pointer;
-    transition: transform 0.1s ease;
+    transition: transform 0.08s ease;
 }
 
-.stamp-tool:hover {
-    transform: translateY(3px);
+.stamp-knob:hover .knob-cap {
+    background: radial-gradient(circle at 35% 25%, #a65e2e, #5a2c0e);
 }
 
-.stamp-handle {
-    width: 24px;
-    height: 36px;
-    background: radial-gradient(circle at 40% 30%, #8d4f26, #44210a);
-    border: 2px solid #1f0d04;
-    border-radius: 4px 4px 0 0;
-    box-shadow: 2px 2px 0 rgba(0,0,0,0.4);
+.stamp-knob:active, .stamp-knob.is-pressing {
+    transform: translateY(14px);
 }
 
-.stamp-base {
-    padding: 6px 12px;
-    border-radius: 4px;
-    font-size: 0.85rem;
+.knob-cap {
+    width: 32px;
+    height: 18px;
+    background: radial-gradient(circle at 35% 25%, #8d4f26, #44210a);
+    border: 2px solid #1a0b03;
+    border-radius: 6px 6px 2px 2px;
+    box-shadow: 0 3px 0 #150802, 0 4px 6px rgba(0,0,0,0.5);
+}
+
+.knob-stem {
+    width: 8px;
+    height: 14px;
+    background: linear-gradient(90deg, #666, #999, #444);
+    border-left: 1px solid #222;
+    border-right: 1px solid #222;
+}
+
+.stamp-shoe {
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 0.75rem;
     font-weight: 900;
     color: #fff;
     text-shadow: 1px 1px 0 #000;
     border: 2px solid #000;
-    box-shadow: 0 4px 0 #000;
+    box-shadow: 0 3px 0 #000;
+    pointer-events: none;
 }
 
-.stamp-assigned .stamp-base { background-color: var(--c-stamp-red); }
-.stamp-random .stamp-base { background-color: var(--c-stamp-blue); }
+.stamp-red-unit .stamp-shoe { background-color: var(--c-stamp-red); }
+.stamp-blue-unit .stamp-shoe { background-color: var(--c-stamp-blue); }
 
 /* 左侧：点阵罚单插槽 */
 .citation-printer-slot {
@@ -825,9 +853,9 @@ button {
 .citation-paper {
     background-color: var(--c-citation);
     border: 2px dashed #992323;
-    padding: 10px 14px;
+    padding: 8px 12px;
     font-family: monospace;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     color: #6d1414;
     box-shadow: 0 6px 12px rgba(0,0,0,0.5);
     animation: citationPrint 0.35s ease-out;
@@ -838,28 +866,28 @@ button {
     100% { transform: translateY(0); opacity: 1; }
 }
 
-.citation-header { font-weight: 900; font-size: 0.88rem; margin-bottom: 4px; text-align: center; }
+.citation-header { font-weight: 900; font-size: 0.85rem; margin-bottom: 3px; text-align: center; }
 .citation-dismiss {
-    margin-top: 6px;
+    margin-top: 4px;
     width: 100%;
     background: #6d1414;
     color: #fff;
     border: none;
-    padding: 3px;
-    font-size: 0.72rem;
+    padding: 2px;
+    font-size: 0.7rem;
     font-weight: 700;
 }
 
 /* 底部状态栏 */
 .desk-bottom-bar {
-    height: 32px;
+    height: 30px;
     background-color: #151819;
     border-top: 2px solid #0a0d0e;
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 16px;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     color: #82929c;
     font-family: monospace;
 }
